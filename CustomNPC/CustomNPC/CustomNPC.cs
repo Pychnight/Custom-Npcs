@@ -63,9 +63,20 @@ namespace CustomNPC
             }
         }
 
+        /// <summary>
+        /// Heals NPC by amount, cannot heal more then MaxHP set
+        /// </summary>
+        /// <param name="amount"></param>
         internal void SelfHealing(int amount)
         {
-            mainNPC.life += amount;
+            if (mainNPC.life + amount < customHealth)
+            {
+                mainNPC.life += amount;
+            }
+            else
+            {
+                mainNPC.life = customHealth;
+            }
         }
 
         internal void Multiply(int amount, bool sethealth = false, int health = 0)
@@ -75,7 +86,27 @@ namespace CustomNPC
 
         internal bool HealthAbove(int Health)
         {
-            return false;
+            if (mainNPC.life >= Health)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
+
+        internal bool HealthBelow(int Health)
+        {
+            if (mainNPC.life <= Health)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        
     }
 }

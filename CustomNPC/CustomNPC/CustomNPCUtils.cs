@@ -14,9 +14,14 @@ namespace CustomNPC
         private CustomNPCUtils() { }
         internal static CustomNPCUtils Instance { get { return instance; } }
 
+        /// <summary>
+        /// Chance system, returns true based on the percentage passed through
+        /// </summary>
+        /// <param name="percentage">At most 2 decimal points</param>
+        /// <returns></returns>
         internal bool Chance(double percentage)
         {
-            if (rand.Next(101) <= percentage)
+            if ((rand.Next(0, 10001) / 100.00) <= percentage)
             {
                 return true;
             }

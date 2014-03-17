@@ -13,8 +13,9 @@ namespace CustomNPC
     public class CustomNPCPlugin : TerrariaPlugin
     {
         //16.66 milliseconds for 1/60th of a second rounded down.
-        private Timer mainLoop = new Timer(16);
+        private Timer mainLoop = new Timer((1/60.0));
         internal static CustomNPCUtils CustomNPCUtils = CustomNPCUtils.Instance;
+        internal NPC[] NPC = new NPC[200];
 
         public CustomNPCPlugin(Main game)
             : base(game)
