@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Terraria;
 
 namespace CustomNPC
 {
@@ -13,7 +14,7 @@ namespace CustomNPC
         /// </summary>
         internal string customName { get; set; }
         internal int customHealth { get; set; }
-        internal int customID { get; set; }
+        internal string customID { get; set; }
         internal int customDefense { get; set; }
         internal int customSpeed { get; set; }
         internal int customAI { get; set; }
@@ -21,6 +22,7 @@ namespace CustomNPC
         internal bool noGravity { get; set; }
         internal bool noTileCollide { get; set; }
         internal bool lavaImmune { get; set; }
+        internal int customBaseID { get; set; }
 
         /// <summary>
         /// NPC Restrictions/Conditions
@@ -36,6 +38,44 @@ namespace CustomNPC
         internal int customSpawnTimer { get; set; }
         internal List<CustomNPCProjectiles> customProjectiles { get; set; }
         internal int customSpawnChance { get; set; }
+        internal NPC mainNPC { get; set; }
+        
+        /// <summary>
+        /// Transforms a NPC to another NPC
+        /// </summary>
+        /// <param name="id">ID of NPC - Can be Custom</param>
+        /// <param name="addhealth">Increase monsters Health</param>
+        /// <param name="additionalhealth">Amount to Increase by, if 0 - get new monsters health and add that to NPC</param>
+        internal void Transform(string id, bool addhealth = false, int additionalhealth = 0)
+        {
+            CustomNPC obj = CustomNPCPlugin.CustomNPCUtils.GetNPCbyID(id);
+            mainNPC.type = obj.customBaseID;
+            if (addhealth)
+            {
+                if (additionalhealth == 0)
+                {
+                    mainNPC.life += obj.customHealth;
+                }
+                else
+                {
+                    mainNPC.life += additionalhealth;
+                }
+            }
+        }
 
+        internal void SelfHealing(int amount)
+        {
+            mainNPC.life += amount;
+        }
+
+        internal void Multiply(int amount, bool sethealth = false, int health = 0)
+        {
+            
+        }
+
+        internal bool HealthAbove(int Health)
+        {
+            return false;
+        }
     }
 }
