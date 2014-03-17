@@ -5,6 +5,17 @@ VisualStudioVersion = 12.0.21005.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomNPC", "CustomNPC\CustomNPC.csproj", "{FDA69D84-FD53-4DDA-BB00-0F9CCAC7A3D4}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{93E7A4CA-D6B6-4BC4-807B-41EFAA1B15B3}"
+	ProjectSection(SolutionItems) = preProject
+		Libraries\HttpServer.dll = Libraries\HttpServer.dll
+		Libraries\Mono.Data.Sqlite.dll = Libraries\Mono.Data.Sqlite.dll
+		Libraries\MySql.Data.dll = Libraries\MySql.Data.dll
+		Libraries\MySql.Web.dll = Libraries\MySql.Web.dll
+		Libraries\Newtonsoft.Json.dll = Libraries\Newtonsoft.Json.dll
+		Libraries\TerrariaServer.exe = Libraries\TerrariaServer.exe
+		Libraries\TShockAPI.dll = Libraries\TShockAPI.dll
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
