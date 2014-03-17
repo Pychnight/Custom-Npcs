@@ -15,7 +15,7 @@ namespace CustomNPC
         //16.66 milliseconds for 1/60th of a second rounded down.
         private Timer mainLoop = new Timer((1/60.0));
         internal static CustomNPCUtils CustomNPCUtils = CustomNPCUtils.Instance;
-        internal NPC[] NPC = new NPC[200];
+        internal Dictionary<string, CustomNPC> CustomNPCs = new Dictionary<string, CustomNPC>();
 
         public CustomNPCPlugin(Main game)
             : base(game)
