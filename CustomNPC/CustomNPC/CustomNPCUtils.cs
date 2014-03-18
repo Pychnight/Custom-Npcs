@@ -21,7 +21,7 @@ namespace CustomNPC
         /// </summary>
         /// <param name="percentage">At most 2 decimal points</param>
         /// <returns></returns>
-        internal bool Chance(double percentage)
+        public bool Chance(double percentage)
         {
             if (rand.NextDouble() * 100 <= percentage)
             {

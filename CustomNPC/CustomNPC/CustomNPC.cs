@@ -50,7 +50,7 @@ namespace CustomNPC
         /// <param name="obj">CustomNPC that will be replacing it</param>
         /// <param name="addhealth">Increase monsters Health</param>
         /// <param name="additionalhealth">Amount to Increase by, if 0 - get new monsters health and add that to NPC</param>
-        internal void Transform(CustomNPC obj, bool addhealth = false, int additionalhealth = 0)
+        public void Transform(CustomNPC obj, bool addhealth = false, int additionalhealth = 0)
         {
             mainNPC.type = obj.customBaseID;
             if (addhealth)
@@ -72,7 +72,7 @@ namespace CustomNPC
         /// <param name="id">ID of NPC - Can be Custom</param>
         /// <param name="addhealth">Increase monsters Health</param>
         /// <param name="additionalhealth">Amount to Increase by, if 0 - get new monsters health and add that to NPC</param>
-        internal void Transform(int id, bool addhealth = false, int additionalhealth = 0)
+        public void Transform(int id, bool addhealth = false, int additionalhealth = 0)
         {
             NPC obj = TShock.Utils.GetNPCById(id);
             mainNPC.type = obj.netID;
@@ -93,7 +93,7 @@ namespace CustomNPC
         /// Heals NPC by amount, cannot heal more then MaxHP set
         /// </summary>
         /// <param name="amount"></param>
-        internal void SelfHealing(int amount)
+        public void SelfHealing(int amount)
         {
             if (mainNPC.life + amount < customHealth)
             {
@@ -111,7 +111,7 @@ namespace CustomNPC
         /// <param name="amount"></param>
         /// <param name="sethealth"></param>
         /// <param name="health"></param>
-        internal void Multiply(int amount, bool sethealth = false, int health = 0)
+        public void Multiply(int amount, bool sethealth = false, int health = 0)
         {
             
         }
@@ -121,7 +121,7 @@ namespace CustomNPC
         /// </summary>
         /// <param name="Health"></param>
         /// <returns></returns>
-        internal bool HealthAbove(int Health)
+        public bool HealthAbove(int Health)
         {
             if (mainNPC.life >= Health)
             {
@@ -138,7 +138,7 @@ namespace CustomNPC
         /// </summary>
         /// <param name="Health"></param>
         /// <returns></returns>
-        internal bool HealthBelow(int Health)
+        public bool HealthBelow(int Health)
         {
             if (mainNPC.life <= Health)
             {
@@ -155,7 +155,7 @@ namespace CustomNPC
         /// </summary>
         /// <param name="buffid"></param>
         /// <returns></returns>
-        internal bool HasBuff(int buffid)
+        public bool HasBuff(int buffid)
         {
             if (mainNPC.buffType.Contains(buffid))
             {
@@ -168,13 +168,13 @@ namespace CustomNPC
         }
 
         /// <summary>
-        /// 
+        /// Teleports a NPC to a specific location in a region
         /// </summary>
         /// <param name="region"></param>
         /// <param name="randompos"></param>
         /// <param name="x"></param>
         /// <param name="y"></param>
-        internal void TeleportNPC(string region, bool randompos = true, int x = 0, int y = 0)
+        public void TeleportNPC(string region, bool randompos = true, int x = 0, int y = 0)
         {
             Region obj = null;
             try {
@@ -189,8 +189,54 @@ namespace CustomNPC
             {
                 TShock.Utils.GetRandomClearTileWithInRange(obj.Area.Left, obj.Area.Top, obj.Area.Width, obj.Area.Height, out x, out y);
             }
+            else
+            {
+                x += obj.Area.Left;
+                y += obj.Area.Top;
+            }
             Vector2 pos = new Vector2(x, y);
             mainNPC.position = pos;
+        }
+
+        /// <summary>
+        /// Statically set x y based on the world coordinates, and teleport npc there
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        public void TeleportNPC(int x, int y)
+        {
+            Vector2 pos = new Vector2(x, y);
+            mainNPC.position = pos;
+        }
+
+        /// <summary>
+        /// Returns the current position of the monster
+        /// </summary>
+        /// <returns></returns>
+        public Vector2 ReturnPos()
+        {
+            return new Vector2(mainNPC.position.X, mainNPC.position.Y);
+        }
+
+        /// <summary>
+        /// Sends a message to all nearby players, distance define-able
+        /// </summary>
+        /// <param name="distance"></param>
+        /// <param name="message"></param>
+        /// <param name="color"></param>
+        public void MessageNearByPlayers(int distance, string message, Color color)
+        {
+            foreach(TSPlayer obj in TShock.Players)
+            {
+                if (obj != null && obj.ConnectionAlive)
+                {
+
+                    if (Vector2.Distance(ReturnPos(), obj.LastNetPosition) <= distance)
+                    {
+                        obj.SendMessage(message, color);
+                    }
+                }
+            }
         }
     }
 }

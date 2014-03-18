@@ -9,7 +9,7 @@ using TShockAPI;
 
 namespace CustomNPC
 {
-    internal class CustomNPCData
+    public class CustomNPCData
     {
         internal Dictionary<string, CustomNPC> CustomNPCs = new Dictionary<string, CustomNPC>();
 
@@ -18,7 +18,7 @@ namespace CustomNPC
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        internal CustomNPC GetNPCbyID(string id)
+        public CustomNPC GetNPCbyID(string id)
         {
             foreach (CustomNPC obj in CustomNPCs.Values)
             {
@@ -35,7 +35,7 @@ namespace CustomNPC
         /// </summary>
         /// <param name="index"></param>
         /// <param name="obj"></param>
-        internal void ConvertNPCToCustom(int index, CustomNPC obj)
+        public void ConvertNPCToCustom(int index, CustomNPC obj)
         {
             NPC npc = Main.npc[index];
             npc.netDefaults(obj.customBaseID);

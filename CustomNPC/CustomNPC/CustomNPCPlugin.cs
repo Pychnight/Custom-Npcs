@@ -74,6 +74,7 @@ namespace CustomNPC
         /// <param name="args"></param>
         private void OnLootDrop(NpcLootDropEventArgs args)
         {
+
         }
 
         private void OnInitialize(EventArgs args)
@@ -147,23 +148,6 @@ namespace CustomNPC
 
         #endregion
 
-        /// <summary>
-        /// Do Everything here
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void mainLoop_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            //check if NPC has been deactivated (could mean NPC despawned)
-            foreach (CustomNPC obj in CustomNPCs)
-            {
-                if (obj != null && !obj.isDead && !obj.mainNPC.active)
-                {
-                    obj.isDead = true;
-                }
-            }
-        }
-
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -186,6 +170,37 @@ namespace CustomNPC
             };
 
             return AppDomain.CreateDomain("Plugin Domain", AppDomain.CurrentDomain.Evidence, info);
+        }
+
+        /// <summary>
+        /// Do Everything here
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void mainLoop_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            //Spawn mobs into regions and specific biomes
+            SpawnMobs();
+            //check if NPC has been deactivated (could mean NPC despawned)
+            CheckActiveNPCs();
+        }
+
+        private void CheckActiveNPCs()
+        {
+            foreach (CustomNPC obj in CustomNPCs)
+            {
+                //if CustomNPC has been defined, and hasn't been set to dead yet, check if the terraria npc is active
+                if (obj != null && !obj.isDead && !obj.mainNPC.active)
+                {
+                    obj.isDead = true;
+                }
+            }
+        }
+
+        private void SpawnMobs()
+        {
+            
+            throw new NotImplementedException();
         }
     }
 }
