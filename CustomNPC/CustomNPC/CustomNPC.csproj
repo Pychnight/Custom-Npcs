@@ -61,6 +61,11 @@
     <Compile Include="CustomNPCPlugin.cs" />
     <Compile Include="CustomNPCProjectiles.cs" />
     <Compile Include="CustomNPCUtils.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="Plugins\IPlugin.cs" />
+    <Compile Include="Plugins\NPCPlugin.cs" />
+    <Compile Include="Plugins\PluginDiscoverer.cs" />
+    <Compile Include="Plugins\PluginManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ShotTile.cs" />
   </ItemGroup>
