@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Terraria;
+
 namespace CustomNPC
 {
     internal class CustomNPCData
@@ -25,6 +27,23 @@ namespace CustomNPC
                 }
             }
             return null;
+        }
+
+        internal void ConvertNPCToCustom(int index, CustomNPC obj)
+        {
+            NPC npc = Main.npc[index];
+            npc.netDefaults(obj.customBaseID);
+            //npc.type = obj.customBaseID;
+
+            npc.life = obj.customHealth;
+            npc.name = obj.customName;
+            npc.displayName = obj.customName;
+            npc.lifeMax = obj.customHealth;
+            npc.life = obj.customHealth;
+            npc.aiStyle = obj.customAI;
+            npc.lavaImmune = obj.lavaImmune;
+            npc.noGravity = obj.noGravity;
+            npc.noTileCollide = obj.noTileCollide;
         }
     }
 }

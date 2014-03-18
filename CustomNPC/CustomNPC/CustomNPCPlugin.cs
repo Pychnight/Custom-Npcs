@@ -70,11 +70,21 @@ namespace CustomNPC
             mainLoop.Enabled = true;
         }
 
+        /// <summary>
+        /// Adds Custom Monster to array for replacement
+        /// </summary>
+        /// <param name="args"></param>
         private void OnUpdate(EventArgs args)
         {
             foreach(NPC obj in Main.npc)
             {
-                //Search all CustomNPC and return first instance of replacement. - Incase of multiple defined replacements
+                foreach(CustomNPC customnpc in CustomNPCData.CustomNPCs.Values)
+                {
+                    if (obj.netID == customnpc.customBaseID)
+                    {
+                        this.CustomNPCs[obj.whoAmI] = customnpc;
+                    }
+                }
             }
         }
 
