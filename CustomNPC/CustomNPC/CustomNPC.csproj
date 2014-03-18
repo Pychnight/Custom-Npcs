@@ -57,6 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CustomNPC.cs" />
+    <Compile Include="CustomNPCData.cs" />
     <Compile Include="CustomNPCPlugin.cs" />
     <Compile Include="CustomNPCProjectiles.cs" />
     <Compile Include="CustomNPCUtils.cs" />

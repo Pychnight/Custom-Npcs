@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using TShockAPI;
+
 namespace CustomNPC
 {
     internal class CustomNPCUtils
@@ -21,7 +23,7 @@ namespace CustomNPC
         /// <returns></returns>
         internal bool Chance(double percentage)
         {
-            if ((rand.Next(0, 10001) / 100.00) <= percentage)
+            if (rand.NextDouble() * 100 <= percentage)
             {
                 return true;
             }
@@ -33,7 +35,7 @@ namespace CustomNPC
 
         internal CustomNPC GetNPCbyID(string id)
         {
-            return null;
+            
         }
     }
 }

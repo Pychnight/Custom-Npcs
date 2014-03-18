@@ -79,6 +79,12 @@ namespace CustomNPC
             }
         }
 
+        /// <summary>
+        /// Spawns monsters randomly around the current x y position.
+        /// </summary>
+        /// <param name="amount"></param>
+        /// <param name="sethealth"></param>
+        /// <param name="health"></param>
         internal void Multiply(int amount, bool sethealth = false, int health = 0)
         {
             
