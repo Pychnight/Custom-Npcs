@@ -66,7 +66,6 @@ namespace CustomNPC
             //one OnUpdate is needed for replacement of mobs
             ServerApi.Hooks.GameUpdate.Register(this, OnUpdate);
             ServerApi.Hooks.NpcLootDrop.Register(this, OnLootDrop);
-            ServerApi.Hooks.NpcStrike.Register(this, OnNpcStrike);
         }
 
         /// <summary>
