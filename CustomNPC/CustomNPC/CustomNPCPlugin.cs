@@ -83,6 +83,7 @@ namespace CustomNPC
                     if (obj.netID == customnpc.customBaseID)
                     {
                         this.CustomNPCs[obj.whoAmI] = customnpc;
+                        CustomNPCData.ConvertNPCToCustom(obj.whoAmI, customnpc);
                     }
                 }
             }

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Terraria;
+using TShockAPI;
 
 namespace CustomNPC
 {
@@ -29,6 +30,11 @@ namespace CustomNPC
             return null;
         }
 
+        /// <summary>
+        /// Customize NPC to Customized NPC specifications
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="obj"></param>
         internal void ConvertNPCToCustom(int index, CustomNPC obj)
         {
             NPC npc = Main.npc[index];
@@ -44,6 +50,11 @@ namespace CustomNPC
             npc.lavaImmune = obj.lavaImmune;
             npc.noGravity = obj.noGravity;
             npc.noTileCollide = obj.noTileCollide;
+
+            if (obj.customSpawnMessage != "")
+            {
+                TSPlayer.All.SendMessage(obj.customSpawnMessage, Color.Green);
+            }
         }
     }
 }
