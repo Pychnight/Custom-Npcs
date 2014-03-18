@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Security.Permissions;
 using TShockAPI;
 
 namespace CustomNPC.Plugins
@@ -26,6 +27,12 @@ namespace CustomNPC.Plugins
         public IReadOnlyList<TPlugin> Plugins
         {
             get { return new ReadOnlyCollection<TPlugin>(_plugins); }
+        }
+
+        [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.Infrastructure)]
+        public override object InitializeLifetimeService()
+        {
+            return null;
         }
 
         public void Load(AppDomain domain)
