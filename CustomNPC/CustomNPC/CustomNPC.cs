@@ -44,12 +44,11 @@ namespace CustomNPC
         /// <summary>
         /// Transforms a NPC to another Custom NPC
         /// </summary>
-        /// <param name="id">ID of NPC - Can be Custom</param>
+        /// <param name="obj">CustomNPC that will be replacing it</param>
         /// <param name="addhealth">Increase monsters Health</param>
         /// <param name="additionalhealth">Amount to Increase by, if 0 - get new monsters health and add that to NPC</param>
-        internal void Transform(string id, bool addhealth = false, int additionalhealth = 0)
+        internal void Transform(CustomNPC obj, bool addhealth = false, int additionalhealth = 0)
         {
-            //CustomNPC obj = .GetNPCbyID(id);
             mainNPC.type = obj.customBaseID;
             if (addhealth)
             {
