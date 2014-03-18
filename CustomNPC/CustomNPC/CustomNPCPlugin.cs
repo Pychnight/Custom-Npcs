@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Streams;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CustomNPC.EventSystem;
+using CustomNPC.EventSystem.Events;
 using CustomNPC.Plugins;
 using Terraria;
 using TerrariaApi.Server;
 using System.Timers;
+using TShockAPI;
 
 namespace CustomNPC
 {
@@ -19,14 +24,17 @@ namespace CustomNPC
 
         //16.66 milliseconds for 1/60th of a second.
         private Timer mainLoop = new Timer(1000 / 60.0);
+        private EventManager eventManager;
         private AppDomain pluginDomain;
         private PluginManager<NPCPlugin> pluginManager; 
 
         public CustomNPCPlugin(Main game)
             : base(game)
         {
+            eventManager = new EventManager();
+
             pluginDomain = CreateNewPluginDomain();
-            pluginManager = pluginDomain.CreateInstanceAndUnwrap<PluginManager<NPCPlugin>>();
+            pluginManager = pluginDomain.CreateInstanceAndUnwrap<PluginManager<NPCPlugin>>(eventManager);
         }
 
         public override string Author
@@ -53,9 +61,10 @@ namespace CustomNPC
         {
             pluginManager.Load(pluginDomain);
 
+            ServerApi.Hooks.GameInitialize.Register(this, OnInitialize);
+
             //one OnUpdate is needed for replacement of mobs
             ServerApi.Hooks.GameUpdate.Register(this, OnUpdate);
-            ServerApi.Hooks.GameInitialize.Register(this, OnInitialize);
             ServerApi.Hooks.NpcLootDrop.Register(this, OnLootDrop);
             ServerApi.Hooks.NpcStrike.Register(this, OnNpcStrike);
         }
@@ -85,9 +94,9 @@ namespace CustomNPC
         /// <param name="args"></param>
         private void OnUpdate(EventArgs args)
         {
-            foreach(NPC obj in Main.npc)
+            foreach (NPC obj in Main.npc)
             {
-                foreach(CustomNPC customnpc in CustomNPCData.CustomNPCs.Values)
+                foreach (CustomNPC customnpc in CustomNPCData.CustomNPCs.Values)
                 {
                     if (obj.netID == customnpc.customBaseID && this.CustomNPCs[obj.whoAmI] == null)
                     {
@@ -97,6 +106,62 @@ namespace CustomNPC
                 }
             }
         }
+
+        private void OnLootDrop(NpcLootDropEventArgs args)
+        {
+            if (CustomNPCs[args.NpcArrayIndex] == null)
+            {
+                return;
+            }
+            CustomNPCs[args.NpcArrayIndex] = null;
+            throw new NotImplementedException();
+        }
+
+        private void OnGetData(GetDataEventArgs args)
+        {
+            if (args.Handled)
+                return;
+
+            PacketTypes type = args.MsgID;
+            TSPlayer player = TShock.Players[args.Msg.whoAmI];
+            if (player == null || !player.ConnectionAlive)
+                return;
+
+            using (var data = new MemoryStream(args.Msg.readBuffer, args.Index, args.Length))
+            {
+                switch (type)
+                {
+                    case PacketTypes.NpcStrike:
+                        OnNpcDamaged(new GetDataHandlerArgs(player, data));
+                        break;
+                }
+            }
+        }
+
+        #region Event Dispatchers
+
+        private void OnNpcDamaged(GetDataHandlerArgs args)
+        {
+            int npcIndex = args.Data.ReadInt16();
+            int damage = args.Data.ReadInt16();
+            float knockback = args.Data.ReadSingle();
+            byte direction = args.Data.ReadInt8();
+            bool critical = args.Data.ReadBoolean();
+
+            var e = new NpcDamageEvent
+            {
+                NpcIndex = npcIndex,
+                PlayerIndex = args.Player.Index,
+                Damage = damage,
+                Knockback = knockback,
+                Direction = direction,
+                CriticalHit = critical
+            };
+
+            eventManager.InvokeHandler(e, EventType.NpcDamage);
+        }
+
+        #endregion
 
         /// <summary>
         /// Do Everything here
