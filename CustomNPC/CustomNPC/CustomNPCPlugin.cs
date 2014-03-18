@@ -56,6 +56,12 @@ namespace CustomNPC
             //one OnUpdate is needed for replacement of mobs
             ServerApi.Hooks.GameUpdate.Register(this, OnUpdate);
             ServerApi.Hooks.GameInitialize.Register(this, OnInitialize);
+            ServerApi.Hooks.NpcLootDrop.Register(this, OnLootDrop);
+        }
+
+        private void OnLootDrop(NpcLootDropEventArgs args)
+        {
+            throw new NotImplementedException();
         }
 
         private void OnInitialize(EventArgs args)
@@ -91,6 +97,7 @@ namespace CustomNPC
 
                 ServerApi.Hooks.GameUpdate.Deregister(this, OnUpdate);
                 ServerApi.Hooks.GameInitialize.Deregister(this, OnInitialize);
+                ServerApi.Hooks.NpcLootDrop.Deregister(this, OnLootDrop);
             }
         }
 

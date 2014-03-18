@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Terraria;
 using TShockAPI;
+using TShockAPI.DB;
 
 namespace CustomNPC
 {
@@ -113,6 +114,11 @@ namespace CustomNPC
             
         }
         
+        /// <summary>
+        /// Checks if the NPC's current health is above the passed amount
+        /// </summary>
+        /// <param name="Health"></param>
+        /// <returns></returns>
         internal bool HealthAbove(int Health)
         {
             if (mainNPC.life >= Health)
@@ -125,6 +131,11 @@ namespace CustomNPC
             }
         }
 
+        /// <summary>
+        /// Checks if the NPC's current health is below the passed amount
+        /// </summary>
+        /// <param name="Health"></param>
+        /// <returns></returns>
         internal bool HealthBelow(int Health)
         {
             if (mainNPC.life <= Health)
@@ -137,5 +148,55 @@ namespace CustomNPC
             }
         }
         
+        /// <summary>
+        /// Checks if the NPC is currently active or not, which in turn checks if its dead or not.
+        /// </summary>
+        /// <returns></returns>
+        internal bool IsDead()
+        {
+            return mainNPC.active;
+        }
+
+        /// <summary>
+        /// Checks if the NPC currently has a buff placed on them
+        /// </summary>
+        /// <param name="buffid"></param>
+        /// <returns></returns>
+        internal bool HasBuff(int buffid)
+        {
+            if (mainNPC.buffType.Contains(buffid))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="region"></param>
+        /// <param name="randompos"></param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        internal void TeleportNPC(string region, bool randompos = true, int x = 0, int y = 0)
+        {
+            Region obj = null;
+            try {
+                obj = TShock.Regions.GetRegionByName(region);
+            }
+            catch
+            {
+                Log.ConsoleError("Error: a defined region does not exist on this map \"region\"", region);
+                return;
+            }
+            if (randompos)
+            {
+                TShock.Utils.GetRandomClearTileWithInRange(obj.Area.Left, obj.Area.Top, obj.Area.Width, obj.Area.Height, out x, out y);
+            }
+            //mainNPC.position;
+        }
     }
 }
