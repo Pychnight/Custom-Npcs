@@ -17,9 +17,9 @@ namespace CustomNPC.Plugins
         private PluginDiscoverer<TPlugin> _discoverer;
         private IList<TPlugin> _plugins;
 
-        public PluginManager()
+        public PluginManager(IEventRegister register)
         {
-            _eventRegister = new EventManager();
+            _eventRegister = register;
             _discoverer = new PluginDiscoverer<TPlugin>();
             _plugins = new List<TPlugin>();
         }

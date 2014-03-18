@@ -20,6 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -63,6 +64,7 @@
     <Compile Include="CustomNPCUtils.cs" />
     <Compile Include="EventSystem\CustomNPCEventHandlerList.cs" />
     <Compile Include="EventSystem\EventManager.cs" />
+    <Compile Include="EventSystem\Events\NpcDamageEvent.cs" />
     <Compile Include="EventSystem\EventType.cs" />
     <Compile Include="EventSystem\IEventDispatcher.cs" />
     <Compile Include="EventSystem\IEventHandlerList.cs" />
