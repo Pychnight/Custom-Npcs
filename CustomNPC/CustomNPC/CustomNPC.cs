@@ -40,6 +40,7 @@ namespace CustomNPC
         internal int customSpawnTimer { get; set; }
         internal List<CustomNPCProjectiles> customProjectiles { get; set; }
         internal int customSpawnChance { get; set; }
+        internal string customSpawnMessage { get; set; }
         internal NPC mainNPC { get; set; }
         
         /// <summary>
