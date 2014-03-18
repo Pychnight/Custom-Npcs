@@ -1,11 +1,17 @@
 ﻿using System;
 using System.Security.Permissions;
+using CustomNPC.EventSystem;
 
 namespace CustomNPC.Plugins
 {
     public abstract class NPCPlugin : MarshalByRefObject, IPlugin
     {
         private bool _disposed;
+
+        protected NPCPlugin(IEventRegister register)
+        {
+            Register = register;
+        }
 
         ~NPCPlugin()
         {
@@ -17,6 +23,8 @@ namespace CustomNPC.Plugins
         public abstract string[] Authors { get; }
 
         public abstract Version Version { get; }
+
+        protected IEventRegister Register { get; private set; }
 
         [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.Infrastructure)]
         public override object InitializeLifetimeService()

@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
+using System.Reflection;
 using System.Security.Permissions;
+using CustomNPC.EventSystem;
 using TShockAPI;
 
 namespace CustomNPC.Plugins
@@ -10,11 +13,13 @@ namespace CustomNPC.Plugins
     public sealed class PluginManager<TPlugin> : MarshalByRefObject
         where TPlugin : IPlugin
     {
+        private IEventRegister _eventRegister;
         private PluginDiscoverer<TPlugin> _discoverer;
         private IList<TPlugin> _plugins;
 
         public PluginManager()
         {
+            _eventRegister = new EventManager();
             _discoverer = new PluginDiscoverer<TPlugin>();
             _plugins = new List<TPlugin>();
         }
@@ -22,6 +27,11 @@ namespace CustomNPC.Plugins
         public static string PluginPath
         {
             get { return Path.Combine(TShock.SavePath, "CustomNPCs"); }
+        }
+
+        public IEventRegister EventRegister
+        {
+            get { return _eventRegister; }
         }
 
         public IReadOnlyList<TPlugin> Plugins
@@ -47,7 +57,12 @@ namespace CustomNPC.Plugins
                 string[] typeNames = _discoverer.GetPluginTypeNames(file);
                 foreach (string typeName in typeNames)
                 {
-                    var plugin = (TPlugin)domain.CreateInstanceFromAndUnwrap(file, typeName);
+                    object[] args =
+                    {
+                        EventRegister
+                    };
+
+                    var plugin = (TPlugin)domain.CreateInstanceFromAndUnwrap(file, typeName, true, BindingFlags.Default, null, args, null, null);
                     _plugins.Add(plugin);
                 }
             }

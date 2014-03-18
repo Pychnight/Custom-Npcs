@@ -61,6 +61,12 @@
     <Compile Include="CustomNPCPlugin.cs" />
     <Compile Include="CustomNPCProjectiles.cs" />
     <Compile Include="CustomNPCUtils.cs" />
+    <Compile Include="EventSystem\CustomNPCEventHandlerList.cs" />
+    <Compile Include="EventSystem\EventManager.cs" />
+    <Compile Include="EventSystem\EventType.cs" />
+    <Compile Include="EventSystem\IEventDispatcher.cs" />
+    <Compile Include="EventSystem\IEventHandlerList.cs" />
+    <Compile Include="EventSystem\IEventRegister.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Plugins\IPlugin.cs" />
     <Compile Include="Plugins\NPCPlugin.cs" />
@@ -69,6 +75,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ShotTile.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
