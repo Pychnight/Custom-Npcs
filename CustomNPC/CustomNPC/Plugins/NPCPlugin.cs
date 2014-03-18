@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Permissions;
 
 namespace CustomNPC.Plugins
 {
@@ -16,6 +17,12 @@ namespace CustomNPC.Plugins
         public abstract string[] Authors { get; }
 
         public abstract Version Version { get; }
+
+        [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.Infrastructure)]
+        public override object InitializeLifetimeService()
+        {
+            return null;
+        }
 
         public void Dispose()
         {
