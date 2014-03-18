@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Terraria;
+using TShockAPI;
 
 namespace CustomNPC
 {
@@ -34,27 +35,50 @@ namespace CustomNPC
         /// NPC MISC
         /// </summary>
         internal List<int> customAreaDebuff { get; set; }
-        //internal CustomParticle customParticle = new CustomParticle(); 
+        //internal CustomParticle customParticle { get; set; }; 
         internal int customSpawnTimer { get; set; }
         internal List<CustomNPCProjectiles> customProjectiles { get; set; }
         internal int customSpawnChance { get; set; }
         internal NPC mainNPC { get; set; }
         
         /// <summary>
-        /// Transforms a NPC to another NPC
+        /// Transforms a NPC to another Custom NPC
         /// </summary>
         /// <param name="id">ID of NPC - Can be Custom</param>
         /// <param name="addhealth">Increase monsters Health</param>
         /// <param name="additionalhealth">Amount to Increase by, if 0 - get new monsters health and add that to NPC</param>
         internal void Transform(string id, bool addhealth = false, int additionalhealth = 0)
         {
-            CustomNPC obj = CustomNPCPlugin.CustomNPCUtils.GetNPCbyID(id);
+            //CustomNPC obj = .GetNPCbyID(id);
             mainNPC.type = obj.customBaseID;
             if (addhealth)
             {
                 if (additionalhealth == 0)
                 {
                     mainNPC.life += obj.customHealth;
+                }
+                else
+                {
+                    mainNPC.life += additionalhealth;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Transform Overload for non-custom NPCs
+        /// </summary>
+        /// <param name="id">ID of NPC - Can be Custom</param>
+        /// <param name="addhealth">Increase monsters Health</param>
+        /// <param name="additionalhealth">Amount to Increase by, if 0 - get new monsters health and add that to NPC</param>
+        internal void Transform(int id, bool addhealth = false, int additionalhealth = 0)
+        {
+            NPC obj = TShock.Utils.GetNPCById(id);
+            mainNPC.type = obj.netID;
+            if (addhealth)
+            {
+                if (additionalhealth == 0)
+                {
+                    mainNPC.life += obj.lifeMax;
                 }
                 else
                 {
@@ -89,7 +113,7 @@ namespace CustomNPC
         {
             
         }
-
+        
         internal bool HealthAbove(int Health)
         {
             if (mainNPC.life >= Health)

@@ -32,10 +32,5 @@ namespace CustomNPC
                 return false;
             }
         }
-
-        internal CustomNPC GetNPCbyID(string id)
-        {
-            
-        }
     }
 }

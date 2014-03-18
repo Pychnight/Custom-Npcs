@@ -14,7 +14,8 @@ namespace CustomNPC
     public class CustomNPCPlugin : TerrariaPlugin
     {
         internal static CustomNPCUtils CustomNPCUtils = CustomNPCUtils.Instance;
-        internal Dictionary<string, CustomNPC> CustomNPCs = new Dictionary<string, CustomNPC>();
+        internal CustomNPC[] CustomNPCs = new CustomNPC[200];
+        internal CustomNPCData CustomNPCData = new CustomNPCData();
 
         //16.66 milliseconds for 1/60th of a second.
         private Timer mainLoop = new Timer(1000 / 60.0);
@@ -54,6 +55,13 @@ namespace CustomNPC
 
             //one OnUpdate is needed for replacement of mobs
             ServerApi.Hooks.GameUpdate.Register(this, OnUpdate);
+            ServerApi.Hooks.GameInitialize.Register(this, OnInitialize);
+        }
+
+        private void OnInitialize(EventArgs args)
+        {
+            mainLoop.Elapsed += mainLoop_Elapsed;
+            mainLoop.Enabled = true;
         }
 
         private void OnUpdate(EventArgs args)
@@ -64,6 +72,16 @@ namespace CustomNPC
             }
         }
 
+        /// <summary>
+        /// Do Everything here
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void mainLoop_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -72,6 +90,7 @@ namespace CustomNPC
                 AppDomain.Unload(pluginDomain);
 
                 ServerApi.Hooks.GameUpdate.Deregister(this, OnUpdate);
+                ServerApi.Hooks.GameInitialize.Deregister(this, OnInitialize);
             }
         }
 
