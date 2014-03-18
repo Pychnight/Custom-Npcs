@@ -57,16 +57,20 @@ namespace CustomNPC
             ServerApi.Hooks.GameUpdate.Register(this, OnUpdate);
             ServerApi.Hooks.GameInitialize.Register(this, OnInitialize);
             ServerApi.Hooks.NpcLootDrop.Register(this, OnLootDrop);
+            ServerApi.Hooks.NpcStrike.Register(this, OnNpcStrike);
         }
 
+        /// <summary>
+        /// For Custom Loot
+        /// </summary>
+        /// <param name="args"></param>
         private void OnLootDrop(NpcLootDropEventArgs args)
         {
             if (CustomNPCs[args.NpcArrayIndex] == null)
             {
                 return;
             }
-            CustomNPCs[args.NpcArrayIndex] = null;
-            throw new NotImplementedException();
+            CustomNPCs[args.NpcArrayIndex].isDead = true;
         }
 
         private void OnInitialize(EventArgs args)
@@ -101,7 +105,14 @@ namespace CustomNPC
         /// <param name="e"></param>
         void mainLoop_Elapsed(object sender, ElapsedEventArgs e)
         {
-            throw new NotImplementedException();
+            //check if NPC has been deactivated (could mean NPC despawned)
+            foreach (CustomNPC obj in CustomNPCs)
+            {
+                if (obj != null && !obj.isDead && !obj.mainNPC.active)
+                {
+                    obj.isDead = true;
+                }
+            }
         }
 
         protected override void Dispose(bool disposing)

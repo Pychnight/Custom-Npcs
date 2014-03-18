@@ -42,6 +42,7 @@ namespace CustomNPC
         internal int customSpawnChance { get; set; }
         internal string customSpawnMessage { get; set; }
         internal NPC mainNPC { get; set; }
+        internal bool isDead { get; set; }
         
         /// <summary>
         /// Transforms a NPC to another Custom NPC
@@ -147,15 +148,6 @@ namespace CustomNPC
             {
                 return false;
             }
-        }
-        
-        /// <summary>
-        /// Checks if the NPC is currently active or not, which in turn checks if its dead or not.
-        /// </summary>
-        /// <returns></returns>
-        internal bool IsDead()
-        {
-            return mainNPC.active;
         }
 
         /// <summary>
