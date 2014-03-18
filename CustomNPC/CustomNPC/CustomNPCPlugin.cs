@@ -75,11 +75,6 @@ namespace CustomNPC
         /// <param name="args"></param>
         private void OnLootDrop(NpcLootDropEventArgs args)
         {
-            if (CustomNPCs[args.NpcArrayIndex] == null)
-            {
-                return;
-            }
-            CustomNPCs[args.NpcArrayIndex].isDead = true;
         }
 
         private void OnInitialize(EventArgs args)
@@ -105,16 +100,6 @@ namespace CustomNPC
                     }
                 }
             }
-        }
-
-        private void OnLootDrop(NpcLootDropEventArgs args)
-        {
-            if (CustomNPCs[args.NpcArrayIndex] == null)
-            {
-                return;
-            }
-            CustomNPCs[args.NpcArrayIndex] = null;
-            throw new NotImplementedException();
         }
 
         private void OnGetData(GetDataEventArgs args)
