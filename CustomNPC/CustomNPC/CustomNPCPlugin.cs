@@ -14,6 +14,7 @@ namespace CustomNPC
     public class CustomNPCPlugin : TerrariaPlugin
     {
         internal static CustomNPCUtils CustomNPCUtils = CustomNPCUtils.Instance;
+        internal Dictionary<string, CustomNPC> CustomNPCs = new Dictionary<string, CustomNPC>();
 
         //16.66 milliseconds for 1/60th of a second.
         private Timer mainLoop = new Timer(1000 / 60.0);
