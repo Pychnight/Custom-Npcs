@@ -61,6 +61,11 @@ namespace CustomNPC
 
         private void OnLootDrop(NpcLootDropEventArgs args)
         {
+            if (CustomNPCs[args.NpcArrayIndex] == null)
+            {
+                return;
+            }
+            CustomNPCs[args.NpcArrayIndex] = null;
             throw new NotImplementedException();
         }
 
@@ -80,7 +85,7 @@ namespace CustomNPC
             {
                 foreach(CustomNPC customnpc in CustomNPCData.CustomNPCs.Values)
                 {
-                    if (obj.netID == customnpc.customBaseID)
+                    if (obj.netID == customnpc.customBaseID && this.CustomNPCs[obj.whoAmI] == null)
                     {
                         this.CustomNPCs[obj.whoAmI] = customnpc;
                         CustomNPCData.ConvertNPCToCustom(obj.whoAmI, customnpc);
