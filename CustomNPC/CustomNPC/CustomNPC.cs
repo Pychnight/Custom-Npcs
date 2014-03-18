@@ -196,7 +196,8 @@ namespace CustomNPC
             {
                 TShock.Utils.GetRandomClearTileWithInRange(obj.Area.Left, obj.Area.Top, obj.Area.Width, obj.Area.Height, out x, out y);
             }
-            //mainNPC.position;
+            Vector2 pos = new Vector2(x, y);
+            mainNPC.position = pos;
         }
     }
 }
