@@ -19,7 +19,7 @@ namespace CustomNPC
     public class CustomNPCPlugin : TerrariaPlugin
     {
         internal static CustomNPCUtils CustomNPCUtils = CustomNPCUtils.Instance;
-        internal CustomNPCDefinition[] CustomNPCs = new CustomNPCDefinition[200];
+        internal CustomNPCVars[] CustomNPCs = new CustomNPCVars[200];
         internal CustomNPCData CustomNPCData = new CustomNPCData();
 
         //16.66 milliseconds for 1/60th of a second.
@@ -95,7 +95,7 @@ namespace CustomNPC
                 {
                     if (obj.netID == customnpc.customBaseID && this.CustomNPCs[obj.whoAmI] == null)
                     {
-                        this.CustomNPCs[obj.whoAmI] = customnpc;
+                        this.CustomNPCs[obj.whoAmI] = new CustomNPCVars(customnpc, DateTime.Now, obj);
                         CustomNPCData.ConvertNPCToCustom(obj.whoAmI, customnpc);
                     }
                 }
@@ -187,7 +187,7 @@ namespace CustomNPC
 
         private void CheckActiveNPCs()
         {
-            foreach (CustomNPCDefinition obj in CustomNPCs)
+            foreach (CustomNPCVars obj in this.CustomNPCs)
             {
                 //if CustomNPC has been defined, and hasn't been set to dead yet, check if the terraria npc is active
                 if (obj != null && !obj.isDead && !obj.mainNPC.active)
@@ -212,7 +212,7 @@ namespace CustomNPC
                     return;
                 }
                 //get list of mobs that can be spawned in that biome
-                foreach (string str in CustomNPCData.BiomeSpawns[PlayersCurrBiome(obj)])
+                foreach (string str in CustomNPCData.BiomeSpawns[CustomNPCUtils.PlayersCurrBiome(obj)])
                 {
                     CustomNPCDefinition customnpc = CustomNPCData.GetNPCbyID(str);
                     if ((DateTime.Now - customnpc.lastAttemptedSpawn).TotalSeconds >= customnpc.customSpawnTimer)
@@ -235,44 +235,7 @@ namespace CustomNPC
         private void SpawnMobsInStaticLocation(int x, int y, CustomNPCDefinition customnpc)
         {
             int npcid = NPC.NewNPC(x, y, customnpc.customBaseID);
-
-        }
-
-        private BiomeTypes PlayersCurrBiome(TSPlayer player)
-        {
-            if (player.TPlayer.zoneEvil)
-            {
-                return BiomeTypes.Corruption;
-            }
-            else if(player.TPlayer.zoneBlood)
-            {
-                return BiomeTypes.Blood;
-            }
-            else if (player.TPlayer.zoneCandle)
-            {
-                return BiomeTypes.Candle;
-            }
-            else if (player.TPlayer.zoneDungeon)
-            {
-                return BiomeTypes.Dungeon;
-            }
-            else if (player.TPlayer.zoneHoly)
-            {
-                return BiomeTypes.Holy;
-            }
-            else if (player.TPlayer.zoneJungle)
-            {
-                return BiomeTypes.Jungle;
-            }
-            else if (player.TPlayer.zoneMeteor)
-            {
-                return BiomeTypes.Meteor;
-            }
-            else if (player.TPlayer.zoneSnow)
-            {
-                return BiomeTypes.Snow;
-            }
-            else return BiomeTypes.Grass;
+            this.CustomNPCs[npcid] = new CustomNPCVars(customnpc, DateTime.Now, Main.npc[npcid]);
         }
 
         private void SpawnMobsInRegion()
