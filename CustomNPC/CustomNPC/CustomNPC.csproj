@@ -58,11 +58,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Biomes.cs" />
-    <Compile Include="CustomNPC.cs" />
+    <Compile Include="CustomNPCDefinition.cs" />
     <Compile Include="CustomNPCData.cs" />
     <Compile Include="CustomNPCPlugin.cs" />
     <Compile Include="CustomNPCProjectiles.cs" />
     <Compile Include="CustomNPCUtils.cs" />
+    <Compile Include="CustomNPCVars.cs" />
     <Compile Include="EventSystem\CustomNPCEventHandlerList.cs" />
     <Compile Include="EventSystem\EventManager.cs" />
     <Compile Include="EventSystem\Events\NpcDamageEvent.cs" />

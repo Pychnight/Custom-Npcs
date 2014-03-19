@@ -9,7 +9,7 @@ using TShockAPI.DB;
 
 namespace CustomNPC
 {
-    public class CustomNPC
+    public class CustomNPCDefinition
     {
         /// <summary>
         /// NPC Variable Customizations
@@ -31,6 +31,7 @@ namespace CustomNPC
         /// </summary>
         internal List<byte> customBiomeSpawn { get; set; }
         internal List<string> customRegionSpawn { get; set; }
+        internal DateTime lastAttemptedSpawn { get; set; }
 
         /// <summary>
         /// NPC MISC
@@ -39,7 +40,7 @@ namespace CustomNPC
         //internal CustomParticle customParticle { get; set; }; 
         internal int customSpawnTimer { get; set; }
         internal List<CustomNPCProjectiles> customProjectiles { get; set; }
-        internal int customSpawnChance { get; set; }
+        internal double customSpawnChance { get; set; }
         internal string customSpawnMessage { get; set; }
         internal NPC mainNPC { get; set; }
         internal bool isDead { get; set; }
@@ -50,7 +51,7 @@ namespace CustomNPC
         /// <param name="obj">CustomNPC that will be replacing it</param>
         /// <param name="addhealth">Increase monsters Health</param>
         /// <param name="additionalhealth">Amount to Increase by, if 0 - get new monsters health and add that to NPC</param>
-        public void Transform(CustomNPC obj, bool addhealth = false, int additionalhealth = 0)
+        public void Transform(CustomNPCDefinition obj, bool addhealth = false, int additionalhealth = 0)
         {
             mainNPC.type = obj.customBaseID;
             if (addhealth)

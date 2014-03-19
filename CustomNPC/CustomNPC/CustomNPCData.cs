@@ -9,9 +9,9 @@ using TShockAPI;
 
 namespace CustomNPC
 {
-    public class CustomNPCData
+    public class CustomNPCData 
     {
-        internal Dictionary<string, CustomNPC> CustomNPCs = new Dictionary<string, CustomNPC>();
+        internal Dictionary<string, CustomNPCDefinition> CustomNPCs = new Dictionary<string, CustomNPCDefinition>();
         internal Dictionary<BiomeTypes, List<string>> BiomeSpawns = new Dictionary<BiomeTypes, List<string>>();
 
         /// <summary>
@@ -19,9 +19,9 @@ namespace CustomNPC
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public CustomNPC GetNPCbyID(string id)
+        public CustomNPCDefinition GetNPCbyID(string id)
         {
-            foreach (CustomNPC obj in CustomNPCs.Values)
+            foreach (CustomNPCDefinition obj in CustomNPCs.Values)
             {
                 if (obj.customID == id)
                 {
@@ -36,7 +36,7 @@ namespace CustomNPC
         /// </summary>
         /// <param name="index"></param>
         /// <param name="obj"></param>
-        public void ConvertNPCToCustom(int index, CustomNPC obj)
+        public void ConvertNPCToCustom(int index, CustomNPCDefinition obj)
         {
             NPC npc = Main.npc[index];
             npc.netDefaults(obj.customBaseID);

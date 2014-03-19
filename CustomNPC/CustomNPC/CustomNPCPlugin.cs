@@ -19,7 +19,7 @@ namespace CustomNPC
     public class CustomNPCPlugin : TerrariaPlugin
     {
         internal static CustomNPCUtils CustomNPCUtils = CustomNPCUtils.Instance;
-        internal CustomNPC[] CustomNPCs = new CustomNPC[200];
+        internal CustomNPCDefinition[] CustomNPCs = new CustomNPCDefinition[200];
         internal CustomNPCData CustomNPCData = new CustomNPCData();
 
         //16.66 milliseconds for 1/60th of a second.
@@ -91,7 +91,7 @@ namespace CustomNPC
         {
             foreach (NPC obj in Main.npc)
             {
-                foreach (CustomNPC customnpc in CustomNPCData.CustomNPCs.Values)
+                foreach (CustomNPCDefinition customnpc in CustomNPCData.CustomNPCs.Values)
                 {
                     if (obj.netID == customnpc.customBaseID && this.CustomNPCs[obj.whoAmI] == null)
                     {
@@ -187,7 +187,7 @@ namespace CustomNPC
 
         private void CheckActiveNPCs()
         {
-            foreach (CustomNPC obj in CustomNPCs)
+            foreach (CustomNPCDefinition obj in CustomNPCs)
             {
                 //if CustomNPC has been defined, and hasn't been set to dead yet, check if the terraria npc is active
                 if (obj != null && !obj.isDead && !obj.mainNPC.active)
@@ -214,9 +214,28 @@ namespace CustomNPC
                 //get list of mobs that can be spawned in that biome
                 foreach (string str in CustomNPCData.BiomeSpawns[PlayersCurrBiome(obj)])
                 {
-
+                    CustomNPCDefinition customnpc = CustomNPCData.GetNPCbyID(str);
+                    if ((DateTime.Now - customnpc.lastAttemptedSpawn).TotalSeconds >= customnpc.customSpawnTimer)
+                    {
+                        if (CustomNPCUtils.Chance(customnpc.customSpawnChance))
+                        {
+                            int spawnX;
+                            int spawnY;
+                            TShock.Utils.GetRandomClearTileWithInRange(obj.TileX, obj.TileY, 50, 50, out spawnX, out spawnY);
+                            SpawnMobsInStaticLocation(spawnX, spawnY, customnpc);
+                        }
+                    }
                 }
             }
+        }
+
+        /// <summary>
+        /// Temporary function - until we get Terraria's code
+        /// </summary>
+        private void SpawnMobsInStaticLocation(int x, int y, CustomNPCDefinition customnpc)
+        {
+            int npcid = NPC.NewNPC(x, y, customnpc.customBaseID);
+
         }
 
         private BiomeTypes PlayersCurrBiome(TSPlayer player)
