@@ -25,16 +25,18 @@ namespace CustomNPC
         //16.66 milliseconds for 1/60th of a second.
         private Timer mainLoop = new Timer(1000 / 60.0);
         private EventManager eventManager;
+        private DefinitionManager definitionManager;
         private AppDomain pluginDomain;
-        private PluginManager<NPCPlugin> pluginManager; 
+        private PluginManager<NPCPlugin> pluginManager;
 
         public CustomNPCPlugin(Main game)
             : base(game)
         {
             eventManager = new EventManager();
+            definitionManager = new DefinitionManager();
 
             pluginDomain = CreateNewPluginDomain();
-            pluginManager = pluginDomain.CreateInstanceAndUnwrap<PluginManager<NPCPlugin>>(eventManager);
+            pluginManager = pluginDomain.CreateInstanceAndUnwrap<PluginManager<NPCPlugin>>(eventManager, definitionManager);
         }
 
         public override string Author

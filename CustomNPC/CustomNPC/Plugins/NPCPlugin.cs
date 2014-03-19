@@ -8,9 +8,10 @@ namespace CustomNPC.Plugins
     {
         private bool _disposed;
 
-        protected NPCPlugin(IEventRegister register)
+        protected NPCPlugin(IEventRegister register, DefinitionManager definitions)
         {
             Register = register;
+            Definitions = definitions;
         }
 
         ~NPCPlugin()
@@ -25,6 +26,8 @@ namespace CustomNPC.Plugins
         public abstract Version Version { get; }
 
         protected IEventRegister Register { get; private set; }
+
+        protected DefinitionManager Definitions { get; private set; }
 
         [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.Infrastructure)]
         public override object InitializeLifetimeService()

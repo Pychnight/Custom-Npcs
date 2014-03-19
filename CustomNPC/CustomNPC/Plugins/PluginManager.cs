@@ -14,12 +14,14 @@ namespace CustomNPC.Plugins
         where TPlugin : IPlugin
     {
         private IEventRegister _eventRegister;
+        private DefinitionManager _definitionManager;
         private PluginDiscoverer<TPlugin> _discoverer;
         private IList<TPlugin> _plugins;
 
-        public PluginManager(IEventRegister register)
+        public PluginManager(IEventRegister register, DefinitionManager definitionManager)
         {
             _eventRegister = register;
+            _definitionManager = definitionManager;
             _discoverer = new PluginDiscoverer<TPlugin>();
             _plugins = new List<TPlugin>();
         }
@@ -32,6 +34,11 @@ namespace CustomNPC.Plugins
         public IEventRegister EventRegister
         {
             get { return _eventRegister; }
+        }
+
+        public DefinitionManager Definitions
+        {
+            get { return _definitionManager; }
         }
 
         public IReadOnlyList<TPlugin> Plugins
@@ -59,7 +66,8 @@ namespace CustomNPC.Plugins
                 {
                     object[] args =
                     {
-                        EventRegister
+                        EventRegister,
+                        Definitions
                     };
 
                     var plugin = (TPlugin)domain.CreateInstanceFromAndUnwrap(file, typeName, true, BindingFlags.Default, null, args, null, null);

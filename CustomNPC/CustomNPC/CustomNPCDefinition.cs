@@ -9,34 +9,35 @@ using TShockAPI.DB;
 
 namespace CustomNPC
 {
-    public class CustomNPCDefinition
+    public abstract class CustomNPCDefinition
     {
         /// <summary>
         /// NPC Variable Customizations
         /// </summary>
-        internal string customName { get; set; }
-        internal int customHealth { get; set; }
-        internal string customID { get; set; }
-        internal int customDefense { get; set; }
-        internal int customSpeed { get; set; }
-        internal int customAI { get; set; }
-        internal bool isBoss { get; set; }
-        internal bool noGravity { get; set; }
-        internal bool noTileCollide { get; set; }
-        internal bool lavaImmune { get; set; }
-        internal int customBaseID { get; set; }
+        public abstract string customName { get; }
+
+        public abstract int customHealth { get; }
+        public abstract string customID { get; }
+        protected abstract int customDefense { get; }
+        protected abstract int customSpeed { get; }
+        public abstract int customAI { get; }
+        protected abstract bool isBoss { get; }
+        public abstract bool noGravity { get; }
+        public abstract bool noTileCollide { get; }
+        public abstract bool lavaImmune { get; }
+        public abstract int customBaseID { get; }
 
         /// <summary>
         /// NPC Restrictions/Conditions
         /// </summary>
-        internal List<byte> customBiomeSpawn { get; set; }
-        internal List<string> customRegionSpawn { get; set; }
-        internal DateTime lastAttemptedSpawn { get; set; }
+        protected abstract List<byte> customBiomeSpawn { get; }
+        protected abstract List<string> customRegionSpawn { get; }
+        public abstract DateTime lastAttemptedSpawn { get; set; } // shouldn't this be in a different place? CustomNPC maybe
 
         /// <summary>
         /// NPC MISC
         /// </summary>
-        internal List<int> customAreaDebuff { get; set; }
+        protected abstract List<int> customAreaDebuff { get; }
         //internal CustomParticle customParticle { get; set; }; 
         internal int customSpawnTimer { get; set; }
         internal List<CustomNPCProjectiles> customProjectiles { get; set; }

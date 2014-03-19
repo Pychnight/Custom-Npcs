@@ -64,6 +64,7 @@
     <Compile Include="CustomNPCProjectiles.cs" />
     <Compile Include="CustomNPCUtils.cs" />
     <Compile Include="CustomNPCVars.cs" />
+    <Compile Include="DefinitionManager.cs" />
     <Compile Include="EventSystem\CustomNPCEventHandlerList.cs" />
     <Compile Include="EventSystem\EventManager.cs" />
     <Compile Include="EventSystem\Events\NpcDamageEvent.cs" />
