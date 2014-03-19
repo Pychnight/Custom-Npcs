@@ -202,36 +202,12 @@ namespace CustomNPC
 
         private void SpawnMobsInBiomeAndRegion()
         {
-            foreach(TSPlayer obj in TShock.Players)
+            foreach(TSPlayer player in TShock.Players)
             {
-                if (obj == null || !obj.ConnectionAlive)
+                if (player != null && player.ConnectionAlive)
                 {
-                    return;
-                }
-                //get list of mobs that can be spawned in that biome
-                foreach (string str in CustomNPCData.BiomeSpawns[CustomNPCUtils.PlayersCurrBiome(obj)])
-                {
-                    CustomNPCDefinition customnpc = CustomNPCData.GetNPCbyID(str);
-                    if ((DateTime.Now - CustomNPCData.LastSpawnAttempt[customnpc.customID]).TotalSeconds >= customnpc.customSpawnTimer)
-                    {
-                        CustomNPCData.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
-                        if (CustomNPCUtils.Chance(customnpc.customSpawnChance))
-                        {
-                            int spawnX;
-                            int spawnY;
-                            TShock.Utils.GetRandomClearTileWithInRange(obj.TileX, obj.TileY, 50, 50, out spawnX, out spawnY);
-                            SpawnMobsInStaticLocation(spawnX, spawnY, customnpc);
-                        }
-                    }
-                }
-            }
-            foreach (Region region in CustomNPCData.RegionSpawns.Keys)
-            {
-                List<TSPlayer> playersInRegion = TShock.Players.ToList().FindAll(ply => region.InArea(new Rectangle((int)(ply.TileX), (int)(ply.TileY), ply.TPlayer.width, ply.TPlayer.height)));
-                foreach (TSPlayer obj in playersInRegion)
-                {
-                    List<string> customNpcSpawns = CustomNPCData.RegionSpawns[region];
-                    foreach (string str in customNpcSpawns)
+                    //get list of mobs that can be spawned in that biome
+                    foreach (string str in CustomNPCData.BiomeSpawns[CustomNPCUtils.PlayersCurrBiome(player)])
                     {
                         CustomNPCDefinition customnpc = CustomNPCData.GetNPCbyID(str);
                         if ((DateTime.Now - CustomNPCData.LastSpawnAttempt[customnpc.customID]).TotalSeconds >= customnpc.customSpawnTimer)
@@ -241,12 +217,37 @@ namespace CustomNPC
                             {
                                 int spawnX;
                                 int spawnY;
-                                TShock.Utils.GetRandomClearTileWithInRange(obj.TileX, obj.TileY, 50, 50, out spawnX, out spawnY);
+                                TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
                                 SpawnMobsInStaticLocation(spawnX, spawnY, customnpc);
                             }
                         }
                     }
+                    //then check regions as well
+                    List<Region> playersInRegion = CustomNPCData.RegionSpawns.Keys.ToList().FindAll(region => region.InArea(new Rectangle((int)(player.TileX), (int)(player.TileY), player.TPlayer.width, player.TPlayer.height)));
+                    foreach (Region obj in playersInRegion)
+                    {
+                        List<string> customNpcSpawns = CustomNPCData.RegionSpawns[obj];
+                        foreach (string str in customNpcSpawns)
+                        {
+                            CustomNPCDefinition customnpc = CustomNPCData.GetNPCbyID(str);
+                            if ((DateTime.Now - CustomNPCData.LastSpawnAttempt[customnpc.customID]).TotalSeconds >= customnpc.customSpawnTimer)
+                            {
+                                CustomNPCData.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
+                                if (CustomNPCUtils.Chance(customnpc.customSpawnChance))
+                                {
+                                    int spawnX;
+                                    int spawnY;
+                                    TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
+                                    SpawnMobsInStaticLocation(spawnX, spawnY, customnpc);
+                                }
+                            }
+                        }
+                    }
                 }
+            }
+            foreach (TSPlayer player in TShock.Players)
+            {
+
             }
         }
 
