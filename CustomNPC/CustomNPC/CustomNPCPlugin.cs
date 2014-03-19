@@ -245,10 +245,6 @@ namespace CustomNPC
                     }
                 }
             }
-            foreach (TSPlayer player in TShock.Players)
-            {
-
-            }
         }
 
         /// <summary>
