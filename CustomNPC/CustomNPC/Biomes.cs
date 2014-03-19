@@ -13,37 +13,41 @@ namespace CustomNPC
     public enum BiomeTypes : byte
     {
         /// <summary>
+        /// Player is in noZone
+        /// </summary>
+        Grass = 0,
+        /// <summary>
         /// Player is in zoneEvil
         /// </summary>
-        Corruption = 0,
+        Corruption = 1,
         /// <summary>
         /// Player is in zoneDungeon
         /// </summary>
-        Dungeon = 1,
+        Dungeon = 2,
         /// <summary>
         /// Player is in zoneMeteor
         /// </summary>
-        Meteor =  2,
+        Meteor =  3,
         /// <summary>
         /// Player is in zoneHoly
         /// </summary>
-        Holy = 3,
+        Holy = 4,
         /// <summary>
         /// Player is in zoneJungle
         /// </summary>
-        Jungle = 4,
+        Jungle = 5,
         /// <summary>
         /// Player is in zoneSnow
         /// </summary>
-        Snow = 5,
+        Snow = 6,
         /// <summary>
         /// Player is in zoneBlood
         /// </summary>
-        Blood = 6,
+        Blood = 7,
         /// <summary>
         /// Player is in zoneCandle
         /// </summary>
-        Candle = 7
+        Candle = 8
     }
 
 }

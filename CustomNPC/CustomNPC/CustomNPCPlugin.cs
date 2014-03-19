@@ -205,7 +205,52 @@ namespace CustomNPC
 
         private void SpawnMobsInBiome()
         {
-            
+            foreach(TSPlayer obj in TShock.Players)
+            {
+                if (obj == null || !obj.ConnectionAlive)
+                {
+                    return;
+                }
+                //get list of mobs that can be spawned in that biome
+
+            }
+        }
+
+        private BiomeTypes PlayersCurrBiome(TSPlayer player)
+        {
+            if (player.TPlayer.zoneEvil)
+            {
+                return BiomeTypes.Corruption;
+            }
+            else if(player.TPlayer.zoneBlood)
+            {
+                return BiomeTypes.Blood;
+            }
+            else if (player.TPlayer.zoneCandle)
+            {
+                return BiomeTypes.Candle;
+            }
+            else if (player.TPlayer.zoneDungeon)
+            {
+                return BiomeTypes.Dungeon;
+            }
+            else if (player.TPlayer.zoneHoly)
+            {
+                return BiomeTypes.Holy;
+            }
+            else if (player.TPlayer.zoneJungle)
+            {
+                return BiomeTypes.Jungle;
+            }
+            else if (player.TPlayer.zoneMeteor)
+            {
+                return BiomeTypes.Meteor;
+            }
+            else if (player.TPlayer.zoneSnow)
+            {
+                return BiomeTypes.Snow;
+            }
+            else return BiomeTypes.Grass;
         }
 
         private void SpawnMobsInRegion()

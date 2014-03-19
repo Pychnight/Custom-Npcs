@@ -9,7 +9,7 @@ using TShockAPI.DB;
 
 namespace CustomNPC
 {
-    internal class CustomNPC
+    public class CustomNPC
     {
         /// <summary>
         /// NPC Variable Customizations

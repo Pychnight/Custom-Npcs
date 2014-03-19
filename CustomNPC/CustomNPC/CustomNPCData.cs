@@ -12,6 +12,7 @@ namespace CustomNPC
     public class CustomNPCData
     {
         internal Dictionary<string, CustomNPC> CustomNPCs = new Dictionary<string, CustomNPC>();
+        internal Dictionary<BiomeTypes, List<string>> BiomeSpawns = new Dictionary<BiomeTypes, List<string>>();
 
         /// <summary>
         /// Returns CustomNPC obj by custom ID
