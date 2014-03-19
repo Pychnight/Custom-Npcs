@@ -224,9 +224,28 @@ namespace CustomNPC
                         }
                     }
                 }
-                foreach (Region region in CustomNPCData.RegionSpawns.Keys)
+            }
+            foreach (Region region in CustomNPCData.RegionSpawns.Keys)
+            {
+                List<TSPlayer> playersInRegion = TShock.Players.ToList().FindAll(ply => region.InArea(new Rectangle((int)(ply.TileX), (int)(ply.TileY), ply.TPlayer.width, ply.TPlayer.height)));
+                foreach (TSPlayer obj in playersInRegion)
                 {
-                    
+                    List<string> customNpcSpawns = CustomNPCData.RegionSpawns[region];
+                    foreach (string str in customNpcSpawns)
+                    {
+                        CustomNPCDefinition customnpc = CustomNPCData.GetNPCbyID(str);
+                        if ((DateTime.Now - CustomNPCData.LastSpawnAttempt[customnpc.customID]).TotalSeconds >= customnpc.customSpawnTimer)
+                        {
+                            CustomNPCData.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
+                            if (CustomNPCUtils.Chance(customnpc.customSpawnChance))
+                            {
+                                int spawnX;
+                                int spawnY;
+                                TShock.Utils.GetRandomClearTileWithInRange(obj.TileX, obj.TileY, 50, 50, out spawnX, out spawnY);
+                                SpawnMobsInStaticLocation(spawnX, spawnY, customnpc);
+                            }
+                        }
+                    }
                 }
             }
         }
