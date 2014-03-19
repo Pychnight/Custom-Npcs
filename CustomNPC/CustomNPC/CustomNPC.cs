@@ -29,7 +29,7 @@ namespace CustomNPC
         /// <summary>
         /// NPC Restrictions/Conditions
         /// </summary>
-        internal List<string> customBiomeSpawn { get; set; }
+        internal List<byte> customBiomeSpawn { get; set; }
         internal List<string> customRegionSpawn { get; set; }
 
         /// <summary>

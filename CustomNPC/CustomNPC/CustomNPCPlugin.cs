@@ -212,7 +212,10 @@ namespace CustomNPC
                     return;
                 }
                 //get list of mobs that can be spawned in that biome
+                foreach (string str in CustomNPCData.BiomeSpawns[PlayersCurrBiome(obj)])
+                {
 
+                }
             }
         }
 

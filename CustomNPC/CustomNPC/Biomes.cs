@@ -49,5 +49,4 @@ namespace CustomNPC
         /// </summary>
         Candle = 8
     }
-
 }
