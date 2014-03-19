@@ -199,7 +199,17 @@ namespace CustomNPC
 
         private void SpawnMobs()
         {
+            SpawnMobsInRegion();
+            SpawnMobsInBiome();
+        }
+
+        private void SpawnMobsInBiome()
+        {
             
+        }
+
+        private void SpawnMobsInRegion()
+        {
             throw new NotImplementedException();
         }
     }

@@ -57,6 +57,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Biomes.cs" />
     <Compile Include="CustomNPC.cs" />
     <Compile Include="CustomNPCData.cs" />
     <Compile Include="CustomNPCPlugin.cs" />
