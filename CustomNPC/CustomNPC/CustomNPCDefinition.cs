@@ -32,7 +32,6 @@ namespace CustomNPC
         /// </summary>
         protected abstract List<byte> customBiomeSpawn { get; }
         protected abstract List<string> customRegionSpawn { get; }
-        public abstract DateTime lastAttemptedSpawn { get; set; } // shouldn't this be in a different place? CustomNPC maybe
 
         /// <summary>
         /// NPC MISC

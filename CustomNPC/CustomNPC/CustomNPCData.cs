@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using Terraria;
 using TShockAPI;
+using TShockAPI.DB;
 
 namespace CustomNPC
 {
@@ -13,6 +14,8 @@ namespace CustomNPC
     {
         internal Dictionary<string, CustomNPCDefinition> CustomNPCs = new Dictionary<string, CustomNPCDefinition>();
         internal Dictionary<BiomeTypes, List<string>> BiomeSpawns = new Dictionary<BiomeTypes, List<string>>();
+        internal Dictionary<Region, List<string>> RegionSpawns = new Dictionary<Region,List<string>>();
+        internal Dictionary<string, DateTime> LastSpawnAttempt = new Dictionary<string, DateTime>();
 
         /// <summary>
         /// Returns CustomNPC obj by custom ID

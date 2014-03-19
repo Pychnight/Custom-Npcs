@@ -12,6 +12,7 @@ using Terraria;
 using TerrariaApi.Server;
 using System.Timers;
 using TShockAPI;
+using TShockAPI.DB;
 
 namespace CustomNPC
 {
@@ -182,7 +183,7 @@ namespace CustomNPC
         void mainLoop_Elapsed(object sender, ElapsedEventArgs e)
         {
             //Spawn mobs into regions and specific biomes
-            SpawnMobs();
+            SpawnMobsInBiomeAndRegion();
             //check if NPC has been deactivated (could mean NPC despawned)
             CheckActiveNPCs();
         }
@@ -199,13 +200,7 @@ namespace CustomNPC
             }
         }
 
-        private void SpawnMobs()
-        {
-            SpawnMobsInRegion();
-            SpawnMobsInBiome();
-        }
-
-        private void SpawnMobsInBiome()
+        private void SpawnMobsInBiomeAndRegion()
         {
             foreach(TSPlayer obj in TShock.Players)
             {
@@ -217,8 +212,9 @@ namespace CustomNPC
                 foreach (string str in CustomNPCData.BiomeSpawns[CustomNPCUtils.PlayersCurrBiome(obj)])
                 {
                     CustomNPCDefinition customnpc = CustomNPCData.GetNPCbyID(str);
-                    if ((DateTime.Now - customnpc.lastAttemptedSpawn).TotalSeconds >= customnpc.customSpawnTimer)
+                    if ((DateTime.Now - CustomNPCData.LastSpawnAttempt[customnpc.customID]).TotalSeconds >= customnpc.customSpawnTimer)
                     {
+                        CustomNPCData.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
                         if (CustomNPCUtils.Chance(customnpc.customSpawnChance))
                         {
                             int spawnX;
@@ -227,6 +223,10 @@ namespace CustomNPC
                             SpawnMobsInStaticLocation(spawnX, spawnY, customnpc);
                         }
                     }
+                }
+                foreach (Region region in CustomNPCData.RegionSpawns.Keys)
+                {
+                    
                 }
             }
         }
@@ -238,11 +238,6 @@ namespace CustomNPC
         {
             int npcid = NPC.NewNPC(x, y, customnpc.customBaseID);
             this.CustomNPCs[npcid] = new CustomNPCVars(customnpc, DateTime.Now, Main.npc[npcid]);
-        }
-
-        private void SpawnMobsInRegion()
-        {
-            throw new NotImplementedException();
         }
     }
 }

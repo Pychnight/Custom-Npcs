@@ -74,8 +74,6 @@ namespace TestNPC
             get { throw new NotImplementedException(); }
         }
 
-        public override DateTime lastAttemptedSpawn { get; set; }
-
         protected override List<int> customAreaDebuff
         {
             get { throw new NotImplementedException(); }

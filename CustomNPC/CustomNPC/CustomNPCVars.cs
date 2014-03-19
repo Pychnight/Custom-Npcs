@@ -164,7 +164,7 @@ namespace CustomNPC
             }
             catch
             {
-                Log.ConsoleError("Error: a defined region does not exist on this map \"region\"", region);
+                Log.ConsoleError("Error: a defined region does not exist on this map \"{0}\"", region);
                 return;
             }
             if (randompos)
