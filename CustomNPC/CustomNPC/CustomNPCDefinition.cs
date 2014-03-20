@@ -16,6 +16,10 @@ namespace CustomNPC
         protected CustomNPCDefinition(int id)
         {
             baseNPC = TShock.Utils.GetNPCById(id);
+
+            // check to make sure this npc is valid
+            if (baseNPC == null || baseNPC.netID == 0)
+                throw new ArgumentException("Invalid BaseNPC id specified: " + id, "id");
         }
 
         /// <summary>
