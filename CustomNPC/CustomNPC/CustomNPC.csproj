@@ -60,6 +60,7 @@
     <Compile Include="Biomes.cs" />
     <Compile Include="CustomNPCDefinition.cs" />
     <Compile Include="CustomNPCData.cs" />
+    <Compile Include="CustomNPCLoot.cs" />
     <Compile Include="CustomNPCPlugin.cs" />
     <Compile Include="CustomNPCProjectiles.cs" />
     <Compile Include="CustomNPCUtils.cs" />

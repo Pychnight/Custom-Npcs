@@ -15,7 +15,8 @@ namespace CustomNPC
         public CustomNPCDefinition customNPC { get; set; }
         public DateTime lastAttemptedProjectile { get; set; }
         public bool isDead { get; set; }
-        public NPC mainNPC { get; set; } 
+        public NPC mainNPC { get; set; }
+        public bool droppedLoot { get; set; }
 
         public CustomNPCVars(CustomNPCDefinition customnpc, DateTime lastattemptedprojectile, NPC mainnpc, bool isdead = false)
         {
@@ -23,6 +24,7 @@ namespace CustomNPC
             isDead = isdead;
             customNPC = customnpc;
             mainNPC = mainnpc;
+            droppedLoot = false;
         }
     }
 }

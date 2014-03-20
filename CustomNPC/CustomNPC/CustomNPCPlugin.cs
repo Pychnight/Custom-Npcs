@@ -78,7 +78,19 @@ namespace CustomNPC
         /// <param name="args"></param>
         private void OnLootDrop(NpcLootDropEventArgs args)
         {
-
+            CustomNPCVars npcvar = CustomNPCs[args.NpcArrayIndex];
+            //check if monster has been customized
+            if (npcvar == null || npcvar.droppedLoot)
+            {
+                return;
+            }
+            foreach (CustomNPCLoot obj in npcvar.customNPC.customNPCLoots)
+            {
+                if (obj.itemDropChance == 100 || CustomNPCUtils.Chance(obj.itemDropChance))
+                {
+                    //create item drop here
+                }
+            }
         }
 
         private void OnInitialize(EventArgs args)
@@ -183,10 +195,10 @@ namespace CustomNPC
         /// <param name="e"></param>
         void mainLoop_Elapsed(object sender, ElapsedEventArgs e)
         {
-            //Spawn mobs into regions and specific biomes
-            SpawnMobsInBiomeAndRegion();
             //check if NPC has been deactivated (could mean NPC despawned)
             CheckActiveNPCs();
+            //Spawn mobs into regions and specific biomes
+            SpawnMobsInBiomeAndRegion();
             //fire projectiles towards closests player
             ProjectileCheck();
         }

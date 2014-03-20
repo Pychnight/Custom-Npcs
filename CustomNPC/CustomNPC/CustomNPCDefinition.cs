@@ -38,6 +38,8 @@ namespace CustomNPC
         /// </summary>
         internal List<CustomNPCProjectiles> customProjectiles { get; set; }
 
+        internal List<CustomNPCLoot> customNPCLoots { get; set; }
+
         /// <summary>
         /// NPC MISC
         /// </summary>
