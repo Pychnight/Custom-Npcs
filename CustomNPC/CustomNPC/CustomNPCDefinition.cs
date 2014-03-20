@@ -34,12 +34,16 @@ namespace CustomNPC
         protected abstract List<string> customRegionSpawn { get; }
 
         /// <summary>
+        /// NPC Projectile Variables
+        /// </summary>
+        internal List<CustomNPCProjectiles> customProjectiles { get; set; }
+
+        /// <summary>
         /// NPC MISC
         /// </summary>
         protected abstract List<int> customAreaDebuff { get; }
         //internal CustomParticle customParticle { get; set; }; 
         internal int customSpawnTimer { get; set; }
-        internal List<CustomNPCProjectiles> customProjectiles { get; set; }
         internal double customSpawnChance { get; set; }
         internal string customSpawnMessage { get; set; }
 
