@@ -42,7 +42,7 @@ namespace CustomNPC
         public void ConvertNPCToCustom(int index, CustomNPCDefinition obj)
         {
             NPC npc = Main.npc[index];
-            npc.netDefaults(obj.customBaseID);
+            npc.netDefaults(obj.customBase.netID);
             //npc.type = obj.customBaseID;
 
             npc.life = obj.customHealth;

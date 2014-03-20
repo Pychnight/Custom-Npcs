@@ -11,20 +11,54 @@ namespace CustomNPC
 {
     public abstract class CustomNPCDefinition
     {
+        private NPC baseNPC;
+
+        protected CustomNPCDefinition(int id)
+        {
+            baseNPC = TShock.Utils.GetNPCById(id);
+        }
+
         /// <summary>
         /// NPC Variable Customizations
         /// </summary>
-        public abstract string customName { get; }
-        public abstract int customHealth { get; }
+        public virtual NPC customBase
+        {
+            get { return baseNPC; }
+        }
         public abstract string customID { get; }
-        protected abstract int customDefense { get; }
-        protected abstract int customSpeed { get; }
-        public abstract int customAI { get; }
-        protected abstract bool isBoss { get; }
-        public abstract bool noGravity { get; }
-        public abstract bool noTileCollide { get; }
-        public abstract bool lavaImmune { get; }
-        public abstract int customBaseID { get; }
+        public abstract string customName { get; }
+        public virtual int customHealth
+        {
+            get { return customBase.lifeMax; }
+        }
+        public virtual int customDefense
+        {
+            get { return customBase.defense; }
+        }
+        protected virtual int customSpeed
+        {
+            get { throw new NotImplementedException(); }
+        }
+        public virtual int customAI
+        {
+            get { return customBase.aiStyle; }
+        }
+        public virtual bool isBoss
+        {
+            get { return customBase.boss; }
+        }
+        public virtual bool noGravity
+        {
+            get { return customBase.noGravity; }
+        }
+        public virtual bool noTileCollide
+        {
+            get { return customBase.noTileCollide; }
+        }
+        public virtual bool lavaImmune
+        {
+            get { return customBase.lavaImmune; }
+        }
 
         /// <summary>
         /// NPC Restrictions/Conditions
@@ -63,7 +97,7 @@ namespace CustomNPC
         /// <param name="additionalhealth">Amount to Increase by, if 0 - get new monsters health and add that to NPC</param>
         public void Transform(CustomNPCVars npcvar, bool addhealth = false, int additionalhealth = 0)
         {
-            npcvar.mainNPC.type = npcvar.customNPC.customBaseID;
+            npcvar.mainNPC.type = npcvar.customNPC.customBase.type;
             if (addhealth)
             {
                 if (additionalhealth == 0)

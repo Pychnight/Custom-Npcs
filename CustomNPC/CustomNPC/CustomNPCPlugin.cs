@@ -109,7 +109,7 @@ namespace CustomNPC
             {
                 foreach (CustomNPCDefinition customnpc in CustomNPCData.CustomNPCs.Values)
                 {
-                    if (obj.netID == customnpc.customBaseID && this.CustomNPCs[obj.whoAmI] == null)
+                    if (obj.netID == customnpc.customBase.netID && this.CustomNPCs[obj.whoAmI] == null)
                     {
                         this.CustomNPCs[obj.whoAmI] = new CustomNPCVars(customnpc, DateTime.Now, obj);
                         CustomNPCData.ConvertNPCToCustom(obj.whoAmI, customnpc);
@@ -392,7 +392,7 @@ namespace CustomNPC
         /// </summary>
         private void SpawnMobsInStaticLocation(int x, int y, CustomNPCDefinition customnpc)
         {
-            int npcid = NPC.NewNPC(x, y, customnpc.customBaseID);
+            int npcid = NPC.NewNPC(x, y, customnpc.customBase.type);
             this.CustomNPCs[npcid] = new CustomNPCVars(customnpc, DateTime.Now, Main.npc[npcid]);
         }
     }

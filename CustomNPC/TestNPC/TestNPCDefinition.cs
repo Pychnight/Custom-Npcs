@@ -9,14 +9,9 @@ namespace TestNPC
 {
     public sealed class TestNPCDefinition : CustomNPCDefinition
     {
-        public override string customName
+        public TestNPCDefinition()
+            : base(1)
         {
-            get { return "Test NPC"; }
-        }
-
-        public override int customHealth
-        {
-            get { return 13000; }
         }
 
         public override string customID
@@ -24,44 +19,9 @@ namespace TestNPC
             get { return "testnpc"; }
         }
 
-        protected override int customDefense
+        public override string customName
         {
-            get { return 0; }
-        }
-
-        protected override int customSpeed
-        {
-            get { return 0; }
-        }
-
-        public override int customAI
-        {
-            get { return 1; }
-        }
-
-        protected override bool isBoss
-        {
-            get { return false; }
-        }
-
-        public override bool noGravity
-        {
-            get { return false; }
-        }
-
-        public override bool noTileCollide
-        {
-            get { return true; }
-        }
-
-        public override bool lavaImmune
-        {
-            get { return true; }
-        }
-
-        public override int customBaseID
-        {
-            get { return 1; }
+            get { return "Test NPC"; }
         }
 
         protected override List<byte> customBiomeSpawn
