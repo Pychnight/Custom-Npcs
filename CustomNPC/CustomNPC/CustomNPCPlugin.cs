@@ -229,36 +229,38 @@ namespace CustomNPC
 
         private void FireProjectile(TSPlayer target, CustomNPCVars origin, CustomNPCProjectiles projectile)
         {
-            foreach (projectile.projectile.projectile.projectile.projectile.projectile.projectile.projectile.projectile.projectile.projectile.projectile.projectile.projectile.projectile.projectile.projectile)
-            if (target != null)
+            foreach (ShotTile obj in projectile.projectileShotTiles)
             {
-                Vector2 start = GetStartPosition(origin);
-                Vector2 speed = CalculateSpeed(start, target);
-                Tuple<float, float> ai = new Tuple<float, float>(projectile.projectileAIParams1, projectile.projectileAIParams2);
+                if (target != null)
+                {
+                    Vector2 start = GetStartPosition(origin, obj);
+                    Vector2 speed = CalculateSpeed(start, target);
+                    Tuple<float, float> ai = new Tuple<float, float>(projectile.projectileAIParams1, projectile.projectileAIParams2);
 
-                int projectileIndex = Projectile.NewProjectile(
-                    start.X,
-                    start.Y,
-                    speed.X,
-                    speed.Y,
-                    projectile.projectileID,
-                    projectile.projectileDamage,
-                    0,
-                    target.Index,
-                    ai.Item1,
-                    ai.Item2);
+                    int projectileIndex = Projectile.NewProjectile(
+                        start.X,
+                        start.Y,
+                        speed.X,
+                        speed.Y,
+                        projectile.projectileID,
+                        projectile.projectileDamage,
+                        0,
+                        target.Index,
+                        ai.Item1,
+                        ai.Item2);
 
-                var proj = Main.projectile[projectileIndex];
-                proj.ai[0] = ai.Item1;
-                proj.ai[1] = ai.Item2;
+                    var proj = Main.projectile[projectileIndex];
+                    proj.ai[0] = ai.Item1;
+                    proj.ai[1] = ai.Item2;
 
-                NetMessage.SendData(27, -1, -1, string.Empty, projectileIndex);
+                    NetMessage.SendData(27, -1, -1, string.Empty, projectileIndex);
+                }
             }
         }
 
-        private Vector2 GetStartPosition(CustomNPCVars origin)
+        private Vector2 GetStartPosition(CustomNPCVars origin, ShotTile shottile)
         {
-            Vector2 offset = new Vector2(rand.Next(-origin.mainNPC.width, origin.mainNPC.width), rand.Next(-origin.mainNPC.height, origin.mainNPC.height)).Multiply(0.5f);
+            Vector2 offset = new Vector2(shottile.X, shottile.Y);
             return origin.mainNPC.center() + offset;
         }
 
