@@ -8,7 +8,7 @@ using TShockAPI;
 
 namespace CustomNPC
 {
-    internal class CustomNPCUtils
+    public class CustomNPCUtils
     {
         public Random rand = new Random();
 

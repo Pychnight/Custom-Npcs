@@ -19,7 +19,7 @@ namespace CustomNPC
     [ApiVersion(1, 15)]
     public class CustomNPCPlugin : TerrariaPlugin
     {
-        internal static CustomNPCUtils CustomNPCUtils = CustomNPCUtils.Instance;
+        public static CustomNPCUtils CustomNPCUtils = CustomNPCUtils.Instance;
         internal Random rand = new Random();
         internal CustomNPCVars[] CustomNPCs = new CustomNPCVars[200];
         internal CustomNPCData CustomNPCData = new CustomNPCData();

@@ -15,7 +15,6 @@ namespace CustomNPC
         /// NPC Variable Customizations
         /// </summary>
         public abstract string customName { get; }
-
         public abstract int customHealth { get; }
         public abstract string customID { get; }
         protected abstract int customDefense { get; }
@@ -38,16 +37,23 @@ namespace CustomNPC
         /// </summary>
         internal List<CustomNPCProjectiles> customProjectiles { get; set; }
 
+        /// <summary>
+        /// NPC Loot Variables
+        /// </summary>
         internal List<CustomNPCLoot> customNPCLoots { get; set; }
+
+        /// <summary>
+        /// NPC Spawning Variables
+        /// </summary>
+        internal int customSpawnTimer { get; set; }
+        internal double customSpawnChance { get; set; }
+        internal string customSpawnMessage { get; set; }
 
         /// <summary>
         /// NPC MISC
         /// </summary>
         protected abstract List<int> customAreaDebuff { get; }
         //internal CustomParticle customParticle { get; set; }; 
-        internal int customSpawnTimer { get; set; }
-        internal double customSpawnChance { get; set; }
-        internal string customSpawnMessage { get; set; }
 
         /// <summary>
         /// Transforms a NPC to another Custom NPC
