@@ -378,7 +378,8 @@ namespace CustomNPC
                                     int spawnX;
                                     int spawnY;
                                     TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
-                                    SpawnMobsInStaticLocation(spawnX, spawnY, customnpc);
+                                    int npcid = SpawnMobsInStaticLocation(spawnX, spawnY, customnpc);
+                                    Main.npc[npcid].target = player.Index;
                                 }
                             }
                         }
@@ -390,10 +391,11 @@ namespace CustomNPC
         /// <summary>
         /// Temporary function - until we get Terraria's code
         /// </summary>
-        private void SpawnMobsInStaticLocation(int x, int y, CustomNPCDefinition customnpc)
+        private int SpawnMobsInStaticLocation(int x, int y, CustomNPCDefinition customnpc)
         {
             int npcid = NPC.NewNPC(x, y, customnpc.customBase.type);
             this.CustomNPCs[npcid] = new CustomNPCVars(customnpc, DateTime.Now, Main.npc[npcid]);
+            return npcid;
         }
     }
 }
