@@ -26,5 +26,13 @@ namespace CustomNPC
             mainNPC = mainnpc;
             droppedLoot = false;
         }
+
+        public void OnDeath()
+        {
+            if (customNPC != null)
+            {
+                customNPC.OnDeath(this);
+            }
+        }
     }
 }

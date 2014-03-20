@@ -288,5 +288,9 @@ namespace CustomNPC
                 }
             }
         }
+
+        public virtual void OnDeath(CustomNPCVars vars)
+        {
+        }
     }
 }

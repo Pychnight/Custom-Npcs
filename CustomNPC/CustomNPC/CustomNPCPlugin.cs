@@ -160,6 +160,28 @@ namespace CustomNPC
             };
 
             eventManager.InvokeHandler(e, EventType.NpcDamage);
+
+            NPC npc = Main.npc[npcIndex];
+            double damageDone = Main.CalculateDamage(damage, npc.ichor ? npc.defense - 20 : npc.defense);
+            if (critical)
+            {
+                damageDone *= 2;
+            }
+
+            if (npc.active && npc.life > 0 && damageDone >= npc.life)
+            {
+                var killedArgs = new NpcKilledEvent
+                {
+                    NpcIndex = npcIndex,
+                    PlayerIndex = args.Player.Index,
+                    Damage = damage,
+                    Knockback = knockback,
+                    Direction = direction,
+                    CriticalHit = critical
+                };
+
+                eventManager.InvokeHandler(killedArgs, EventType.NpcKill);
+            }
         }
 
         #endregion
