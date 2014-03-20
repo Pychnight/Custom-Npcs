@@ -191,35 +191,58 @@ namespace CustomNPC
             ProjectileCheck();
         }
 
+        /// <summary>
+        /// Checks if any player is within targetable range of the npc, without obstacle and withing firing cooldown timer.
+        /// </summary>
         private void ProjectileCheck()
         {
+            //loop through all custom npcs currently spawned
             foreach (CustomNPCVars obj in this.CustomNPCs)
             {
-                if (obj != null && !obj.isDead)
+                //check if they exists and are active
+                if (obj != null && !obj.isDead && obj.mainNPC.active)
                 {
+                    //loop through all npc projectiles they can fire
                     foreach (CustomNPCProjectiles projectile in obj.customNPC.customProjectiles)
                     {
-                        TSPlayer target = null;
+                        //check if projectile last fire time is greater then equal to its next allowed fire time
                         if ((DateTime.Now - obj.lastAttemptedProjectile).TotalSeconds >= projectile.projectileFireRate)
                         {
-                            foreach (TSPlayer player in TShock.Players.Where(x => x != null && !x.Dead && x.ConnectionAlive))
+                            //make sure chance is checked too, don't bother checking if its 100
+                            if (projectile.projectileFireChance == 100 || CustomNPCUtils.Chance(projectile.projectileFireChance))
                             {
-                                if (!projectile.projectileCheckCollision || Collision.CanHit(player.TPlayer.position, player.TPlayer.bodyFrame.Width, player.TPlayer.bodyFrame.Height, obj.mainNPC.position, obj.mainNPC.width, obj.mainNPC.height))
+                                TSPlayer target = null;
+                                //find a target for it to shoot that isn't dead or disconnected
+                                foreach (TSPlayer player in TShock.Players.Where(x => x != null && !x.Dead && x.ConnectionAlive))
                                 {
-                                    float currDistance = Math.Abs(Vector2.Distance(player.TPlayer.position, obj.mainNPC.center()));
-                                    if (currDistance < 2048)
+                                    //check if that target can be shot ie/ no obstacles, or if it if projectile goes through walls ignore this check
+                                    if (!projectile.projectileCheckCollision || Collision.CanHit(player.TPlayer.position, player.TPlayer.bodyFrame.Width, player.TPlayer.bodyFrame.Height, obj.mainNPC.position, obj.mainNPC.width, obj.mainNPC.height))
                                     {
-                                        target = player;
+                                        //make sure distance isn't further then what tshock allows
+                                        float currDistance = Math.Abs(Vector2.Distance(player.TPlayer.position, obj.mainNPC.center()));
+                                        if (currDistance < 2048)
+                                        {
+                                            //set the target player
+                                            target = player;
+                                            //set npcs target to the player its shooting at
+                                            obj.mainNPC.target = player.Index;
+                                            //break since no need to find another target
+                                            break;
+                                        }
                                     }
                                 }
+                                //check if previous for loop was broken out of, or just ended because no valid target
                                 if (target != null)
                                 {
-                                    break;
+                                    //all checks completed fire projectile
+                                    FireProjectile(target, obj, projectile);
+                                    //set last attempted projectile to now
+                                    obj.lastAttemptedProjectile = DateTime.Now;
                                 }
                             }
-                            if (target != null)
+                            else
                             {
-                                FireProjectile(target, obj, projectile);
+                                obj.lastAttemptedProjectile = DateTime.Now;
                             }
                         }
                     }
@@ -227,16 +250,28 @@ namespace CustomNPC
             }
         }
 
+        /// <summary>
+        /// Fires a projectile given the target starting position and projectile class
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="origin"></param>
+        /// <param name="projectile"></param>
         private void FireProjectile(TSPlayer target, CustomNPCVars origin, CustomNPCProjectiles projectile)
         {
+            //loop through all ShotTiles
             foreach (ShotTile obj in projectile.projectileShotTiles)
             {
+                //Make sure target actually exists - at this point it should always exist
                 if (target != null)
                 {
+                    //calculate starting position
                     Vector2 start = GetStartPosition(origin, obj);
+                    //calculate speed of projectile
                     Vector2 speed = CalculateSpeed(start, target);
+                    //get the projectile AI
                     Tuple<float, float> ai = new Tuple<float, float>(projectile.projectileAIParams1, projectile.projectileAIParams2);
 
+                    //Create new projectile VIA Terraria's method, with all customizations
                     int projectileIndex = Projectile.NewProjectile(
                         start.X,
                         start.Y,
@@ -249,21 +284,25 @@ namespace CustomNPC
                         ai.Item1,
                         ai.Item2);
 
+                    //customize AI for projectile again, as it gets overwritten
                     var proj = Main.projectile[projectileIndex];
                     proj.ai[0] = ai.Item1;
                     proj.ai[1] = ai.Item2;
 
+                    //send projectile as a packet
                     NetMessage.SendData(27, -1, -1, string.Empty, projectileIndex);
                 }
             }
         }
 
+        //Returns start position of projectile with shottile offset
         private Vector2 GetStartPosition(CustomNPCVars origin, ShotTile shottile)
         {
             Vector2 offset = new Vector2(shottile.X, shottile.Y);
             return origin.mainNPC.center() + offset;
         }
 
+        //calculates the x y speed required angle
         private Vector2 CalculateSpeed(Vector2 start, TSPlayer target)
         {
             Vector2 targetCenter = target.TPlayer.center();
