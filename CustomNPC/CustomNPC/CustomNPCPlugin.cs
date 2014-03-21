@@ -217,12 +217,16 @@ namespace CustomNPC
         /// <param name="e"></param>
         void mainLoop_Elapsed(object sender, ElapsedEventArgs e)
         {
+            eventManager.InvokeHandler(PluginUpdateEvent.Empty, EventType.PluginUpdate);
+
             //check if NPC has been deactivated (could mean NPC despawned)
             CheckActiveNPCs();
             //Spawn mobs into regions and specific biomes
             SpawnMobsInBiomeAndRegion();
             //fire projectiles towards closests player
             ProjectileCheck();
+
+            eventManager.InvokeHandler(PluginUpdateEvent.Empty, EventType.PostPluginUpdate);
         }
 
         /// <summary>

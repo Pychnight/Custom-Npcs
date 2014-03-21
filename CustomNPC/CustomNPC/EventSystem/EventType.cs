@@ -4,6 +4,9 @@
     {
         None = 0,
 
+        PluginUpdate,
+        PostPluginUpdate,
+
         NpcDamage,
         NpcKill
     }
