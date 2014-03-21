@@ -170,6 +170,11 @@ namespace CustomNPC
 
             if (npc.active && npc.life > 0 && damageDone >= npc.life)
             {
+                CustomNPCVars npcvar = this.CustomNPCs[npcIndex];
+                if (npcvar != null)
+                {
+                    npcvar.isDead = true;
+                }
                 var killedArgs = new NpcKilledEvent
                 {
                     NpcIndex = npcIndex,
