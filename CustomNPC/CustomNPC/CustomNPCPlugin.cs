@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Streams;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using CustomNPC.EventSystem;
@@ -28,7 +29,9 @@ namespace CustomNPC
         private Timer mainLoop = new Timer(1000 / 60.0);
         private EventManager eventManager;
         private DefinitionManager definitionManager;
+#if USE_APPDOMAIN
         private AppDomain pluginDomain;
+#endif
         private PluginManager<NPCPlugin> pluginManager;
 
         public CustomNPCPlugin(Main game)
@@ -37,8 +40,24 @@ namespace CustomNPC
             eventManager = new EventManager();
             definitionManager = new DefinitionManager();
 
+#if USE_APPDOMAIN
             pluginDomain = CreateNewPluginDomain();
+#endif
+            ////pluginDomain.AssemblyResolve += PluginDomain_OnAssemblyResolve;
+/*
+            foreach (AssemblyName asm in Assembly.GetExecutingAssembly().GetReferencedAssemblies())
+            {
+                pluginDomain.Load(asm);
+            }
+
+            pluginDomain.Load(Assembly.GetExecutingAssembly().GetName());
+*/
+
+#if USE_APPDOMAIN
             pluginManager = pluginDomain.CreateInstanceAndUnwrap<PluginManager<NPCPlugin>>(eventManager, definitionManager);
+#else
+            pluginManager = new PluginManager<NPCPlugin>(eventManager, definitionManager);
+#endif
         }
 
         public override string Author
@@ -63,13 +82,29 @@ namespace CustomNPC
 
         public override void Initialize()
         {
+#if USE_APPDOMAIN
             pluginManager.Load(pluginDomain);
+#else
+            pluginManager.Load();
+#endif
+            foreach (NPCPlugin plugin in pluginManager.Plugins)
+            {
+                Console.WriteLine("\tLoading CustomNPC plugin: {0} v{1} by {2}", plugin.Name, plugin.Version, string.Join(", ", plugin.Authors));
+            }
+
+            CustomNPCData.Load(definitionManager);
 
             ServerApi.Hooks.GameInitialize.Register(this, OnInitialize);
 
             //one OnUpdate is needed for replacement of mobs
             ServerApi.Hooks.GameUpdate.Register(this, OnUpdate);
             ServerApi.Hooks.NpcLootDrop.Register(this, OnLootDrop);
+            ServerApi.Hooks.NetGetData.Register(this, OnGetData);
+        }
+
+        private Assembly PluginDomain_OnAssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            return null;
         }
 
         /// <summary>
@@ -84,11 +119,21 @@ namespace CustomNPC
             {
                 return;
             }
-            foreach (CustomNPCLoot obj in npcvar.customNPC.customNPCLoots)
+
+            if (npcvar.customNPC.customNPCLoots != null)
             {
-                if (obj.itemDropChance == 100 || CustomNPCUtils.Chance(obj.itemDropChance))
+                foreach (CustomNPCLoot obj in npcvar.customNPC.customNPCLoots)
                 {
-                    //create item drop here
+                    if (obj.itemDropChance >= 100 || CustomNPCUtils.Chance(obj.itemDropChance))
+                    {
+                        int pre = 0;
+                        if (obj.itemPrefix != null)
+                        {
+                            pre = obj.itemPrefix[rand.Next(obj.itemPrefix.Count)];
+                        }
+
+                        Item.NewItem((int)npcvar.mainNPC.position.X, (int)npcvar.mainNPC.position.Y, npcvar.mainNPC.width, npcvar.mainNPC.height, obj.itemID, obj.itemStack, false, pre, false);
+                    }
                 }
             }
         }
@@ -196,11 +241,14 @@ namespace CustomNPC
             if (disposing)
             {
                 pluginManager.Unload();
+#if USE_APPDOMAIN
                 AppDomain.Unload(pluginDomain);
+#endif
 
                 ServerApi.Hooks.GameUpdate.Deregister(this, OnUpdate);
                 ServerApi.Hooks.GameInitialize.Deregister(this, OnInitialize);
                 ServerApi.Hooks.NpcLootDrop.Deregister(this, OnLootDrop);
+                ServerApi.Hooks.NetGetData.Deregister(this, OnGetData);
             }
         }
 
@@ -209,7 +257,10 @@ namespace CustomNPC
             AppDomainSetup info = new AppDomainSetup
             {
                 // this allows the replacement of plugin files in the file system
-                ShadowCopyFiles = bool.TrueString
+                ShadowCopyFiles = bool.TrueString,
+
+                ApplicationBase = Environment.CurrentDirectory,
+                PrivateBinPath = @".\ServerPlugins"
             };
 
             return AppDomain.CreateDomain("Plugin Domain", AppDomain.CurrentDomain.Evidence, info);
@@ -239,53 +290,58 @@ namespace CustomNPC
         /// </summary>
         private void ProjectileCheck()
         {
-            //loop through all custom npcs currently spawned
+            // loop through all custom npcs currently spawned
             foreach (CustomNPCVars obj in this.CustomNPCs)
             {
-                //check if they exists and are active
+                // check if they exists and are active
                 if (obj != null && !obj.isDead && obj.mainNPC.active)
                 {
-                    //loop through all npc projectiles they can fire
-                    foreach (CustomNPCProjectiles projectile in obj.customNPC.customProjectiles)
+                    if (obj.customNPC.customProjectiles != null)
                     {
-                        //check if projectile last fire time is greater then equal to its next allowed fire time
-                        if ((DateTime.Now - obj.lastAttemptedProjectile).TotalSeconds >= projectile.projectileFireRate)
+                        // loop through all npc projectiles they can fire
+                        foreach (CustomNPCProjectiles projectile in obj.customNPC.customProjectiles)
                         {
-                            //make sure chance is checked too, don't bother checking if its 100
-                            if (projectile.projectileFireChance == 100 || CustomNPCUtils.Chance(projectile.projectileFireChance))
+                            // check if projectile last fire time is greater then equal to its next allowed fire time
+                            if ((DateTime.Now - obj.lastAttemptedProjectile).TotalSeconds >= projectile.projectileFireRate)
                             {
-                                TSPlayer target = null;
-                                //find a target for it to shoot that isn't dead or disconnected
-                                foreach (TSPlayer player in TShock.Players.Where(x => x != null && !x.Dead && x.ConnectionAlive))
+                                // make sure chance is checked too, don't bother checking if its 100
+                                if (projectile.projectileFireChance == 100 || CustomNPCUtils.Chance(projectile.projectileFireChance))
                                 {
-                                    //check if that target can be shot ie/ no obstacles, or if it if projectile goes through walls ignore this check
-                                    if (!projectile.projectileCheckCollision || Collision.CanHit(player.TPlayer.position, player.TPlayer.bodyFrame.Width, player.TPlayer.bodyFrame.Height, obj.mainNPC.position, obj.mainNPC.width, obj.mainNPC.height))
+                                    TSPlayer target = null;
+
+                                    // find a target for it to shoot that isn't dead or disconnected
+                                    foreach (TSPlayer player in TShock.Players.Where(x => x != null && !x.Dead && x.ConnectionAlive))
                                     {
-                                        //make sure distance isn't further then what tshock allows
-                                        float currDistance = Math.Abs(Vector2.Distance(player.TPlayer.position, obj.mainNPC.center()));
-                                        if (currDistance < 2048)
+                                        // check if that target can be shot ie/ no obstacles, or if it if projectile goes through walls ignore this check
+                                        if (!projectile.projectileCheckCollision || Collision.CanHit(player.TPlayer.position, player.TPlayer.bodyFrame.Width, player.TPlayer.bodyFrame.Height, obj.mainNPC.position, obj.mainNPC.width, obj.mainNPC.height))
                                         {
-                                            //set the target player
-                                            target = player;
-                                            //set npcs target to the player its shooting at
-                                            obj.mainNPC.target = player.Index;
-                                            //break since no need to find another target
-                                            break;
+                                            // make sure distance isn't further then what tshock allows
+                                            float currDistance = Math.Abs(Vector2.Distance(player.TPlayer.position, obj.mainNPC.center()));
+                                            if (currDistance < 2048)
+                                            {
+                                                // set the target player
+                                                target = player;
+                                                // set npcs target to the player its shooting at
+                                                obj.mainNPC.target = player.Index;
+                                                // break since no need to find another target
+                                                break;
+                                            }
                                         }
                                     }
+
+                                    // check if previous for loop was broken out of, or just ended because no valid target
+                                    if (target != null)
+                                    {
+                                        // all checks completed fire projectile
+                                        FireProjectile(target, obj, projectile);
+                                        // set last attempted projectile to now
+                                        obj.lastAttemptedProjectile = DateTime.Now;
+                                    }
                                 }
-                                //check if previous for loop was broken out of, or just ended because no valid target
-                                if (target != null)
+                                else
                                 {
-                                    //all checks completed fire projectile
-                                    FireProjectile(target, obj, projectile);
-                                    //set last attempted projectile to now
                                     obj.lastAttemptedProjectile = DateTime.Now;
                                 }
-                            }
-                            else
-                            {
-                                obj.lastAttemptedProjectile = DateTime.Now;
                             }
                         }
                     }
@@ -301,20 +357,20 @@ namespace CustomNPC
         /// <param name="projectile"></param>
         private void FireProjectile(TSPlayer target, CustomNPCVars origin, CustomNPCProjectiles projectile)
         {
-            //loop through all ShotTiles
+            // loop through all ShotTiles
             foreach (ShotTile obj in projectile.projectileShotTiles)
             {
-                //Make sure target actually exists - at this point it should always exist
+                // Make sure target actually exists - at this point it should always exist
                 if (target != null)
                 {
-                    //calculate starting position
+                    // calculate starting position
                     Vector2 start = GetStartPosition(origin, obj);
-                    //calculate speed of projectile
+                    // calculate speed of projectile
                     Vector2 speed = CalculateSpeed(start, target);
-                    //get the projectile AI
-                    Tuple<float, float> ai = new Tuple<float, float>(projectile.projectileAIParams1, projectile.projectileAIParams2);
+                    // get the projectile AI
+                    Tuple<float, float> ai = Tuple.Create(projectile.projectileAIParams1, projectile.projectileAIParams2);
 
-                    //Create new projectile VIA Terraria's method, with all customizations
+                    // Create new projectile VIA Terraria's method, with all customizations
                     int projectileIndex = Projectile.NewProjectile(
                         start.X,
                         start.Y,
@@ -327,18 +383,18 @@ namespace CustomNPC
                         ai.Item1,
                         ai.Item2);
 
-                    //customize AI for projectile again, as it gets overwritten
+                    // customize AI for projectile again, as it gets overwritten
                     var proj = Main.projectile[projectileIndex];
                     proj.ai[0] = ai.Item1;
                     proj.ai[1] = ai.Item2;
 
-                    //send projectile as a packet
+                    // send projectile as a packet
                     NetMessage.SendData(27, -1, -1, string.Empty, projectileIndex);
                 }
             }
         }
 
-        //Returns start position of projectile with shottile offset
+        // Returns start position of projectile with shottile offset
         private Vector2 GetStartPosition(CustomNPCVars origin, ShotTile shottile)
         {
             Vector2 offset = new Vector2(shottile.X, shottile.Y);
@@ -373,35 +429,29 @@ namespace CustomNPC
 
         private void SpawnMobsInBiomeAndRegion()
         {
-            foreach(TSPlayer player in TShock.Players)
+            foreach (TSPlayer player in TShock.Players)
             {
                 if (player != null && player.ConnectionAlive)
                 {
-                    //get list of mobs that can be spawned in that biome
-                    foreach (string str in CustomNPCData.BiomeSpawns[CustomNPCUtils.PlayersCurrBiome(player)])
+                    BiomeTypes biome = CustomNPCUtils.PlayersCurrBiome(player);
+                    
+                    // get list of mobs that can be spawned in that biome
+                    List<string> biomeSpawns;
+                    if (CustomNPCData.BiomeSpawns.TryGetValue(biome, out biomeSpawns))
                     {
-                        CustomNPCDefinition customnpc = CustomNPCData.GetNPCbyID(str);
-                        if ((DateTime.Now - CustomNPCData.LastSpawnAttempt[customnpc.customID]).TotalSeconds >= customnpc.customSpawnTimer)
+                        foreach (string id in biomeSpawns)
                         {
-                            CustomNPCData.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
-                            if (CustomNPCUtils.Chance(customnpc.customSpawnChance))
+                            CustomNPCDefinition customnpc = CustomNPCData.GetNPCbyID(id);
+
+                            // get the last spawn attempt
+                            DateTime lastSpawnAttempt;
+                            if (!CustomNPCData.LastSpawnAttempt.TryGetValue(customnpc.customID, out lastSpawnAttempt))
                             {
-                                int spawnX;
-                                int spawnY;
-                                TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
-                                SpawnMobsInStaticLocation(spawnX, spawnY, customnpc);
+                                lastSpawnAttempt = default(DateTime);
+                                CustomNPCData.LastSpawnAttempt[customnpc.customID] = lastSpawnAttempt;
                             }
-                        }
-                    }
-                    //then check regions as well
-                    List<Region> playersInRegion = CustomNPCData.RegionSpawns.Keys.ToList().FindAll(region => region.InArea(new Rectangle((int)(player.TileX), (int)(player.TileY), player.TPlayer.width, player.TPlayer.height)));
-                    foreach (Region obj in playersInRegion)
-                    {
-                        List<string> customNpcSpawns = CustomNPCData.RegionSpawns[obj];
-                        foreach (string str in customNpcSpawns)
-                        {
-                            CustomNPCDefinition customnpc = CustomNPCData.GetNPCbyID(str);
-                            if ((DateTime.Now - CustomNPCData.LastSpawnAttempt[customnpc.customID]).TotalSeconds >= customnpc.customSpawnTimer)
+
+                            if ((DateTime.Now - lastSpawnAttempt).TotalSeconds >= customnpc.customSpawnTimer)
                             {
                                 CustomNPCData.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
                                 if (CustomNPCUtils.Chance(customnpc.customSpawnChance))
@@ -409,8 +459,42 @@ namespace CustomNPC
                                     int spawnX;
                                     int spawnY;
                                     TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
-                                    int npcid = SpawnMobsInStaticLocation(spawnX, spawnY, customnpc);
-                                    Main.npc[npcid].target = player.Index;
+                                    SpawnMobsInStaticLocation(spawnX * 16, spawnY * 16, customnpc);
+                                }
+                            }
+                        }
+                    }
+
+                    // then check regions as well
+                    Rectangle playerRectangle = new Rectangle(player.TileX, player.TileY, player.TPlayer.width, player.TPlayer.height);
+                    foreach (Region obj in CustomNPCData.RegionSpawns.Keys.Where(region => region.InArea(playerRectangle)))
+                    {
+                        List<string> regionSpawns;
+                        if (CustomNPCData.RegionSpawns.TryGetValue(obj, out regionSpawns))
+                        {
+                            foreach (string id in regionSpawns)
+                            {
+                                CustomNPCDefinition customnpc = CustomNPCData.GetNPCbyID(id);
+
+                                // get the last spawn attempt
+                                DateTime lastSpawnAttempt;
+                                if (!CustomNPCData.LastSpawnAttempt.TryGetValue(customnpc.customID, out lastSpawnAttempt))
+                                {
+                                    lastSpawnAttempt = default(DateTime);
+                                    CustomNPCData.LastSpawnAttempt[customnpc.customID] = lastSpawnAttempt;
+                                }
+
+                                if ((DateTime.Now - lastSpawnAttempt).TotalSeconds >= customnpc.customSpawnTimer)
+                                {
+                                    CustomNPCData.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
+                                    if (CustomNPCUtils.Chance(customnpc.customSpawnChance))
+                                    {
+                                        int spawnX;
+                                        int spawnY;
+                                        TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
+                                        int npcid = SpawnMobsInStaticLocation(spawnX, spawnY, customnpc);
+                                        Main.npc[npcid].target = player.Index;
+                                    }
                                 }
                             }
                         }
@@ -426,6 +510,8 @@ namespace CustomNPC
         {
             int npcid = NPC.NewNPC(x, y, customnpc.customBase.type);
             this.CustomNPCs[npcid] = new CustomNPCVars(customnpc, DateTime.Now, Main.npc[npcid]);
+
+            TSPlayer.All.SendData(PacketTypes.NpcUpdate, "", npcid);
             return npcid;
         }
     }

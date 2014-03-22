@@ -6,6 +6,7 @@ using System.IO;
 using System.Reflection;
 using System.Security.Permissions;
 using CustomNPC.EventSystem;
+using TerrariaApi.Server;
 using TShockAPI;
 
 namespace CustomNPC.Plugins
@@ -16,6 +17,7 @@ namespace CustomNPC.Plugins
         private IEventRegister _eventRegister;
         private DefinitionManager _definitionManager;
         private PluginDiscoverer<TPlugin> _discoverer;
+        private IList<Assembly> _assemblies; 
         private IList<TPlugin> _plugins;
 
         public PluginManager(IEventRegister register, DefinitionManager definitionManager)
@@ -23,12 +25,13 @@ namespace CustomNPC.Plugins
             _eventRegister = register;
             _definitionManager = definitionManager;
             _discoverer = new PluginDiscoverer<TPlugin>();
+            _assemblies = new List<Assembly>();
             _plugins = new List<TPlugin>();
         }
 
         public static string PluginPath
         {
-            get { return Path.Combine(TShock.SavePath, "CustomNPCs"); }
+            get { return Path.Combine(ServerApi.ServerPluginsDirectoryPath, "CustomNPCs"); }
         }
 
         public IEventRegister EventRegister
@@ -52,7 +55,11 @@ namespace CustomNPC.Plugins
             return null;
         }
 
-        public void Load(AppDomain domain)
+        public void Load(
+#if USE_APPDOMAIN
+            AppDomain domain
+#endif
+            )
         {
             if (!Directory.Exists(PluginPath))
             {
@@ -70,8 +77,22 @@ namespace CustomNPC.Plugins
                         Definitions
                     };
 
+#if USE_APPDOMAIN
                     var plugin = (TPlugin)domain.CreateInstanceFromAndUnwrap(file, typeName, true, BindingFlags.Default, null, args, null, null);
                     _plugins.Add(plugin);
+#else
+                    try
+                    {
+                        Assembly asm = Assembly.Load(File.ReadAllBytes(file));
+                        _assemblies.Add(asm);
+
+                        var plugin = (TPlugin)asm.CreateInstance(typeName, true, BindingFlags.Default, null, args, null, null);
+                        _plugins.Add(plugin);
+                    }
+                    catch (BadImageFormatException)
+                    {
+                    }
+#endif
                 }
             }
 

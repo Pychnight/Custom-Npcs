@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Security.Permissions;
 
@@ -19,7 +20,7 @@ namespace CustomNPC.Plugins
         {
             var typeNames = new List<string>();
 
-            Assembly asm = Assembly.LoadFrom(assemblyFile);
+            Assembly asm = Assembly.Load(File.ReadAllBytes(assemblyFile));
             foreach (Type type in asm.GetTypes())
             {
                 if (type.IsPublic && PluginType.IsAssignableFrom(type))

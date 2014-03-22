@@ -10,7 +10,7 @@ namespace TestNPC
     public sealed class TestNPCDefinition : CustomNPCDefinition
     {
         public TestNPCDefinition()
-            : base(1)
+            : base(21)
         {
         }
 
@@ -24,14 +24,15 @@ namespace TestNPC
             get { return "Test NPC"; }
         }
 
-        protected override List<byte> customBiomeSpawn
+        public override IList<CustomNPCLoot> customNPCLoots
         {
-            get { throw new NotImplementedException(); }
-        }
-
-        protected override List<string> customRegionSpawn
-        {
-            get { throw new NotImplementedException(); }
+            get
+            {
+                return new[]
+                {
+                    new CustomNPCLoot(1553, new List<int> { 83 }, 1, 50), 
+                };
+            }
         }
 
         protected override List<int> customAreaDebuff

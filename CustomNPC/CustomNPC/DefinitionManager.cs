@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Permissions;
 
 namespace CustomNPC
 {
-    public class DefinitionManager
+    public class DefinitionManager : MarshalByRefObject
     {
         private IDictionary<string, CustomNPCDefinition> _definitions;
 
@@ -15,6 +16,12 @@ namespace CustomNPC
         public IDictionary<string, CustomNPCDefinition> Definitions
         {
             get { return _definitions; }
+        }
+
+        [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.Infrastructure)]
+        public override object InitializeLifetimeService()
+        {
+            return null;
         }
 
         public void Add(CustomNPCDefinition definition)

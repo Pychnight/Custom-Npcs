@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CustomNPC
 {
-    internal class CustomNPCProjectiles
+    public class CustomNPCProjectiles
     {
         internal int projectileID { get; set; }
         internal List<ShotTile> projectileShotTiles { get; set; }

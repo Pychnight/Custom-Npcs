@@ -18,6 +18,31 @@ namespace CustomNPC
         internal Dictionary<string, DateTime> LastSpawnAttempt = new Dictionary<string, DateTime>();
 
         /// <summary>
+        /// This is called once the CustomNPCDefinitions have been loaded into the DefinitionManager.
+        /// </summary>
+        /// <param name="definitions"></param>
+        internal void Load(DefinitionManager definitions)
+        {
+            foreach (var pair in definitions.Definitions)
+            {
+                string id = pair.Key;
+                CustomNPCDefinition definition = pair.Value;
+
+                CustomNPCs.Add(id, definition);
+
+                AddCustomNPCToBiome(definition.customBiomeSpawn, definition.customID);
+
+                if (definition.customRegionSpawn != null)
+                {
+                    foreach (string regionName in definition.customRegionSpawn)
+                    {
+                        AddCustomNPCToRegion(regionName, definition.customID);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Returns CustomNPC obj by custom ID
         /// </summary>
         /// <param name="id"></param>
@@ -58,6 +83,40 @@ namespace CustomNPC
             if (obj.customSpawnMessage != "")
             {
                 TSPlayer.All.SendMessage(obj.customSpawnMessage, Color.Green);
+            }
+        }
+
+        private void AddCustomNPCToBiome(BiomeTypes biome, string id)
+        {
+            List<string> spawns;
+            if (!BiomeSpawns.TryGetValue(biome, out spawns))
+            {
+                spawns = new List<string>();
+                BiomeSpawns[biome] = spawns;
+            }
+
+            if (!spawns.Contains(id))
+            {
+                spawns.Add(id);
+            }
+        }
+
+        private void AddCustomNPCToRegion(string regionName, string id)
+        {
+            Region region = TShock.Regions.GetRegionByName(regionName);
+            if (region == null)
+                return;
+
+            List<string> spawns;
+            if (!RegionSpawns.TryGetValue(region, out spawns))
+            {
+                spawns = new List<string>();
+                RegionSpawns[region] = spawns;
+            }
+
+            if (!spawns.Contains(id))
+            {
+                spawns.Add(id);
             }
         }
     }

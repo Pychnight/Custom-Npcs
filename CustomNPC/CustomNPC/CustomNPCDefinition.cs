@@ -67,24 +67,52 @@ namespace CustomNPC
         /// <summary>
         /// NPC Restrictions/Conditions
         /// </summary>
-        protected abstract List<byte> customBiomeSpawn { get; }
-        protected abstract List<string> customRegionSpawn { get; }
+        public virtual BiomeTypes customBiomeSpawn
+        {
+            get { return BiomeTypes.Grass; }
+        }
+        public virtual IList<string> customRegionSpawn
+        {
+            get { return null; }
+        }
+
+        // NPC Projectile Variables
 
         /// <summary>
-        /// NPC Projectile Variables
+        /// Gets a list of projectiles this NPC can fire.
         /// </summary>
-        internal List<CustomNPCProjectiles> customProjectiles { get; set; }
+        public virtual IList<CustomNPCProjectiles> customProjectiles
+        {
+            get { return null; }
+        }
+
+        // NPC Loot Variables
 
         /// <summary>
-        /// NPC Loot Variables
+        /// Gets a list of items this NPC can drop.
         /// </summary>
-        internal List<CustomNPCLoot> customNPCLoots { get; set; }
+        public virtual IList<CustomNPCLoot> customNPCLoots
+        {
+            get { return null; }
+        }
+
+        // NPC spawning variables
 
         /// <summary>
-        /// NPC Spawning Variables
+        /// Gets the number of seconds between spawn attempts.
         /// </summary>
-        internal int customSpawnTimer { get; set; }
-        internal double customSpawnChance { get; set; }
+        public virtual int customSpawnTimer
+        {
+            get { return 5; }
+        }
+
+        /// <summary>
+        /// Gets the chance (out of 100) to spawn this NPC.
+        /// </summary>
+        public virtual double customSpawnChance
+        {
+            get { return 100.0; }
+        }
         internal string customSpawnMessage { get; set; }
 
         /// <summary>
