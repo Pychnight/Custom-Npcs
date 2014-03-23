@@ -35,6 +35,14 @@ namespace TestNPC
             }
         }
 
+        public override int customAI
+        {
+            get
+            {
+                return 2;
+            }
+        }
+
         protected override List<int> customAreaDebuff
         {
             get { throw new NotImplementedException(); }
