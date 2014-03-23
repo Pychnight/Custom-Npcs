@@ -318,8 +318,14 @@ namespace CustomNPC
         {
             foreach (CustomNPCVars obj in this.CustomNPCs)
             {
+                if (obj == null)
+                    continue;
+
                 foreach (TSPlayer player in TShock.Players)
                 {
+                    if (player == null)
+                        continue;
+
                     Rectangle npcframe = new Rectangle((int)obj.mainNPC.position.X, (int)obj.mainNPC.position.Y, obj.mainNPC.width, obj.mainNPC.height);
                     Rectangle playerframe = new Rectangle((int)player.TPlayer.position.X, (int)player.TPlayer.position.Y, player.TPlayer.width, player.TPlayer.height);
                     if (npcframe.Intersects(playerframe))
@@ -580,13 +586,16 @@ namespace CustomNPC
 
         private int SpawnMobAroundPlayer(TSPlayer player, CustomNPCDefinition definition)
         {
+            const int SpawnSpaceX = 3;
+            const int SpawnSpaceY = 3;
+
             // search for a location
             int screenTilesX = (int)(NPC.sWidth / 16f);
             int screenTilesY = (int)(NPC.sHeight / 16f);
             int spawnRangeX = (int)(screenTilesX * 0.7);
             int spawnRangeY = (int)(screenTilesY * 0.7);
             int safeRangeX = (int)(screenTilesX * 0.52);
-            int safeRangeY = (int)(screenTilesX * 0.52);
+            int safeRangeY = (int)(screenTilesY * 0.52);
 
             Vector2 position = player.TPlayer.position;
             int playerTileX = (int)(position.X / 16f);
@@ -599,8 +608,8 @@ namespace CustomNPC
 
             int safeRangeMinX = Math.Max(0, Math.Min(Main.maxTilesX, playerTileX - safeRangeX));
             int safeRangeMaxX = Math.Max(0, Math.Min(Main.maxTilesX, playerTileX + safeRangeX));
-            int safeRangeMinY = Math.Max(0, Math.Min(Main.maxTilesY, playerTileY - safeRangeX));
-            int safeRangeMaxY = Math.Max(0, Math.Min(Main.maxTilesY, playerTileY + safeRangeX));
+            int safeRangeMinY = Math.Max(0, Math.Min(Main.maxTilesY, playerTileY - safeRangeY));
+            int safeRangeMaxY = Math.Max(0, Math.Min(Main.maxTilesY, playerTileY + safeRangeY));
 
             int spawnX = 0;
             int spawnY = 0;
@@ -621,8 +630,7 @@ namespace CustomNPC
 
                 if (!Main.wallHouse[testTile.wall])
                 {
-                    int y = testY;
-                    while (y < Main.maxTilesY)
+                    for (int y = testY; y < Main.maxTilesY; y++)
                     {
                         Tile test = Main.tile[testX, y];
                         if (test.nactive() && Main.tileSolid[test.type])
@@ -635,8 +643,54 @@ namespace CustomNPC
                                 break;
                             }
                         }
+                    }
 
-                        y++;
+                    if (!found)
+                    {
+                        attempts++;
+                    }
+
+                    int spaceMinX = spawnX - (SpawnSpaceX / 2);
+                    int spaceMaxX = spawnX + (SpawnSpaceX / 2);
+                    int spaceMinY = spawnY - SpawnSpaceY;
+                    int spaceMaxY = spawnY;
+                    if (spaceMinX < 0 || spaceMaxX > Main.maxTilesX)
+                    {
+                        attempts++;
+                        continue;
+                    }
+
+                    if (spaceMinY < 0 || spaceMaxY > Main.maxTilesY)
+                    {
+                        attempts++;
+                        continue;
+                    }
+
+                    if (found)
+                    {
+                        for (int x = spaceMinX; x < spaceMaxX; x++)
+                        {
+                            for (int y = spaceMinY; y < spaceMaxY; y++)
+                            {
+                                if (Main.tile[x, y].nactive() && Main.tileSolid[Main.tile[x, y].type])
+                                {
+                                    found = false;
+                                    break;
+                                }
+
+                                if (Main.tile[x, y].lava())
+                                {
+                                    found = false;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (!found)
+                        {
+                            attempts++;
+                            continue;
+                        }
                     }
 
                     if (spawnX >= safeRangeMinX && spawnX <= safeRangeMaxX)
@@ -648,18 +702,13 @@ namespace CustomNPC
                         }
                     }
                 }
-
-                if (!found)
-                {
-                    attempts++;
-                }
             }
 
             if (found)
             {
                 Log.ConsoleInfo("Spawning mob around player: plr[{0},{1}] mob[{2},{3}]", playerTileX, playerTileY, spawnX, spawnY);
 
-                int npcid = NPC.NewNPC((spawnX * 16) + 8, (spawnY * 16) + 8, definition.customBase.type);
+                int npcid = NPC.NewNPC((spawnX * 16) + 8, spawnY * 16, definition.customBase.type);
                 CustomNPCData.ConvertNPCToCustom(npcid, definition);
                 CustomNPCs[npcid] = new CustomNPCVars(definition, DateTime.Now, Main.npc[npcid]);
 
