@@ -136,11 +136,11 @@ namespace CustomNPC
                             }
 
                             Item.NewItem((int)npcvar.mainNPC.position.X, (int)npcvar.mainNPC.position.Y, npcvar.mainNPC.width, npcvar.mainNPC.height, obj.itemID, obj.itemStack, false, pre, false);
-                            npcvar.isDead = true;
-                            npcvar.droppedLoot = true;
                         }
                     }
                 }
+                npcvar.isDead = true;
+                npcvar.droppedLoot = true;
             }
         }
 
@@ -472,7 +472,7 @@ namespace CustomNPC
             foreach (CustomNPCVars obj in this.CustomNPCs)
             {
                 //if CustomNPC has been defined, and hasn't been set to dead yet, check if the terraria npc is active
-                if (obj != null && !obj.isDead && !obj.mainNPC.active)
+                if (obj != null && !obj.isDead && obj.mainNPC.life <= 0)
                 {
                     obj.isDead = true;
                 }
@@ -508,10 +508,15 @@ namespace CustomNPC
                                 CustomNPCData.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
                                 if (CustomNPCUtils.Chance(customnpc.customSpawnChance))
                                 {
-                                    int spawnX;
-                                    int spawnY;
-                                    TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
-                                    SpawnMobsInStaticLocation(spawnX * 16, spawnY * 16, customnpc);
+                                    int npcid = SpawnMobAroundPlayer(player, customnpc);
+                                    if (npcid != -1)
+                                    {
+                                        Main.npc[npcid].target = player.Index;
+                                    }
+                                    //int spawnX;
+                                    //int spawnY;
+                                    //TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
+                                    //SpawnMobsInStaticLocation(spawnX * 16, spawnY * 16, customnpc);
                                 }
                             }
                         }
@@ -541,19 +546,11 @@ namespace CustomNPC
                                     CustomNPCData.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
                                     if (CustomNPCUtils.Chance(customnpc.customSpawnChance))
                                     {
-                                        int npcid = SpawnMobAroundPlayer(player, customnpc);
-                                        if (npcid != -1)
-                                        {
-                                            Main.npc[npcid].target = player.Index;
-                                        }
-
-/*
                                         int spawnX;
                                         int spawnY;
                                         TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
                                         int npcid = SpawnMobsInStaticLocation(spawnX, spawnY, customnpc);
                                         Main.npc[npcid].target = player.Index;
-*/
                                     }
                                 }
                             }
