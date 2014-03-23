@@ -297,7 +297,13 @@ namespace CustomNPC
                     Rectangle playerframe = new Rectangle((int)player.TPlayer.position.X, (int)player.TPlayer.position.Y, player.TPlayer.width, player.TPlayer.height);
                     if (npcframe.Intersects(playerframe))
                     {
-                        // do event
+                        var args = new NpcCollisionEvent
+                        {
+                            NpcIndex = obj.mainNPC.whoAmI,
+                            PlayerIndex = player.Index
+                        };
+
+                        eventManager.InvokeHandler(args, EventType.NpcCollision);
                     }
                 }
             }
