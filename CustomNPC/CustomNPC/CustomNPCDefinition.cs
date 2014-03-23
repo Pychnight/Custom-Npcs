@@ -29,6 +29,10 @@ namespace CustomNPC
         {
             get { return baseNPC; }
         }
+        public virtual bool isReplacement
+        {
+            get { return false; }
+        }
         public abstract string customID { get; }
         public abstract string customName { get; }
         public virtual int customHealth

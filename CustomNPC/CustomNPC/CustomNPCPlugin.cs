@@ -96,8 +96,9 @@ namespace CustomNPC
 
             ServerApi.Hooks.GameInitialize.Register(this, OnInitialize);
 
-            //one OnUpdate is needed for replacement of mobs
+            //one OnUpdate is needed for updating mob positioning
             ServerApi.Hooks.GameUpdate.Register(this, OnUpdate);
+            ServerApi.Hooks.NpcSpawn.Register(this, OnNPCSpawn);
             ServerApi.Hooks.NpcLootDrop.Register(this, OnLootDrop);
             ServerApi.Hooks.NetGetData.Register(this, OnGetData);
         }
@@ -120,19 +121,24 @@ namespace CustomNPC
                 return;
             }
 
-            if (npcvar.customNPC.customNPCLoots != null)
+            if (!npcvar.droppedLoot)
             {
-                foreach (CustomNPCLoot obj in npcvar.customNPC.customNPCLoots)
+                if (npcvar.customNPC.customNPCLoots != null)
                 {
-                    if (obj.itemDropChance >= 100 || CustomNPCUtils.Chance(obj.itemDropChance))
+                    foreach (CustomNPCLoot obj in npcvar.customNPC.customNPCLoots)
                     {
-                        int pre = 0;
-                        if (obj.itemPrefix != null)
+                        if (obj.itemDropChance >= 100 || CustomNPCUtils.Chance(obj.itemDropChance))
                         {
-                            pre = obj.itemPrefix[rand.Next(obj.itemPrefix.Count)];
-                        }
+                            int pre = 0;
+                            if (obj.itemPrefix != null)
+                            {
+                                pre = obj.itemPrefix[rand.Next(obj.itemPrefix.Count)];
+                            }
 
-                        Item.NewItem((int)npcvar.mainNPC.position.X, (int)npcvar.mainNPC.position.Y, npcvar.mainNPC.width, npcvar.mainNPC.height, obj.itemID, obj.itemStack, false, pre, false);
+                            Item.NewItem((int)npcvar.mainNPC.position.X, (int)npcvar.mainNPC.position.Y, npcvar.mainNPC.width, npcvar.mainNPC.height, obj.itemID, obj.itemStack, false, pre, false);
+                            npcvar.isDead = true;
+                            npcvar.droppedLoot = true;
+                        }
                     }
                 }
             }
@@ -150,11 +156,17 @@ namespace CustomNPC
         /// <param name="args"></param>
         private void OnUpdate(EventArgs args)
         {
+            //Update all Custom NPCs
+            CustomNPCUpdate();
+        }
+
+        private void OnNPCSpawn(NpcSpawnEventArgs args)
+        {
             foreach (NPC obj in Main.npc)
             {
                 foreach (CustomNPCDefinition customnpc in CustomNPCData.CustomNPCs.Values)
                 {
-                    if (obj.netID == customnpc.customBase.netID && this.CustomNPCs[obj.whoAmI] == null)
+                    if (customnpc.isReplacement && obj.netID == customnpc.customBase.netID && (this.CustomNPCs[obj.whoAmI] == null || this.CustomNPCs[obj.whoAmI].isDead))
                     {
                         this.CustomNPCs[obj.whoAmI] = new CustomNPCVars(customnpc, DateTime.Now, obj);
                         CustomNPCData.ConvertNPCToCustom(obj.whoAmI, customnpc);
@@ -249,6 +261,7 @@ namespace CustomNPC
                 ServerApi.Hooks.GameInitialize.Deregister(this, OnInitialize);
                 ServerApi.Hooks.NpcLootDrop.Deregister(this, OnLootDrop);
                 ServerApi.Hooks.NetGetData.Deregister(this, OnGetData);
+                ServerApi.Hooks.NpcSpawn.Deregister(this, OnNPCSpawn);
             }
         }
 
@@ -275,8 +288,6 @@ namespace CustomNPC
         {
             eventManager.InvokeHandler(PluginUpdateEvent.Empty, EventType.PluginUpdate);
 
-            //Update all Custom NPCs
-            CustomNPCUpdate();
             //check if NPC has been deactivated (could mean NPC despawned)
             CheckActiveNPCs();
             //Spawn mobs into regions and specific biomes
@@ -295,7 +306,7 @@ namespace CustomNPC
             {
                 if (obj != null && !obj.isDead)
                 {
-                    TSPlayer.All.SendData(PacketTypes.NpcUpdate, "",obj.mainNPC.whoAmI);
+                    NetMessage.SendData(23, -1, -1, "", obj.mainNPC.whoAmI, 0f, 0f, 0f, 0);
                 }
             }
         }
@@ -548,6 +559,7 @@ namespace CustomNPC
         private int SpawnMobsInStaticLocation(int x, int y, CustomNPCDefinition customnpc)
         {
             int npcid = NPC.NewNPC(x, y, customnpc.customBase.type);
+            CustomNPCData.ConvertNPCToCustom(npcid, customnpc);
             this.CustomNPCs[npcid] = new CustomNPCVars(customnpc, DateTime.Now, Main.npc[npcid]);
 
             TSPlayer.All.SendData(PacketTypes.NpcUpdate, "", npcid);

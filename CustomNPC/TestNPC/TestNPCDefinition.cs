@@ -39,7 +39,23 @@ namespace TestNPC
         {
             get
             {
-                return 2;
+                return 14;
+            }
+        }
+
+        public override bool noGravity
+        {
+            get
+            {
+                return true;
+            }
+        }
+
+        public override int customHealth
+        {
+            get
+            {
+                return 1000;
             }
         }
 
