@@ -102,6 +102,14 @@ namespace CustomNPC
             get { return null; }
         }
 
+        /// <summary>
+        /// Gets a boolean that determines whether this NPC should drop its base NPC loot.
+        /// </summary>
+        public virtual bool overrideBaseNPCLoot
+        {
+            get { return false; }
+        }
+
         // NPC spawning variables
 
         /// <summary>
