@@ -14,7 +14,8 @@ namespace TestNPC
         public TestNPCDefinition()
             : base(21)
         {
-            ProjectilesList.Add(new CustomNPCProjectiles(180, new List<ShotTile>() { ShotTile.Middle }, 100, 250, true, 80));
+            ProjectilesList.Add(new CustomNPCProjectiles(180, new List<ShotTile>() { ShotTile.Middle }, 10, 250, false, 100));
+            ProjectilesList.Add(new CustomNPCProjectiles(257, new List<ShotTile>() { ShotTile.Middle }, 70, 2000, false, 10));
         }
 
         public override string customID

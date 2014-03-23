@@ -442,7 +442,7 @@ namespace CustomNPC
                         projectile.projectileID,
                         projectile.projectileDamage,
                         0,
-                        target.Index,
+                        255,
                         ai.Item1,
                         ai.Item2);
 
@@ -483,7 +483,7 @@ namespace CustomNPC
             foreach (CustomNPCVars obj in this.CustomNPCs)
             {
                 //if CustomNPC has been defined, and hasn't been set to dead yet, check if the terraria npc is active
-                if (obj != null && !obj.isDead && obj.mainNPC.life <= 0)
+                if (obj != null && !obj.isDead && (obj.mainNPC == null || obj.mainNPC.life <= 0))
                 {
                     obj.isDead = true;
                 }
