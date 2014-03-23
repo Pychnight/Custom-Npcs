@@ -77,6 +77,7 @@
     <Compile Include="EventSystem\IEventHandlerList.cs" />
     <Compile Include="EventSystem\IEventRegister.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="NPCManager.cs" />
     <Compile Include="Plugins\IPlugin.cs" />
     <Compile Include="Plugins\NPCPlugin.cs" />
     <Compile Include="Plugins\PluginDiscoverer.cs" />

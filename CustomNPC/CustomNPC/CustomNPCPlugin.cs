@@ -22,8 +22,6 @@ namespace CustomNPC
     {
         public static CustomNPCUtils CustomNPCUtils = CustomNPCUtils.Instance;
         internal Random rand = new Random();
-        internal CustomNPCVars[] CustomNPCs = new CustomNPCVars[200];
-        internal CustomNPCData CustomNPCData = new CustomNPCData();
 
         //16.66 milliseconds for 1/60th of a second.
         private Timer mainLoop = new Timer(1000 / 60.0);
@@ -92,7 +90,7 @@ namespace CustomNPC
                 Console.WriteLine("\tLoading CustomNPC plugin: {0} v{1} by {2}", plugin.Name, plugin.Version, string.Join(", ", plugin.Authors));
             }
 
-            CustomNPCData.Load(definitionManager);
+            NPCManager.LoadFrom(definitionManager);
 
             ServerApi.Hooks.GameInitialize.Register(this, OnInitialize);
 
@@ -114,7 +112,7 @@ namespace CustomNPC
         /// <param name="args"></param>
         private void OnLootDrop(NpcLootDropEventArgs args)
         {
-            CustomNPCVars npcvar = CustomNPCs[args.NpcArrayIndex];
+            CustomNPCVars npcvar = NPCManager.NPCs[args.NpcArrayIndex];
             //check if monster has been customized
             if (npcvar == null || npcvar.droppedLoot)
             {
@@ -165,12 +163,12 @@ namespace CustomNPC
         {
             foreach (NPC obj in Main.npc)
             {
-                foreach (CustomNPCDefinition customnpc in CustomNPCData.CustomNPCs.Values)
+                foreach (CustomNPCDefinition customnpc in NPCManager.Data.CustomNPCs.Values)
                 {
-                    if (customnpc.isReplacement && obj.netID == customnpc.customBase.netID && (this.CustomNPCs[obj.whoAmI] == null || this.CustomNPCs[obj.whoAmI].isDead))
+                    if (customnpc.isReplacement && obj.netID == customnpc.customBase.netID && (NPCManager.NPCs[obj.whoAmI] == null || NPCManager.NPCs[obj.whoAmI].isDead))
                     {
-                        this.CustomNPCs[obj.whoAmI] = new CustomNPCVars(customnpc, DateTime.Now, obj);
-                        CustomNPCData.ConvertNPCToCustom(obj.whoAmI, customnpc);
+                        NPCManager.NPCs[obj.whoAmI] = new CustomNPCVars(customnpc, DateTime.Now, obj);
+                        NPCManager.Data.ConvertNPCToCustom(obj.whoAmI, customnpc);
                     }
                 }
             }
@@ -228,7 +226,7 @@ namespace CustomNPC
 
             if (npc.active && npc.life > 0 && damageDone >= npc.life)
             {
-                CustomNPCVars npcvar = this.CustomNPCs[npcIndex];
+                CustomNPCVars npcvar = NPCManager.NPCs[npcIndex];
                 if (npcvar != null)
                 {
                     npcvar.isDead = true;
@@ -305,7 +303,7 @@ namespace CustomNPC
 
         private void CustomNPCUpdate()
         {
-            foreach (CustomNPCVars obj in this.CustomNPCs)
+            foreach (CustomNPCVars obj in NPCManager.NPCs)
             {
                 if (obj != null && !obj.isDead)
                 {
@@ -317,7 +315,7 @@ namespace CustomNPC
 
         private void CollisionDetection()
         {
-            foreach (CustomNPCVars obj in this.CustomNPCs)
+            foreach (CustomNPCVars obj in NPCManager.NPCs)
             {
                 if (obj == null)
                     continue;
@@ -349,7 +347,7 @@ namespace CustomNPC
         private void ProjectileCheck()
         {
             // loop through all custom npcs currently spawned
-            foreach (CustomNPCVars obj in this.CustomNPCs)
+            foreach (CustomNPCVars obj in NPCManager.NPCs)
             {
                 // check if they exists and are active
                 if (obj != null && !obj.isDead)
@@ -481,7 +479,7 @@ namespace CustomNPC
 
         private void CheckActiveNPCs()
         {
-            foreach (CustomNPCVars obj in this.CustomNPCs)
+            foreach (CustomNPCVars obj in NPCManager.NPCs)
             {
                 //if CustomNPC has been defined, and hasn't been set to dead yet, check if the terraria npc is active
                 if (obj != null && !obj.isDead && obj.mainNPC.life <= 0)
@@ -501,23 +499,23 @@ namespace CustomNPC
                     
                     // get list of mobs that can be spawned in that biome
                     List<string> biomeSpawns;
-                    if (CustomNPCData.BiomeSpawns.TryGetValue(biome, out biomeSpawns))
+                    if (NPCManager.Data.BiomeSpawns.TryGetValue(biome, out biomeSpawns))
                     {
                         foreach (string id in biomeSpawns)
                         {
-                            CustomNPCDefinition customnpc = CustomNPCData.GetNPCbyID(id);
+                            CustomNPCDefinition customnpc = NPCManager.Data.GetNPCbyID(id);
 
                             // get the last spawn attempt
                             DateTime lastSpawnAttempt;
-                            if (!CustomNPCData.LastSpawnAttempt.TryGetValue(customnpc.customID, out lastSpawnAttempt))
+                            if (!NPCManager.Data.LastSpawnAttempt.TryGetValue(customnpc.customID, out lastSpawnAttempt))
                             {
                                 lastSpawnAttempt = default(DateTime);
-                                CustomNPCData.LastSpawnAttempt[customnpc.customID] = lastSpawnAttempt;
+                                NPCManager.Data.LastSpawnAttempt[customnpc.customID] = lastSpawnAttempt;
                             }
 
                             if ((DateTime.Now - lastSpawnAttempt).TotalSeconds >= customnpc.customSpawnTimer)
                             {
-                                CustomNPCData.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
+                                NPCManager.Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
                                 if (CustomNPCUtils.Chance(customnpc.customSpawnChance))
                                 {
                                     int npcid = SpawnMobAroundPlayer(player, customnpc);
@@ -536,26 +534,26 @@ namespace CustomNPC
 
                     // then check regions as well
                     Rectangle playerRectangle = new Rectangle(player.TileX, player.TileY, player.TPlayer.width, player.TPlayer.height);
-                    foreach (Region obj in CustomNPCData.RegionSpawns.Keys.Where(region => region.InArea(playerRectangle)))
+                    foreach (Region obj in NPCManager.Data.RegionSpawns.Keys.Where(region => region.InArea(playerRectangle)))
                     {
                         List<string> regionSpawns;
-                        if (CustomNPCData.RegionSpawns.TryGetValue(obj, out regionSpawns))
+                        if (NPCManager.Data.RegionSpawns.TryGetValue(obj, out regionSpawns))
                         {
                             foreach (string id in regionSpawns)
                             {
-                                CustomNPCDefinition customnpc = CustomNPCData.GetNPCbyID(id);
+                                CustomNPCDefinition customnpc = NPCManager.Data.GetNPCbyID(id);
 
                                 // get the last spawn attempt
                                 DateTime lastSpawnAttempt;
-                                if (!CustomNPCData.LastSpawnAttempt.TryGetValue(customnpc.customID, out lastSpawnAttempt))
+                                if (!NPCManager.Data.LastSpawnAttempt.TryGetValue(customnpc.customID, out lastSpawnAttempt))
                                 {
                                     lastSpawnAttempt = default(DateTime);
-                                    CustomNPCData.LastSpawnAttempt[customnpc.customID] = lastSpawnAttempt;
+                                    NPCManager.Data.LastSpawnAttempt[customnpc.customID] = lastSpawnAttempt;
                                 }
 
                                 if ((DateTime.Now - lastSpawnAttempt).TotalSeconds >= customnpc.customSpawnTimer)
                                 {
-                                    CustomNPCData.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
+                                    NPCManager.Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
                                     if (CustomNPCUtils.Chance(customnpc.customSpawnChance))
                                     {
                                         int spawnX;
@@ -578,8 +576,8 @@ namespace CustomNPC
         private int SpawnMobsInStaticLocation(int x, int y, CustomNPCDefinition customnpc)
         {
             int npcid = NPC.NewNPC(x, y, customnpc.customBase.type);
-            CustomNPCData.ConvertNPCToCustom(npcid, customnpc);
-            this.CustomNPCs[npcid] = new CustomNPCVars(customnpc, DateTime.Now, Main.npc[npcid]);
+            NPCManager.Data.ConvertNPCToCustom(npcid, customnpc);
+            NPCManager.NPCs[npcid] = new CustomNPCVars(customnpc, DateTime.Now, Main.npc[npcid]);
 
             TSPlayer.All.SendData(PacketTypes.NpcUpdate, "", npcid);
             return npcid;
@@ -710,8 +708,8 @@ namespace CustomNPC
                 Log.ConsoleInfo("Spawning mob around player: plr[{0},{1}] mob[{2},{3}]", playerTileX, playerTileY, spawnX, spawnY);
 
                 int npcid = NPC.NewNPC((spawnX * 16) + 8, spawnY * 16, definition.customBase.type);
-                CustomNPCData.ConvertNPCToCustom(npcid, definition);
-                CustomNPCs[npcid] = new CustomNPCVars(definition, DateTime.Now, Main.npc[npcid]);
+                NPCManager.Data.ConvertNPCToCustom(npcid, definition);
+                NPCManager.NPCs[npcid] = new CustomNPCVars(definition, DateTime.Now, Main.npc[npcid]);
 
                 TSPlayer.All.SendData(PacketTypes.NpcUpdate, "", npcid);
                 return npcid;

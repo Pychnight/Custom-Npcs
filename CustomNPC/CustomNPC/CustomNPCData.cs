@@ -21,7 +21,7 @@ namespace CustomNPC
         /// This is called once the CustomNPCDefinitions have been loaded into the DefinitionManager.
         /// </summary>
         /// <param name="definitions"></param>
-        internal void Load(DefinitionManager definitions)
+        internal void LoadFrom(DefinitionManager definitions)
         {
             foreach (var pair in definitions.Definitions)
             {
