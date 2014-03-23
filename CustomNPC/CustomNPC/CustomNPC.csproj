@@ -68,6 +68,7 @@
     <Compile Include="DefinitionManager.cs" />
     <Compile Include="EventSystem\CustomNPCEventHandlerList.cs" />
     <Compile Include="EventSystem\EventManager.cs" />
+    <Compile Include="EventSystem\Events\NpcCollisionEvent.cs" />
     <Compile Include="EventSystem\Events\NpcDamageEvent.cs" />
     <Compile Include="EventSystem\Events\NpcKilledEvent.cs" />
     <Compile Include="EventSystem\Events\EmptyEvent.cs" />
