@@ -275,6 +275,8 @@ namespace CustomNPC
         {
             eventManager.InvokeHandler(PluginUpdateEvent.Empty, EventType.PluginUpdate);
 
+            //Update all Custom NPCs
+            CustomNPCUpdate();
             //check if NPC has been deactivated (could mean NPC despawned)
             CheckActiveNPCs();
             //Spawn mobs into regions and specific biomes
@@ -286,6 +288,18 @@ namespace CustomNPC
 
             eventManager.InvokeHandler(PluginUpdateEvent.Empty, EventType.PostPluginUpdate);
         }
+
+        private void CustomNPCUpdate()
+        {
+            foreach (CustomNPCVars obj in this.CustomNPCs)
+            {
+                if (obj != null && !obj.isDead)
+                {
+                    TSPlayer.All.SendData(PacketTypes.NpcUpdate, "",obj.mainNPC.whoAmI);
+                }
+            }
+        }
+
 
         private void CollisionDetection()
         {
