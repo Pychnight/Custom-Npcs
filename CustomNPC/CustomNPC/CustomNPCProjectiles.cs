@@ -16,8 +16,9 @@ namespace CustomNPC
         public bool projectileCheckCollision { get; set; }
         public float projectileAIParams1 { get; set; }
         public float projectileAIParams2 { get; set; }
+        public bool projectileLookForTarget { get; set; }
 
-        public CustomNPCProjectiles(int projectileid, List<ShotTile> projectileshottiles, int projectiledamage, int projectilefirerate, int projectilefirechance = 100, bool projectilecheckcollision = true, float projectileaiparams1 = 0f, float projectileaiparams2 = 0f)
+        public CustomNPCProjectiles(int projectileid, List<ShotTile> projectileshottiles, int projectiledamage, int projectilefirerate, bool projectilelookfortarget = false, int projectilefirechance = 100, bool projectilecheckcollision = true, float projectileaiparams1 = 0f, float projectileaiparams2 = 0f)
         {
             projectileID = projectileid;
             projectileShotTiles = projectileshottiles;
@@ -27,6 +28,7 @@ namespace CustomNPC
             projectileCheckCollision = projectilecheckcollision;
             projectileAIParams1 = projectileaiparams1;
             projectileAIParams2 = projectileaiparams2;
+            projectileLookForTarget = projectilelookfortarget;
         }
     }
 }

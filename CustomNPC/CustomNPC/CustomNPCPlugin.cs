@@ -352,7 +352,7 @@ namespace CustomNPC
             foreach (CustomNPCVars obj in this.CustomNPCs)
             {
                 // check if they exists and are active
-                if (obj != null && !obj.isDead && obj.mainNPC.active)
+                if (obj != null && !obj.isDead)
                 {
                     if (obj.customNPC.customProjectiles != null)
                     {
@@ -366,27 +366,32 @@ namespace CustomNPC
                                 if (projectile.projectileFireChance == 100 || CustomNPCUtils.Chance(projectile.projectileFireChance))
                                 {
                                     TSPlayer target = null;
-
-                                    // find a target for it to shoot that isn't dead or disconnected
-                                    foreach (TSPlayer player in TShock.Players.Where(x => x != null && !x.Dead && x.ConnectionAlive))
+                                    if (projectile.projectileLookForTarget)
                                     {
-                                        // check if that target can be shot ie/ no obstacles, or if it if projectile goes through walls ignore this check
-                                        if (!projectile.projectileCheckCollision || Collision.CanHit(player.TPlayer.position, player.TPlayer.bodyFrame.Width, player.TPlayer.bodyFrame.Height, obj.mainNPC.position, obj.mainNPC.width, obj.mainNPC.height))
+                                        // find a target for it to shoot that isn't dead or disconnected
+                                        foreach (TSPlayer player in TShock.Players.Where(x => x != null && !x.Dead && x.ConnectionAlive))
                                         {
-                                            // make sure distance isn't further then what tshock allows
-                                            float currDistance = Math.Abs(Vector2.Distance(player.TPlayer.position, obj.mainNPC.center()));
-                                            if (currDistance < 2048)
+                                            // check if that target can be shot ie/ no obstacles, or if it if projectile goes through walls ignore this check
+                                            if (!projectile.projectileCheckCollision || Collision.CanHit(player.TPlayer.position, player.TPlayer.bodyFrame.Width, player.TPlayer.bodyFrame.Height, obj.mainNPC.position, obj.mainNPC.width, obj.mainNPC.height))
                                             {
-                                                // set the target player
-                                                target = player;
-                                                // set npcs target to the player its shooting at
-                                                obj.mainNPC.target = player.Index;
-                                                // break since no need to find another target
-                                                break;
+                                                // make sure distance isn't further then what tshock allows
+                                                float currDistance = Math.Abs(Vector2.Distance(player.TPlayer.position, obj.mainNPC.center()));
+                                                if (currDistance < 2048)
+                                                {
+                                                    // set the target player
+                                                    target = player;
+                                                    // set npcs target to the player its shooting at
+                                                    obj.mainNPC.target = player.Index;
+                                                    // break since no need to find another target
+                                                    break;
+                                                }
                                             }
                                         }
                                     }
-
+                                    else
+                                    {
+                                        target = TShock.Players[obj.mainNPC.target];
+                                    }
 
                                     // check if previous for loop was broken out of, or just ended because no valid target
                                     if (target != null)
