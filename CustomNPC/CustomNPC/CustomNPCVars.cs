@@ -13,12 +13,12 @@ namespace CustomNPC
     public class CustomNPCVars
     {
         public CustomNPCDefinition customNPC { get; set; }
-        public DateTime lastAttemptedProjectile { get; set; }
+        public DateTime[] lastAttemptedProjectile { get; set; }
         public bool isDead { get; set; }
         public NPC mainNPC { get; set; }
         public bool droppedLoot { get; set; }
 
-        public CustomNPCVars(CustomNPCDefinition customnpc, DateTime lastattemptedprojectile, NPC mainnpc, bool isdead = false)
+        public CustomNPCVars(CustomNPCDefinition customnpc, DateTime[] lastattemptedprojectile, NPC mainnpc, bool isdead = false)
         {
             lastAttemptedProjectile = lastattemptedprojectile;
             isDead = isdead;

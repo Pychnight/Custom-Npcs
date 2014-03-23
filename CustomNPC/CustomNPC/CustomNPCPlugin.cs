@@ -167,7 +167,12 @@ namespace CustomNPC
                 {
                     if (customnpc.isReplacement && obj.netID == customnpc.customBase.netID && (NPCManager.NPCs[obj.whoAmI] == null || NPCManager.NPCs[obj.whoAmI].isDead))
                     {
-                        NPCManager.NPCs[obj.whoAmI] = new CustomNPCVars(customnpc, DateTime.Now, obj);
+                        DateTime[] dt = null;
+                        if (customnpc.customProjectiles != null)
+                        {
+                            dt = Enumerable.Repeat(DateTime.Now, customnpc.customProjectiles.Count).ToArray();
+                        }
+                        NPCManager.NPCs[obj.whoAmI] = new CustomNPCVars(customnpc, dt, obj);
                         NPCManager.Data.ConvertNPCToCustom(obj.whoAmI, customnpc);
                     }
                 }
@@ -350,15 +355,17 @@ namespace CustomNPC
             foreach (CustomNPCVars obj in NPCManager.NPCs)
             {
                 // check if they exists and are active
-                if (obj != null && !obj.isDead)
+                if (obj != null && !obj.isDead && obj.mainNPC.active)
                 {
                     if (obj.customNPC.customProjectiles != null)
                     {
                         // loop through all npc projectiles they can fire
                         foreach (CustomNPCProjectiles projectile in obj.customNPC.customProjectiles)
                         {
+                            //custom projectile index
+                            int projectileIndex = obj.customNPC.customProjectiles.IndexOf(projectile);
                             // check if projectile last fire time is greater then equal to its next allowed fire time
-                            if ((DateTime.Now - obj.lastAttemptedProjectile).TotalMilliseconds >= projectile.projectileFireRate)
+                            if ((DateTime.Now - obj.lastAttemptedProjectile[projectileIndex]).TotalMilliseconds >= projectile.projectileFireRate)
                             {
                                 // make sure chance is checked too, don't bother checking if its 100
                                 if (projectile.projectileFireChance == 100 || CustomNPCUtils.Chance(projectile.projectileFireChance))
@@ -397,12 +404,12 @@ namespace CustomNPC
                                         // all checks completed fire projectile
                                         FireProjectile(target, obj, projectile);
                                         // set last attempted projectile to now
-                                        obj.lastAttemptedProjectile = DateTime.Now;
+                                        obj.lastAttemptedProjectile[projectileIndex] = DateTime.Now;
                                     }
                                 }
                                 else
                                 {
-                                    obj.lastAttemptedProjectile = DateTime.Now;
+                                    obj.lastAttemptedProjectile[projectileIndex] = DateTime.Now;
                                 }
                             }
                         }
@@ -482,7 +489,7 @@ namespace CustomNPC
             foreach (CustomNPCVars obj in NPCManager.NPCs)
             {
                 //if CustomNPC has been defined, and hasn't been set to dead yet, check if the terraria npc is active
-                if (obj != null && !obj.isDead && (obj.mainNPC == null || obj.mainNPC.life <= 0))
+                if (obj != null && !obj.isDead && (obj.mainNPC == null || obj.mainNPC.life <= 0 || obj.mainNPC.type == 0))
                 {
                     obj.isDead = true;
                 }
@@ -577,7 +584,12 @@ namespace CustomNPC
         {
             int npcid = NPC.NewNPC(x, y, customnpc.customBase.type);
             NPCManager.Data.ConvertNPCToCustom(npcid, customnpc);
-            NPCManager.NPCs[npcid] = new CustomNPCVars(customnpc, DateTime.Now, Main.npc[npcid]);
+            DateTime[] dt = null;
+            if (customnpc.customProjectiles != null)
+            {
+                dt = Enumerable.Repeat(DateTime.Now, customnpc.customProjectiles.Count).ToArray();
+            }
+            NPCManager.NPCs[npcid] = new CustomNPCVars(customnpc, dt, Main.npc[npcid]);
 
             TSPlayer.All.SendData(PacketTypes.NpcUpdate, "", npcid);
             return npcid;
@@ -709,7 +721,12 @@ namespace CustomNPC
 
                 int npcid = NPC.NewNPC((spawnX * 16) + 8, spawnY * 16, definition.customBase.type);
                 NPCManager.Data.ConvertNPCToCustom(npcid, definition);
-                NPCManager.NPCs[npcid] = new CustomNPCVars(definition, DateTime.Now, Main.npc[npcid]);
+                DateTime[] dt = null;
+                if (definition.customProjectiles != null)
+                {
+                    dt = Enumerable.Repeat(DateTime.Now, definition.customProjectiles.Count).ToArray();
+                }
+                NPCManager.NPCs[npcid] = new CustomNPCVars(definition, dt, Main.npc[npcid]);
 
                 TSPlayer.All.SendData(PacketTypes.NpcUpdate, "", npcid);
                 return npcid;
