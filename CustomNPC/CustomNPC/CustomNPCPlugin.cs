@@ -318,22 +318,25 @@ namespace CustomNPC
         {
             foreach (CustomNPCVars obj in this.CustomNPCs)
             {
-                if (obj != null)
-                {
-                    foreach (TSPlayer player in TShock.Players)
-                    {
-                        Rectangle npcframe = new Rectangle((int)obj.mainNPC.position.X, (int)obj.mainNPC.position.Y, obj.mainNPC.width, obj.mainNPC.height);
-                        Rectangle playerframe = new Rectangle((int)player.TPlayer.position.X, (int)player.TPlayer.position.Y, player.TPlayer.width, player.TPlayer.height);
-                        if (npcframe.Intersects(playerframe))
-                        {
-                            var args = new NpcCollisionEvent
-                            {
-                                NpcIndex = obj.mainNPC.whoAmI,
-                                PlayerIndex = player.Index
-                            };
+                if (obj == null)
+                    continue;
 
-                            eventManager.InvokeHandler(args, EventType.NpcCollision);
-                        }
+                foreach (TSPlayer player in TShock.Players)
+                {
+                    if (player == null)
+                        continue;
+
+                    Rectangle npcframe = new Rectangle((int)obj.mainNPC.position.X, (int)obj.mainNPC.position.Y, obj.mainNPC.width, obj.mainNPC.height);
+                    Rectangle playerframe = new Rectangle((int)player.TPlayer.position.X, (int)player.TPlayer.position.Y, player.TPlayer.width, player.TPlayer.height);
+                    if (npcframe.Intersects(playerframe))
+                    {
+                        var args = new NpcCollisionEvent
+                        {
+                            NpcIndex = obj.mainNPC.whoAmI,
+                            PlayerIndex = player.Index
+                        };
+
+                        eventManager.InvokeHandler(args, EventType.NpcCollision);
                     }
                 }
             }
