@@ -37,7 +37,6 @@ namespace TestNPC
             Register.RegisterHandler<NpcDamageEvent>(this, OnNpcDamage, EventType.NpcDamage);
             Register.RegisterHandler<NpcCollisionEvent>(this, OnNpcCollision, EventType.NpcCollision);
             Register.RegisterHandler<PluginUpdateEvent>(this, OnPreUpdate, EventType.PluginUpdate);
-            Register.RegisterHandler<NpcKilledEvent>(this, OnDeath, EventType.NpcKill);
 
             // add new npc definitions here
             Definitions.Add(new TestNPCDefinition());
@@ -50,21 +49,12 @@ namespace TestNPC
                 Register.DeregisterHandler(this, EventType.NpcDamage);
                 Register.DeregisterHandler(this, EventType.NpcCollision);
                 Register.DeregisterHandler(this, EventType.PluginUpdate);
-                Register.DeregisterHandler(this, EventType.NpcKill);
-            }
-        }
-
-        private void OnDeath(NpcKilledEvent args)
-        {
-            if (npcvar.customNPC.customID == "testnpc" && npcvar.HealthBelow(200))
-            {
-                ////npcvar.Multiply(3);
             }
         }
 
         private void OnPreUpdate(PluginUpdateEvent args)
         {
-            throw new NotImplementedException();
+            
         }
 
         private void OnNpcDamage(NpcDamageEvent args)

@@ -9,7 +9,7 @@ namespace TestNPC
 {
     public sealed class TestNPCDefinition : CustomNPCDefinition
     {
-        //this doesn't change
+        //this doesn't change unless you don't want projectiles
         private List<CustomNPCProjectiles> ProjectilesList = new List<CustomNPCProjectiles>();
 
         public TestNPCDefinition()
@@ -95,9 +95,13 @@ namespace TestNPC
             }
         }
 
-        protected override List<int> customAreaDebuff
+        //On death 35% chance of multiplying into 3
+        public override void OnDeath(CustomNPCVars vars)
         {
-            get { throw new NotImplementedException(); }
+            if (NPCManager.Chance(35))
+            {
+                vars.Multiply(vars, 3);
+            }
         }
     }
 }

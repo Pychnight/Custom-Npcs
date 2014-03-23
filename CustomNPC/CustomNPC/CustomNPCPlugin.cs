@@ -20,7 +20,6 @@ namespace CustomNPC
     [ApiVersion(1, 15)]
     public class CustomNPCPlugin : TerrariaPlugin
     {
-        public static CustomNPCUtils CustomNPCUtils = CustomNPCUtils.Instance;
         internal Random rand = new Random();
 
         //16.66 milliseconds for 1/60th of a second.
@@ -126,7 +125,7 @@ namespace CustomNPC
                 {
                     foreach (CustomNPCLoot obj in npcvar.customNPC.customNPCLoots)
                     {
-                        if (obj.itemDropChance >= 100 || CustomNPCUtils.Chance(obj.itemDropChance))
+                        if (obj.itemDropChance >= 100 || NPCManager.Chance(obj.itemDropChance))
                         {
                             int pre = 0;
                             if (obj.itemPrefix != null)
@@ -368,7 +367,7 @@ namespace CustomNPC
                             if ((DateTime.Now - obj.lastAttemptedProjectile[projectileIndex]).TotalMilliseconds >= projectile.projectileFireRate)
                             {
                                 // make sure chance is checked too, don't bother checking if its 100
-                                if (projectile.projectileFireChance == 100 || CustomNPCUtils.Chance(projectile.projectileFireChance))
+                                if (projectile.projectileFireChance == 100 || NPCManager.Chance(projectile.projectileFireChance))
                                 {
                                     TSPlayer target = null;
                                     if (projectile.projectileLookForTarget)

@@ -63,7 +63,6 @@
     <Compile Include="CustomNPCLoot.cs" />
     <Compile Include="CustomNPCPlugin.cs" />
     <Compile Include="CustomNPCProjectiles.cs" />
-    <Compile Include="CustomNPCUtils.cs" />
     <Compile Include="CustomNPCVars.cs" />
     <Compile Include="DefinitionManager.cs" />
     <Compile Include="EventSystem\CustomNPCEventHandlerList.cs" />

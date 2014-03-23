@@ -147,7 +147,6 @@ namespace CustomNPC
         /// <summary>
         /// NPC MISC
         /// </summary>
-        protected abstract List<int> customAreaDebuff { get; }
         //internal CustomParticle customParticle { get; set; }; 
 
         public virtual void OnDeath(CustomNPCVars vars)

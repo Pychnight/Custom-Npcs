@@ -26,7 +26,7 @@ namespace CustomNPC
             {
                 if (player != null && player.ConnectionAlive)
                 {
-                    BiomeTypes biome = CustomNPCUtils.Instance.PlayersCurrBiome(player);
+                    BiomeTypes biome = NPCManager.PlayersCurrBiome(player);
 
                     // get list of mobs that can be spawned in that biome
                     List<string> biomeSpawns;
@@ -47,7 +47,7 @@ namespace CustomNPC
                             if ((DateTime.Now - lastSpawnAttempt).TotalSeconds >= customnpc.customSpawnTimer)
                             {
                                 Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
-                                if (CustomNPCUtils.Instance.Chance(customnpc.customSpawnChance))
+                                if (NPCManager.Chance(customnpc.customSpawnChance))
                                 {
                                     int npcid = SpawnMobAroundPlayer(player, customnpc);
                                     if (npcid != -1)
@@ -85,7 +85,7 @@ namespace CustomNPC
                                 if ((DateTime.Now - lastSpawnAttempt).TotalSeconds >= customnpc.customSpawnTimer)
                                 {
                                     Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
-                                    if (CustomNPCUtils.Instance.Chance(customnpc.customSpawnChance))
+                                    if (NPCManager.Chance(customnpc.customSpawnChance))
                                     {
                                         int spawnX;
                                         int spawnY;
@@ -259,6 +259,92 @@ namespace CustomNPC
             }
 
             return -1;
+        }
+
+        /// <summary>
+        /// Chance system, returns true based on the percentage passed through
+        /// </summary>
+        /// <param name="percentage">At most 2 decimal points</param>
+        /// <returns></returns>
+        public static bool Chance(double percentage)
+        {
+            if (rand.NextDouble() * 100 <= percentage)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public static BiomeTypes PlayersCurrBiome(TSPlayer player)
+        {
+            if (player.TPlayer.zoneEvil)
+            {
+                return BiomeTypes.Corruption;
+            }
+            else if (player.TPlayer.zoneBlood)
+            {
+                return BiomeTypes.Blood;
+            }
+            else if (player.TPlayer.zoneCandle)
+            {
+                return BiomeTypes.Candle;
+            }
+            else if (player.TPlayer.zoneDungeon)
+            {
+                return BiomeTypes.Dungeon;
+            }
+            else if (player.TPlayer.zoneHoly)
+            {
+                return BiomeTypes.Holy;
+            }
+            else if (player.TPlayer.zoneJungle)
+            {
+                return BiomeTypes.Jungle;
+            }
+            else if (player.TPlayer.zoneMeteor)
+            {
+                return BiomeTypes.Meteor;
+            }
+            else if (player.TPlayer.zoneSnow)
+            {
+                return BiomeTypes.Snow;
+            }
+            else return BiomeTypes.Grass;
+        }
+
+        public static void DebuffNearbyPlayers(int debuffid, Vector2 position, int distance)
+        {
+            foreach (TSPlayer player in PlayersNearBy(position, distance))
+            {
+                player.TPlayer.AddBuff(debuffid, 5);
+            }
+        }
+
+        public static void SendPrivateMessageNearbyPlayers(string message, Color color, Vector2 position, int distance)
+        {
+            foreach (TSPlayer player in PlayersNearBy(position, distance))
+            {
+                player.SendMessage(message, color);
+            }
+        }
+
+        public static List<TSPlayer> PlayersNearBy(Vector2 position, int distance)
+        {
+            List<TSPlayer> playerlist = new List<TSPlayer>();
+            foreach (TSPlayer player in TShock.Players)
+            {
+                if (player != null && !player.Dead)
+                {
+                    if (Math.Abs(Vector2.Distance(player.TPlayer.position, position)) <= distance)
+                    {
+                        playerlist.Add(player);
+                    }
+                }
+            }
+            return playerlist;
         }
     }
 }

@@ -87,10 +87,9 @@ namespace CustomNPC
         /// <param name="amount"></param>
         /// <param name="sethealth"></param>
         /// <param name="health"></param>
-        public void Multiply(int index, int amount, bool sethealth = false, int health = 0)
+        public void Multiply(CustomNPCVars npcvar, int amount, bool sethealth = false, int health = 0)
         {
             //gets the npc
-            var npcvar = NPCManager.GetCustomNPCByIndex(index);
             if (npcvar == null)
             {
                 return;
