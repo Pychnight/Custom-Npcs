@@ -539,11 +539,19 @@ namespace CustomNPC
                                     CustomNPCData.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
                                     if (CustomNPCUtils.Chance(customnpc.customSpawnChance))
                                     {
+                                        int npcid = SpawnMobAroundPlayer(player, customnpc);
+                                        if (npcid != -1)
+                                        {
+                                            Main.npc[npcid].target = player.Index;
+                                        }
+
+/*
                                         int spawnX;
                                         int spawnY;
                                         TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
                                         int npcid = SpawnMobsInStaticLocation(spawnX, spawnY, customnpc);
                                         Main.npc[npcid].target = player.Index;
+*/
                                     }
                                 }
                             }
@@ -564,6 +572,98 @@ namespace CustomNPC
 
             TSPlayer.All.SendData(PacketTypes.NpcUpdate, "", npcid);
             return npcid;
+        }
+
+        private int SpawnMobAroundPlayer(TSPlayer player, CustomNPCDefinition definition)
+        {
+            // search for a location
+            int screenTilesX = (int)(NPC.sWidth / 16f);
+            int screenTilesY = (int)(NPC.sHeight / 16f);
+            int spawnRangeX = (int)(screenTilesX * 0.7);
+            int spawnRangeY = (int)(screenTilesY * 0.7);
+            int safeRangeX = (int)(screenTilesX * 0.52);
+            int safeRangeY = (int)(screenTilesX * 0.52);
+
+            Vector2 position = player.TPlayer.position;
+            int playerTileX = (int)(position.X / 16f);
+            int playerTileY = (int)(position.Y / 16f);
+
+            int spawnRangeMinX = Math.Max(0, Math.Min(Main.maxTilesX, playerTileX - spawnRangeX));
+            int spawnRangeMaxX = Math.Max(0, Math.Min(Main.maxTilesX, playerTileX + spawnRangeX));
+            int spawnRangeMinY = Math.Max(0, Math.Min(Main.maxTilesY, playerTileY - spawnRangeY));
+            int spawnRangeMaxY = Math.Max(0, Math.Min(Main.maxTilesY, playerTileY + spawnRangeY));
+
+            int safeRangeMinX = Math.Max(0, Math.Min(Main.maxTilesX, playerTileX - safeRangeX));
+            int safeRangeMaxX = Math.Max(0, Math.Min(Main.maxTilesX, playerTileX + safeRangeX));
+            int safeRangeMinY = Math.Max(0, Math.Min(Main.maxTilesY, playerTileY - safeRangeX));
+            int safeRangeMaxY = Math.Max(0, Math.Min(Main.maxTilesY, playerTileY + safeRangeX));
+
+            int spawnX = 0;
+            int spawnY = 0;
+
+            bool found = false;
+            int attempts = 0;
+            while (attempts < 50)
+            {
+                int testX = rand.Next(spawnRangeMinX, spawnRangeMaxX);
+                int testY = rand.Next(spawnRangeMinY, spawnRangeMaxY);
+
+                Tile testTile = Main.tile[testX, testY];
+                if (testTile.nactive() && Main.tileSolid[testTile.type])
+                {
+                    attempts++;
+                    continue;
+                }
+
+                if (!Main.wallHouse[testTile.wall])
+                {
+                    int y = testY;
+                    while (y < Main.maxTilesY)
+                    {
+                        Tile test = Main.tile[testX, y];
+                        if (test.nactive() && Main.tileSolid[test.type])
+                        {
+                            if (testX < safeRangeMinX || testX > safeRangeMaxX || y < safeRangeMinY || y > safeRangeMaxY)
+                            {
+                                spawnX = testX;
+                                spawnY = y;
+                                found = true;
+                                break;
+                            }
+                        }
+
+                        y++;
+                    }
+
+                    if (spawnX >= safeRangeMinX && spawnX <= safeRangeMaxX)
+                    {
+                        if (!found)
+                        {
+                            attempts++;
+                            continue;
+                        }
+                    }
+                }
+
+                if (!found)
+                {
+                    attempts++;
+                }
+            }
+
+            if (found)
+            {
+                Log.ConsoleInfo("Spawning mob around player: plr[{0},{1}] mob[{2},{3}]", playerTileX, playerTileY, spawnX, spawnY);
+
+                int npcid = NPC.NewNPC((spawnX * 16) + 8, (spawnY * 16) + 8, definition.customBase.type);
+                CustomNPCData.ConvertNPCToCustom(npcid, definition);
+                CustomNPCs[npcid] = new CustomNPCVars(definition, DateTime.Now, Main.npc[npcid]);
+
+                TSPlayer.All.SendData(PacketTypes.NpcUpdate, "", npcid);
+                return npcid;
+            }
+
+            return -1;
         }
     }
 }

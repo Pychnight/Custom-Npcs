@@ -11,6 +11,8 @@ namespace CustomNPC
 {
     public abstract class CustomNPCDefinition
     {
+        private static readonly Color SummonColor = new Color(175, 75, 255);
+
         private NPC baseNPC;
 
         protected CustomNPCDefinition(int id)
@@ -117,7 +119,22 @@ namespace CustomNPC
         {
             get { return 100.0; }
         }
-        internal string customSpawnMessage { get; set; }
+
+        /// <summary>
+        /// Gets the message displayed when this NPC is spawned.
+        /// </summary>
+        public virtual string customSpawnMessage
+        {
+            get { return null; }
+        }
+
+        /// <summary>
+        /// Gets the color of the custom message displayed when this NPC is spawned.
+        /// </summary>
+        public virtual Color customSpawnMessageColor
+        {
+            get { return SummonColor; }
+        }
 
         /// <summary>
         /// NPC MISC
