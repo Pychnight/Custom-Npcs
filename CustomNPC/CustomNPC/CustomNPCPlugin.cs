@@ -121,6 +121,7 @@ namespace CustomNPC
                 return;
             }
 
+            args.Handled = npcvar.customNPC.overrideBaseNPCLoot;
             if (!npcvar.droppedLoot)
             {
                 if (npcvar.customNPC.customNPCLoots != null)
