@@ -281,8 +281,26 @@ namespace CustomNPC
             SpawnMobsInBiomeAndRegion();
             //fire projectiles towards closests player
             ProjectileCheck();
+            //Check for player Collision with NPC
+            CollisionDetection();
 
             eventManager.InvokeHandler(PluginUpdateEvent.Empty, EventType.PostPluginUpdate);
+        }
+
+        private void CollisionDetection()
+        {
+            foreach (CustomNPCVars obj in this.CustomNPCs)
+            {
+                foreach (TSPlayer player in TShock.Players)
+                {
+                    Rectangle npcframe = new Rectangle((int)obj.mainNPC.position.X, (int)obj.mainNPC.position.Y, obj.mainNPC.width, obj.mainNPC.height);
+                    Rectangle playerframe = new Rectangle((int)player.TPlayer.position.X, (int)player.TPlayer.position.Y, player.TPlayer.width, player.TPlayer.height);
+                    if (npcframe.Intersects(playerframe))
+                    {
+                        // do event
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -328,6 +346,7 @@ namespace CustomNPC
                                             }
                                         }
                                     }
+
 
                                     // check if previous for loop was broken out of, or just ended because no valid target
                                     if (target != null)
