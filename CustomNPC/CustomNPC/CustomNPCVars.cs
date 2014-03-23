@@ -87,11 +87,18 @@ namespace CustomNPC
         /// <param name="amount"></param>
         /// <param name="sethealth"></param>
         /// <param name="health"></param>
-        public void Multiply(int amount, bool sethealth = false, int health = 0)
+        public void Multiply(int index, int amount, bool sethealth = false, int health = 0)
         {
+            //gets the npc
+            var npcvar = NPCManager.GetCustomNPCByIndex(index);
+            if (npcvar == null)
+            {
+                return;
+            }
+
             for (int i = 0; i < amount; i++)
             {
-                int npc = NPCManager.SpawnNPCAtLocation((int)mainNPC.position.X + 8, (int)mainNPC.position.Y, customNPC);
+                int npc = NPCManager.SpawnNPCAtLocation((int)mainNPC.position.X + Main.rand.Next(0, 16) - 8, (int)mainNPC.position.Y + Main.rand.Next(0, 16) - 8, customNPC);
                 var spawned = NPCManager.GetCustomNPCByIndex(npc);
                 if (spawned != null)
                 {

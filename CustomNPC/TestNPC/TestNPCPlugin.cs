@@ -35,6 +35,9 @@ namespace TestNPC
         public override void Initialize()
         {
             Register.RegisterHandler<NpcDamageEvent>(this, OnNpcDamage, EventType.NpcDamage);
+            Register.RegisterHandler<NpcCollisionEvent>(this, OnNpcCollision, EventType.NpcCollision);
+            Register.RegisterHandler<PluginUpdateEvent>(this, OnPreUpdate, EventType.PluginUpdate);
+            Register.RegisterHandler<NpcKilledEvent>(this, OnDeath, EventType.NpcKill);
 
             // add new npc definitions here
             Definitions.Add(new TestNPCDefinition());
@@ -45,19 +48,33 @@ namespace TestNPC
             if (disposing)
             {
                 Register.DeregisterHandler(this, EventType.NpcDamage);
+                Register.DeregisterHandler(this, EventType.NpcCollision);
+                Register.DeregisterHandler(this, EventType.PluginUpdate);
+                Register.DeregisterHandler(this, EventType.NpcKill);
             }
         }
 
-        private void OnNpcDamage(NpcDamageEvent args)
+        private void OnDeath(NpcKilledEvent args)
         {
-            var npcvar = NPCManager.GetCustomNPCByIndex(args.NpcIndex);
-            if (npcvar == null)
-                return;
-
             if (npcvar.customNPC.customID == "testnpc" && npcvar.HealthBelow(200))
             {
                 ////npcvar.Multiply(3);
             }
+        }
+
+        private void OnPreUpdate(PluginUpdateEvent args)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void OnNpcDamage(NpcDamageEvent args)
+        {
+
+        }
+
+        private void OnNpcCollision(NpcCollisionEvent args)
+        {
+            throw new NotImplementedException();
         }
     }
 }

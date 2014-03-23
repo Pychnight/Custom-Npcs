@@ -9,26 +9,47 @@ namespace TestNPC
 {
     public sealed class TestNPCDefinition : CustomNPCDefinition
     {
+        //this doesn't change
         private List<CustomNPCProjectiles> ProjectilesList = new List<CustomNPCProjectiles>();
 
         public TestNPCDefinition()
+            //define base id type for Custom NPC
             : base(21)
         {
+            //add projectiles to list here
+            //(Projectile ID, ShotTiles, Damage, Attack Rate (milliseconds), TargetSearch Detection, Chance, Collision Check, ai0, ai1)
+            //Projectile ID = ID of Projectile
+            //ShotTiles = Position shot from relative from players centre
+            //Damage = how much damage it will do (this is affected by armor)
+            //Attack Rate = how fast it will attack again, 1000 = every 1 second
+            //Target Search = whether to fire at the first fireable person, or fire at the NPCs current target
+            //Chance = 0 - 100
+            //Collision check = whether to check if it the projectile will collide with a tile before firing
+            //ai0 ai1 = projectile ai's - don't use unless you know what these does (does different things depending on different projectiles)
+            //Example of 3 different Shot Tile methods new ShotTile(x, y) - relative to centre of the Player, where positive values for x is down, and postive values for y is right
             ProjectilesList.Add(new CustomNPCProjectiles(180, new List<ShotTile>() { ShotTile.Middle }, 10, 250, false, 100));
-            ProjectilesList.Add(new CustomNPCProjectiles(257, new List<ShotTile>() { ShotTile.Middle }, 170, 2000, false, 10));
+            ProjectilesList.Add(new CustomNPCProjectiles(257, new List<ShotTile>() { new ShotTile(-100, 0) }, 170, 2000, false, 10));
             ProjectilesList.Add(new CustomNPCProjectiles(174, new List<ShotTile>() { ShotTile.Middle, ShotTile.MiddleLeft, ShotTile.MiddleRight }, 70, 600, false, 50));
         }
 
+        //ID of Custom NPC - can be set to anything, this will be what is used to summon the npc in game ie/ c1, c2, c3 etc...
         public override string customID
         {
             get { return "testnpc"; }
         }
 
+        //Name of NPC - will display for namable NPCs
         public override string customName
         {
             get { return "Test NPC"; }
         }
 
+        //Custom loot
+        //(Loot ID, Prefix Lists, Stacks, Chance)
+        //Loot ID = item id
+        //Prefix List = list of prefixs it can drop with - if you set -1 it randomizes all prefixs, if you set a prefix it can't be set it will randomize the prefix as well
+        //stacks = how many drops at once
+        //chance = 0 - 100
         public override IList<CustomNPCLoot> customNPCLoots
         {
             get
@@ -65,6 +86,7 @@ namespace TestNPC
             }
         }
 
+        //Does not change if you require projectiles
         public override IList<CustomNPCProjectiles> customProjectiles
         {
             get
