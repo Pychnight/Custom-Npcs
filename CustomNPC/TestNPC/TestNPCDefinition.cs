@@ -9,9 +9,12 @@ namespace TestNPC
 {
     public sealed class TestNPCDefinition : CustomNPCDefinition
     {
+        private List<CustomNPCProjectiles> customPorjectiles = new List<CustomNPCProjectiles>();
+
         public TestNPCDefinition()
             : base(21)
         {
+            customProjectiles.Add(new CustomNPCProjectiles(180, new List<ShotTile>() { ShotTile.Middle }, 100, 250, 80, true));
         }
 
         public override string customID
@@ -56,6 +59,14 @@ namespace TestNPC
             get
             {
                 return 1000;
+            }
+        }
+
+        public override IList<CustomNPCProjectiles> customProjectiles
+        {
+            get
+            {
+                return customProjectiles;
             }
         }
 

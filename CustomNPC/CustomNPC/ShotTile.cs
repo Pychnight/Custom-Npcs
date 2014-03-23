@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace CustomNPC
 {
-    internal class ShotTile
+    public class ShotTile
     {
-        internal float X { get; set; }
-        internal float Y { get; set; }
+        public float X { get; set; }
+        public float Y { get; set; }
 
-        internal ShotTile(float x, float y)
+        public ShotTile(float x, float y)
         {
             X = x;
             Y = y;

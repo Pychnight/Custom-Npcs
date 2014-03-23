@@ -288,6 +288,8 @@ namespace CustomNPC
         {
             eventManager.InvokeHandler(PluginUpdateEvent.Empty, EventType.PluginUpdate);
 
+            //test
+            CustomNPCUpdate();
             //check if NPC has been deactivated (could mean NPC despawned)
             CheckActiveNPCs();
             //Spawn mobs into regions and specific biomes
@@ -351,7 +353,7 @@ namespace CustomNPC
                         foreach (CustomNPCProjectiles projectile in obj.customNPC.customProjectiles)
                         {
                             // check if projectile last fire time is greater then equal to its next allowed fire time
-                            if ((DateTime.Now - obj.lastAttemptedProjectile).TotalSeconds >= projectile.projectileFireRate)
+                            if ((DateTime.Now - obj.lastAttemptedProjectile).TotalMilliseconds >= projectile.projectileFireRate)
                             {
                                 // make sure chance is checked too, don't bother checking if its 100
                                 if (projectile.projectileFireChance == 100 || CustomNPCUtils.Chance(projectile.projectileFireChance))
