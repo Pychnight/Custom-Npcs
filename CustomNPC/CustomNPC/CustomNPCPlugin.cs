@@ -581,6 +581,9 @@ namespace CustomNPC
 
         private int SpawnMobAroundPlayer(TSPlayer player, CustomNPCDefinition definition)
         {
+            const int SpawnSpaceX = 3;
+            const int SpawnSpaceY = 3;
+
             // search for a location
             int screenTilesX = (int)(NPC.sWidth / 16f);
             int screenTilesY = (int)(NPC.sHeight / 16f);
@@ -622,8 +625,7 @@ namespace CustomNPC
 
                 if (!Main.wallHouse[testTile.wall])
                 {
-                    int y = testY;
-                    while (y < Main.maxTilesY)
+                    for (int y = testY; y < Main.maxTilesY; y++)
                     {
                         Tile test = Main.tile[testX, y];
                         if (test.nactive() && Main.tileSolid[test.type])
@@ -636,8 +638,54 @@ namespace CustomNPC
                                 break;
                             }
                         }
+                    }
 
-                        y++;
+                    if (!found)
+                    {
+                        attempts++;
+                    }
+
+                    int spaceMinX = spawnX - (SpawnSpaceX / 2);
+                    int spaceMaxX = spawnX + (SpawnSpaceX / 2);
+                    int spaceMinY = spawnY - SpawnSpaceY;
+                    int spaceMaxY = spawnY;
+                    if (spaceMinX < 0 || spaceMaxX > Main.maxTilesX)
+                    {
+                        attempts++;
+                        continue;
+                    }
+
+                    if (spaceMinY < 0 || spaceMaxY > Main.maxTilesY)
+                    {
+                        attempts++;
+                        continue;
+                    }
+
+                    if (found)
+                    {
+                        for (int x = spaceMinX; x < spaceMaxX; x++)
+                        {
+                            for (int y = spaceMinY; y < spaceMaxY; y++)
+                            {
+                                if (Main.tile[x, y].nactive() && Main.tileSolid[Main.tile[x, y].type])
+                                {
+                                    found = false;
+                                    break;
+                                }
+
+                                if (Main.tile[x, y].lava())
+                                {
+                                    found = false;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (!found)
+                        {
+                            attempts++;
+                            continue;
+                        }
                     }
 
                     if (spawnX >= safeRangeMinX && spawnX <= safeRangeMaxX)
@@ -648,11 +696,6 @@ namespace CustomNPC
                             continue;
                         }
                     }
-                }
-
-                if (!found)
-                {
-                    attempts++;
                 }
             }
 
