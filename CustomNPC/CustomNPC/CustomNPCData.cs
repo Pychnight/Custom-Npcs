@@ -80,7 +80,7 @@ namespace CustomNPC
             npc.noGravity = obj.noGravity;
             npc.noTileCollide = obj.noTileCollide;
 
-            if (string.IsNullOrEmpty(obj.customSpawnMessage))
+            if (!string.IsNullOrEmpty(obj.customSpawnMessage))
             {
                 TSPlayer.All.SendMessage(obj.customSpawnMessage, obj.customSpawnMessageColor);
             }

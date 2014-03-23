@@ -318,19 +318,22 @@ namespace CustomNPC
         {
             foreach (CustomNPCVars obj in this.CustomNPCs)
             {
-                foreach (TSPlayer player in TShock.Players)
+                if (obj != null)
                 {
-                    Rectangle npcframe = new Rectangle((int)obj.mainNPC.position.X, (int)obj.mainNPC.position.Y, obj.mainNPC.width, obj.mainNPC.height);
-                    Rectangle playerframe = new Rectangle((int)player.TPlayer.position.X, (int)player.TPlayer.position.Y, player.TPlayer.width, player.TPlayer.height);
-                    if (npcframe.Intersects(playerframe))
+                    foreach (TSPlayer player in TShock.Players)
                     {
-                        var args = new NpcCollisionEvent
+                        Rectangle npcframe = new Rectangle((int)obj.mainNPC.position.X, (int)obj.mainNPC.position.Y, obj.mainNPC.width, obj.mainNPC.height);
+                        Rectangle playerframe = new Rectangle((int)player.TPlayer.position.X, (int)player.TPlayer.position.Y, player.TPlayer.width, player.TPlayer.height);
+                        if (npcframe.Intersects(playerframe))
                         {
-                            NpcIndex = obj.mainNPC.whoAmI,
-                            PlayerIndex = player.Index
-                        };
+                            var args = new NpcCollisionEvent
+                            {
+                                NpcIndex = obj.mainNPC.whoAmI,
+                                PlayerIndex = player.Index
+                            };
 
-                        eventManager.InvokeHandler(args, EventType.NpcCollision);
+                            eventManager.InvokeHandler(args, EventType.NpcCollision);
+                        }
                     }
                 }
             }
@@ -581,7 +584,7 @@ namespace CustomNPC
             int spawnRangeX = (int)(screenTilesX * 0.7);
             int spawnRangeY = (int)(screenTilesY * 0.7);
             int safeRangeX = (int)(screenTilesX * 0.52);
-            int safeRangeY = (int)(screenTilesX * 0.52);
+            int safeRangeY = (int)(screenTilesY * 0.52);
 
             Vector2 position = player.TPlayer.position;
             int playerTileX = (int)(position.X / 16f);
@@ -594,8 +597,8 @@ namespace CustomNPC
 
             int safeRangeMinX = Math.Max(0, Math.Min(Main.maxTilesX, playerTileX - safeRangeX));
             int safeRangeMaxX = Math.Max(0, Math.Min(Main.maxTilesX, playerTileX + safeRangeX));
-            int safeRangeMinY = Math.Max(0, Math.Min(Main.maxTilesY, playerTileY - safeRangeX));
-            int safeRangeMaxY = Math.Max(0, Math.Min(Main.maxTilesY, playerTileY + safeRangeX));
+            int safeRangeMinY = Math.Max(0, Math.Min(Main.maxTilesY, playerTileY - safeRangeY));
+            int safeRangeMaxY = Math.Max(0, Math.Min(Main.maxTilesY, playerTileY + safeRangeY));
 
             int spawnX = 0;
             int spawnY = 0;
@@ -654,7 +657,7 @@ namespace CustomNPC
             {
                 Log.ConsoleInfo("Spawning mob around player: plr[{0},{1}] mob[{2},{3}]", playerTileX, playerTileY, spawnX, spawnY);
 
-                int npcid = NPC.NewNPC((spawnX * 16) + 8, (spawnY * 16) + 8, definition.customBase.type);
+                int npcid = NPC.NewNPC((spawnX * 16) + 8, spawnY * 16, definition.customBase.type);
                 CustomNPCData.ConvertNPCToCustom(npcid, definition);
                 CustomNPCs[npcid] = new CustomNPCVars(definition, DateTime.Now, Main.npc[npcid]);
 
