@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CustomNPC;
 using CustomNPC.EventSystem;
+using CustomNPC.EventSystem.Events;
 using CustomNPC.Plugins;
 
 namespace TestNPC
@@ -33,8 +34,30 @@ namespace TestNPC
 
         public override void Initialize()
         {
+            Register.RegisterHandler<NpcDamageEvent>(this, OnNpcDamage, EventType.NpcDamage);
+
             // add new npc definitions here
             Definitions.Add(new TestNPCDefinition());
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                Register.DeregisterHandler(this, EventType.NpcDamage);
+            }
+        }
+
+        private void OnNpcDamage(NpcDamageEvent args)
+        {
+            var npcvar = NPCManager.GetCustomNPCByIndex(args.NpcIndex);
+            if (npcvar == null)
+                return;
+
+            if (npcvar.customNPC.customID == "testnpc" && npcvar.HealthBelow(200))
+            {
+                ////npcvar.Multiply(3);
+            }
         }
     }
 }
