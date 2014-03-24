@@ -100,10 +100,12 @@ namespace CustomNPC
             ServerApi.Hooks.NetGetData.Register(this, OnGetData);
         }
 
+#if USE_APPDOMAIN
         private Assembly PluginDomain_OnAssemblyResolve(object sender, ResolveEventArgs args)
         {
             return null;
         }
+#endif
 
         /// <summary>
         /// For Custom Loot
@@ -268,6 +270,7 @@ namespace CustomNPC
             }
         }
 
+#if USE_APPDOMAIN
         private AppDomain CreateNewPluginDomain()
         {
             AppDomainSetup info = new AppDomainSetup
@@ -281,6 +284,7 @@ namespace CustomNPC
 
             return AppDomain.CreateDomain("Plugin Domain", AppDomain.CurrentDomain.Evidence, info);
         }
+#endif
 
         /// <summary>
         /// Do Everything here
@@ -311,6 +315,12 @@ namespace CustomNPC
             {
                 if (obj != null && !obj.isDead)
                 {
+                    var args = new NpcUpdateEvent
+                    {
+                        NpxIndex = obj.mainNPC.whoAmI
+                    };
+
+                    eventManager.InvokeHandler(args, EventType.NpcUpdate);
                     NetMessage.SendData(23, -1, -1, "", obj.mainNPC.whoAmI, 0f, 0f, 0f, 0);
                 }
             }

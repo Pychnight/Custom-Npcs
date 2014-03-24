@@ -71,6 +71,7 @@
     <Compile Include="EventSystem\Events\NpcDamageEvent.cs" />
     <Compile Include="EventSystem\Events\NpcKilledEvent.cs" />
     <Compile Include="EventSystem\Events\EmptyEvent.cs" />
+    <Compile Include="EventSystem\Events\NpcUpdateEvent.cs" />
     <Compile Include="EventSystem\EventType.cs" />
     <Compile Include="EventSystem\IEventDispatcher.cs" />
     <Compile Include="EventSystem\IEventHandlerList.cs" />

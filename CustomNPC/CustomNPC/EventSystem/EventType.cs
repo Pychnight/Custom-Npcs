@@ -7,6 +7,9 @@
         PluginUpdate,
         PostPluginUpdate,
 
+        NpcUpdate,
+        PostNpcUpdate,
+
         NpcCollision,
         NpcDamage,
         NpcKill

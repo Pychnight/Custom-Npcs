@@ -26,7 +26,7 @@ namespace CustomNPC
             {
                 if (player != null && player.ConnectionAlive)
                 {
-                    BiomeTypes biome = NPCManager.PlayersCurrBiome(player);
+                    BiomeTypes biome = player.GetCurrentBiomes();
 
                     // get list of mobs that can be spawned in that biome
                     List<string> biomeSpawns;
