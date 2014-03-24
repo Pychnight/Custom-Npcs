@@ -84,13 +84,17 @@ namespace CustomNPC
 
                                 if ((DateTime.Now - lastSpawnAttempt).TotalSeconds >= customnpc.customSpawnTimer)
                                 {
-                                    Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
                                     if (NPCManager.Chance(customnpc.customSpawnChance))
                                     {
                                         int spawnX;
                                         int spawnY;
                                         TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
                                         int npcid = SpawnNPCAtLocation(spawnX, spawnY, customnpc);
+                                        Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
+                                        if (npcid == -1)
+                                        {
+                                            return;
+                                        }
                                         Main.npc[npcid].target = player.Index;
                                     }
                                 }
@@ -109,6 +113,10 @@ namespace CustomNPC
         public static int SpawnNPCAtLocation(int x, int y, CustomNPCDefinition customnpc)
         {
             int npcid = NPC.NewNPC(x, y, customnpc.customBase.type);
+            if (npcid == 200)
+            {
+                return -1;
+            }
             Data.ConvertNPCToCustom(npcid, customnpc);
             DateTime[] dt = null;
             if (customnpc.customProjectiles != null)
@@ -246,6 +254,10 @@ namespace CustomNPC
                 Log.ConsoleInfo("Spawning mob around player: plr[{0},{1}] mob[{2},{3}]", playerTileX, playerTileY, spawnX, spawnY);
 
                 int npcid = NPC.NewNPC((spawnX * 16) + 8, spawnY * 16, definition.customBase.type);
+                if (npcid == 200)
+                {
+                    return -1;
+                }
                 Data.ConvertNPCToCustom(npcid, definition);
                 DateTime[] dt = null;
                 if (definition.customProjectiles != null)
