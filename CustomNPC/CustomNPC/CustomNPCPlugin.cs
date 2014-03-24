@@ -315,12 +315,6 @@ namespace CustomNPC
             {
                 if (obj != null && !obj.isDead)
                 {
-                    var args = new NpcUpdateEvent
-                    {
-                        NpxIndex = obj.mainNPC.whoAmI
-                    };
-
-                    eventManager.InvokeHandler(args, EventType.NpcUpdate);
                     NetMessage.SendData(23, -1, -1, "", obj.mainNPC.whoAmI, 0f, 0f, 0f, 0);
                 }
             }
@@ -501,6 +495,15 @@ namespace CustomNPC
                 if (obj != null && !obj.isDead && (obj.mainNPC == null || obj.mainNPC.life <= 0 || obj.mainNPC.type == 0))
                 {
                     obj.isDead = true;
+                }
+                else
+                {
+                    var args = new NpcUpdateEvent
+                    {
+                        NpxIndex = obj.mainNPC.whoAmI
+                    };
+
+                    eventManager.InvokeHandler(args, EventType.NpcUpdate);
                 }
             }
         }

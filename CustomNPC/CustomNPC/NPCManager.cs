@@ -46,13 +46,13 @@ namespace CustomNPC
 
                             if ((DateTime.Now - lastSpawnAttempt).TotalSeconds >= customnpc.customSpawnTimer)
                             {
-                                Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
                                 if (NPCManager.Chance(customnpc.customSpawnChance))
                                 {
                                     int npcid = SpawnMobAroundPlayer(player, customnpc);
                                     if (npcid != -1)
                                     {
                                         Main.npc[npcid].target = player.Index;
+                                        Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
                                     }
                                     //int spawnX;
                                     //int spawnY;
@@ -278,16 +278,28 @@ namespace CustomNPC
             }
         }
 
-        public static void DebuffNearbyPlayers(int debuffid, Vector2 position, int distance)
+        public static void DebuffNearbyPlayers(int debuffid, int npcindex, int distance)
         {
+            NPC npc = Main.npc[npcindex];
+            if (npc == null)
+            {
+                return;
+            }
+            Vector2 position = npc.position;
             foreach (TSPlayer player in PlayersNearBy(position, distance))
             {
-                player.TPlayer.AddBuff(debuffid, 5);
+                player.TPlayer.AddBuff(debuffid, 5*60);
             }
         }
 
-        public static void SendPrivateMessageNearbyPlayers(string message, Color color, Vector2 position, int distance)
+        public static void SendPrivateMessageNearbyPlayers(string message, Color color, int npcindex, int distance)
         {
+            NPC npc = Main.npc[npcindex];
+            if (npc == null)
+            {
+                return;
+            }
+            Vector2 position = npc.position;
             foreach (TSPlayer player in PlayersNearBy(position, distance))
             {
                 player.SendMessage(message, color);
@@ -308,6 +320,61 @@ namespace CustomNPC
                 }
             }
             return playerlist;
+        }
+
+        /// <summary>
+        /// Checks if the NPC's current health is above the passed amount
+        /// </summary>
+        /// <param name="Health"></param>
+        /// <returns></returns>
+        public static bool HealthAbove(int npcid, int Health)
+        {
+            NPC mainNPC = Main.npc[npcid];
+            if (mainNPC == null)
+            {
+                return false;
+            }
+            return mainNPC.life >= Health;
+        }
+
+        /// <summary>
+        /// Checks if the NPC's current health is below the passed amount
+        /// </summary>
+        /// <param name="Health"></param>
+        /// <returns></returns>
+        public static bool HealthBelow(int npcid, int Health)
+        {
+            NPC mainNPC = Main.npc[npcid];
+            if (mainNPC == null)
+            {
+                return false;
+            }
+            return mainNPC.life <= Health;
+        }
+
+        /// <summary>
+        /// Checks if the NPC currently has a buff placed on them
+        /// </summary>
+        /// <param name="buffid"></param>
+        /// <returns></returns>
+        public static bool HasBuff(int npcid, int buffid)
+        {
+            NPC mainNPC = Main.npc[npcid];
+            if (mainNPC == null)
+            {
+                return false;
+            }
+            return mainNPC.buffType.Contains(buffid);
+        }
+
+        public static void AddBuffToPlayer(int playerindex, int buffid, int duration)
+        {
+            Player player = Main.player[playerindex];
+            if (player == null)
+            {
+                return;
+            }
+            player.AddBuff(buffid, duration * 60);
         }
     }
 }

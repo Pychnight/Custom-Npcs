@@ -7,6 +7,7 @@ using CustomNPC;
 using CustomNPC.EventSystem;
 using CustomNPC.EventSystem.Events;
 using CustomNPC.Plugins;
+using Terraria;
 
 namespace TestNPC
 {
@@ -36,7 +37,7 @@ namespace TestNPC
         {
             Register.RegisterHandler<NpcDamageEvent>(this, OnNpcDamage, EventType.NpcDamage);
             Register.RegisterHandler<NpcCollisionEvent>(this, OnNpcCollision, EventType.NpcCollision);
-            Register.RegisterHandler<PluginUpdateEvent>(this, OnPreUpdate, EventType.PluginUpdate);
+            Register.RegisterHandler<NpcUpdateEvent>(this, OnNpcUpdate, EventType.NpcUpdate);
 
             // add new npc definitions here
             Definitions.Add(new TestNPCDefinition());
@@ -48,23 +49,23 @@ namespace TestNPC
             {
                 Register.DeregisterHandler(this, EventType.NpcDamage);
                 Register.DeregisterHandler(this, EventType.NpcCollision);
-                Register.DeregisterHandler(this, EventType.PluginUpdate);
+                Register.DeregisterHandler(this, EventType.NpcUpdate);
             }
         }
 
-        private void OnPreUpdate(PluginUpdateEvent args)
+        private void OnNpcUpdate(NpcUpdateEvent args)
         {
-            
+            NPCManager.DebuffNearbyPlayers(80, args.NpxIndex, 100);
         }
 
         private void OnNpcDamage(NpcDamageEvent args)
         {
-
+            NPCManager.AddBuffToPlayer(args.PlayerIndex, 20, 10);
         }
 
         private void OnNpcCollision(NpcCollisionEvent args)
         {
-            throw new NotImplementedException();
+            NPCManager.AddBuffToPlayer(args.PlayerIndex, 24, 10);
         }
     }
 }

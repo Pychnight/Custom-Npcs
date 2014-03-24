@@ -110,36 +110,6 @@ namespace CustomNPC
         }
 
         /// <summary>
-        /// Checks if the NPC's current health is above the passed amount
-        /// </summary>
-        /// <param name="Health"></param>
-        /// <returns></returns>
-        public bool HealthAbove(int Health)
-        {
-            return mainNPC.life >= Health;
-        }
-
-        /// <summary>
-        /// Checks if the NPC's current health is below the passed amount
-        /// </summary>
-        /// <param name="Health"></param>
-        /// <returns></returns>
-        public bool HealthBelow(int Health)
-        {
-            return mainNPC.life <= Health;
-        }
-
-        /// <summary>
-        /// Checks if the NPC currently has a buff placed on them
-        /// </summary>
-        /// <param name="buffid"></param>
-        /// <returns></returns>
-        public bool HasBuff(int buffid)
-        {
-            return mainNPC.buffType.Contains(buffid);
-        }
-
-        /// <summary>
         /// Teleports a NPC to a specific location in a region
         /// </summary>
         /// <param name="region"></param>

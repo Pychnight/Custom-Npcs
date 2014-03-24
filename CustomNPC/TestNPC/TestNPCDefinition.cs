@@ -100,6 +100,7 @@ namespace TestNPC
         {
             if (NPCManager.Chance(35))
             {
+                NPCManager.SendPrivateMessageNearbyPlayers("TestNpc: I live three folds more! Muwhahahah!", Color.Purple, vars.mainNPC.whoAmI, 100);
                 vars.Multiply(vars, 3);
             }
         }
