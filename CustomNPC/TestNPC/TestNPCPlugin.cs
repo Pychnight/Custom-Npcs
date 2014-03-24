@@ -53,16 +53,19 @@ namespace TestNPC
             }
         }
 
+        //this update happens every 1/60th of a second
         private void OnNpcUpdate(NpcUpdateEvent args)
         {
             NPCManager.DebuffNearbyPlayers(80, args.NpxIndex, 100);
         }
 
+        //everytime the npc gets damaged
         private void OnNpcDamage(NpcDamageEvent args)
         {
             NPCManager.AddBuffToPlayer(args.PlayerIndex, 20, 10);
         }
 
+        //everytime someone collides with an npc
         private void OnNpcCollision(NpcCollisionEvent args)
         {
             NPCManager.AddBuffToPlayer(args.PlayerIndex, 24, 10);

@@ -73,9 +73,9 @@ namespace CustomNPC
         /// <summary>
         /// NPC Restrictions/Conditions
         /// </summary>
-        public virtual BiomeTypes customBiomeSpawn
+        public virtual List<BiomeTypes> customBiomeSpawn
         {
-            get { return BiomeTypes.Grass; }
+            get { return new List<BiomeTypes>(); }
         }
         public virtual IList<string> customRegionSpawn
         {

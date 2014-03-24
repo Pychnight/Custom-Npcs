@@ -29,9 +29,10 @@ namespace CustomNPC
                 CustomNPCDefinition definition = pair.Value;
 
                 CustomNPCs.Add(id, definition);
-
-                AddCustomNPCToBiome(definition.customBiomeSpawn, definition.customID);
-
+                foreach (BiomeTypes obj in definition.customBiomeSpawn)
+                {
+                    AddCustomNPCToBiome(obj, definition.customID);
+                }
                 if (definition.customRegionSpawn != null)
                 {
                     foreach (string regionName in definition.customRegionSpawn)

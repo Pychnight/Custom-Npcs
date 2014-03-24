@@ -350,7 +350,7 @@ namespace CustomNPC
         }
 
         /// <summary>
-        /// Checks if any player is within targetable range of the npc, without obstacle and withing firing cooldown timer.
+        /// Checks if any player is within targetable range of the npc, without obstacle and within firing cooldown timer.
         /// </summary>
         private void ProjectileCheck()
         {

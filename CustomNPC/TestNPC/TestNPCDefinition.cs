@@ -12,6 +12,9 @@ namespace TestNPC
         //this doesn't change unless you don't want projectiles
         private List<CustomNPCProjectiles> ProjectilesList = new List<CustomNPCProjectiles>();
 
+        //this doesn't change unless you don't want biome spawns
+        private List<BiomeTypes> BiomeList = new List<BiomeTypes>();
+
         public TestNPCDefinition()
             //define base id type for Custom NPC
             : base(21)
@@ -30,6 +33,9 @@ namespace TestNPC
             ProjectilesList.Add(new CustomNPCProjectiles(180, new List<ShotTile>() { ShotTile.Middle }, 10, 250, false, 100));
             ProjectilesList.Add(new CustomNPCProjectiles(257, new List<ShotTile>() { new ShotTile(-100, 0) }, 170, 2000, false, 10));
             ProjectilesList.Add(new CustomNPCProjectiles(174, new List<ShotTile>() { ShotTile.Middle, ShotTile.MiddleLeft, ShotTile.MiddleRight }, 70, 600, false, 50));
+
+            BiomeList.Add(BiomeTypes.Grass);
+            BiomeList.Add(BiomeTypes.Corruption);
         }
 
         //ID of Custom NPC - can be set to anything, this will be what is used to summon the npc in game ie/ c1, c2, c3 etc...
@@ -59,6 +65,14 @@ namespace TestNPC
                     new CustomNPCLoot(808, new List<int> { 0 }, 1, 50), 
                     new CustomNPCLoot(806, new List<int> { 83 }, 1, 100), 
                 };
+            }
+        }
+
+        public override List<BiomeTypes> customBiomeSpawn
+        {
+            get
+            {
+                return this.BiomeList;
             }
         }
 
