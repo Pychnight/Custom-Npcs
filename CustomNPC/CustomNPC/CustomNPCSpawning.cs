@@ -9,7 +9,7 @@ using TShockAPI;
 
 namespace CustomNPC
 {
-    class CustomNPCSpawning
+    public class CustomNPCSpawning
     {
         public BiomeTypes spawnBiome { get; set; }
         public Region spawnRegion { get; set; }

@@ -113,6 +113,14 @@ namespace CustomNPC
         // NPC spawning variables
 
         /// <summary>
+        /// Spawn definition defined here
+        /// </summary>
+        public virtual IList<CustomNPCSpawning> customNPCSpawning
+        {
+            get { return null; }
+        }
+
+        /// <summary>
         /// Gets the number of seconds between spawn attempts.
         /// </summary>
         //public virtual int customSpawnTimer
