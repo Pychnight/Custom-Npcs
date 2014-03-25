@@ -12,19 +12,14 @@ namespace CustomNPC
     public class CustomNPCSpawning
     {
         public BiomeTypes spawnBiome { get; set; }
-        public Region spawnRegion { get; set; }
+        public string spawnRegion { get; set; }
         public int spawnRate { get; set; }
         public double spawnChance { get; set; }
         public List<SpawnConditions> spawnConditions { get; set; }
-        public CustomNPCSpawning(BiomeTypes spawnbiome, int spawnrate, List<SpawnConditions> spawnconditions, string spawnregion = "", double spawnchance = 100.0)
+        public CustomNPCSpawning(int spawnrate, List<SpawnConditions> spawnconditions, BiomeTypes spawnbiome = BiomeTypes.None, string spawnregion = "", double spawnchance = 100.0)
         {
-            Region region = TShock.Regions.GetRegionByName(spawnregion);
-            if (region == null)
-            {
-                Log.ConsoleError("[CustomNPC]: Error Region \"{1}\" does not exist!", spawnregion);
-            }
             spawnBiome = spawnbiome;
-            spawnRegion = region;
+            spawnRegion = spawnregion;
             spawnRate = spawnrate;
             spawnChance = spawnchance;
             spawnConditions = spawnconditions;
