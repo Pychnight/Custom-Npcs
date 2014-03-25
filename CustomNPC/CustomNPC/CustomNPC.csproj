@@ -57,12 +57,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SpawnConditions.cs" />
     <Compile Include="Biomes.cs" />
     <Compile Include="CustomNPCDefinition.cs" />
     <Compile Include="CustomNPCData.cs" />
     <Compile Include="CustomNPCLoot.cs" />
     <Compile Include="CustomNPCPlugin.cs" />
     <Compile Include="CustomNPCProjectiles.cs" />
+    <Compile Include="CustomNPCSpawning.cs" />
     <Compile Include="CustomNPCVars.cs" />
     <Compile Include="DefinitionManager.cs" />
     <Compile Include="EventSystem\CustomNPCEventHandlerList.cs" />
