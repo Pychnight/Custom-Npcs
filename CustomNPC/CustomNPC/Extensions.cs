@@ -12,7 +12,7 @@ namespace CustomNPC
     {
         public static BiomeTypes GetCurrentBiomes(this TSPlayer player)
         {
-            BiomeTypes biome = BiomeTypes.Grass;
+            BiomeTypes biome = BiomeTypes.None;
 
             if (player.TPlayer.zoneEvil)
                 biome |= BiomeTypes.Corruption;
@@ -37,6 +37,11 @@ namespace CustomNPC
 
             if (player.TPlayer.zoneCandle)
                 biome |= BiomeTypes.Candle;
+
+            if (biome == BiomeTypes.None)
+            {
+                biome |= BiomeTypes.Grass;
+            }
 
             return biome;
         }
