@@ -68,14 +68,6 @@ namespace TestNPC
             }
         }
 
-        public override List<BiomeTypes> customBiomeSpawn
-        {
-            get
-            {
-                return this.BiomeList;
-            }
-        }
-
         public override int customAI
         {
             get

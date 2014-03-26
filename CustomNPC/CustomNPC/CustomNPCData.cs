@@ -29,15 +29,16 @@ namespace CustomNPC
                 CustomNPCDefinition definition = pair.Value;
 
                 CustomNPCs.Add(id, definition);
-                foreach (BiomeTypes obj in definition.customBiomeSpawn)
+                foreach (var spawning in definition.customNPCSpawning)
                 {
-                    AddCustomNPCToBiome(obj, definition.customID);
-                }
-                if (definition.customRegionSpawn != null)
-                {
-                    foreach (string regionName in definition.customRegionSpawn)
+                    if (spawning.spawnBiome != BiomeTypes.None)
                     {
-                        AddCustomNPCToRegion(regionName, definition.customID);
+                        AddCustomNPCToBiome(spawning.spawnBiome, id, spawning);
+                    }
+
+                    if (!string.IsNullOrEmpty(spawning.spawnRegion))
+                    {
+                        AddCustomNPCToRegion(spawning.spawnRegion, id, spawning);
                     }
                 }
             }
@@ -87,37 +88,39 @@ namespace CustomNPC
             }
         }
 
-        private void AddCustomNPCToBiome(BiomeTypes biome, string id)
+        private void AddCustomNPCToBiome(BiomeTypes biome, string id, CustomNPCSpawning spawning)
         {
-            List<string> spawns;
+            List<Tuple<string, CustomNPCSpawning>> spawns;
             if (!BiomeSpawns.TryGetValue(biome, out spawns))
             {
-                spawns = new List<string>();
+                spawns = new List<Tuple<string, CustomNPCSpawning>>();
                 BiomeSpawns[biome] = spawns;
             }
 
-            if (!spawns.Contains(id))
+            var pair = Tuple.Create(id, spawning);
+            if (!spawns.Contains(pair))
             {
-                spawns.Add(id);
+                spawns.Add(pair);
             }
         }
 
-        private void AddCustomNPCToRegion(string regionName, string id)
+        private void AddCustomNPCToRegion(string regionName, string id, CustomNPCSpawning spawning)
         {
             Region region = TShock.Regions.GetRegionByName(regionName);
             if (region == null)
                 return;
 
-            List<string> spawns;
+            List<Tuple<string, CustomNPCSpawning>> spawns;
             if (!RegionSpawns.TryGetValue(region, out spawns))
             {
-                spawns = new List<string>();
+                spawns = new List<Tuple<string, CustomNPCSpawning>>();
                 RegionSpawns[region] = spawns;
             }
 
-            if (!spawns.Contains(id))
+            var pair = Tuple.Create(id, spawning);
+            if (!spawns.Contains(pair))
             {
-                spawns.Add(id);
+                spawns.Add(pair);
             }
         }
     }
