@@ -13,8 +13,8 @@ namespace CustomNPC
     public class CustomNPCData 
     {
         internal Dictionary<string, CustomNPCDefinition> CustomNPCs = new Dictionary<string, CustomNPCDefinition>();
-        internal Dictionary<BiomeTypes, List<string>> BiomeSpawns = new Dictionary<BiomeTypes, List<string>>();
-        internal Dictionary<Region, Tuple<List<string>, CustomNPCSpawning>> RegionSpawns = new Dictionary<Region,Tuple<List<string>, CustomNPCSpawning>>();
+        internal Dictionary<BiomeTypes, List<Tuple<string, CustomNPCSpawning>>> BiomeSpawns = new Dictionary<BiomeTypes, List<Tuple<string, CustomNPCSpawning>>>();
+        internal Dictionary<Region, List<Tuple<string, CustomNPCSpawning>>> RegionSpawns = new Dictionary<Region,List<Tuple<string, CustomNPCSpawning>>>();
         internal Dictionary<string, DateTime> LastSpawnAttempt = new Dictionary<string, DateTime>();
 
         /// <summary>
