@@ -14,6 +14,8 @@ namespace CustomNPC
         private static readonly Color SummonColor = new Color(175, 75, 255);
 
         private NPC baseNPC;
+        private IList<CustomNPCProjectiles> projectiles;
+        private IList<CustomNPCLoot> loots;
 
         protected CustomNPCDefinition(int id)
         {
@@ -22,6 +24,9 @@ namespace CustomNPC
             // check to make sure this npc is valid
             if (baseNPC == null || baseNPC.netID == 0)
                 throw new ArgumentException("Invalid BaseNPC id specified: " + id, "id");
+
+            projectiles = new List<CustomNPCProjectiles>();
+            loots = new List<CustomNPCLoot>();
         }
 
         /// <summary>
@@ -89,7 +94,7 @@ namespace CustomNPC
         /// </summary>
         public virtual IList<CustomNPCProjectiles> customProjectiles
         {
-            get { return null; }
+            get { return projectiles; }
         }
 
         // NPC Loot Variables
@@ -99,7 +104,7 @@ namespace CustomNPC
         /// </summary>
         public virtual IList<CustomNPCLoot> customNPCLoots
         {
-            get { return null; }
+            get { return loots; }
         }
 
         /// <summary>

@@ -9,9 +9,6 @@ namespace TestNPC
 {
     public sealed class TestNPCDefinition : CustomNPCDefinition
     {
-        //this doesn't change unless you don't want projectiles
-        private List<CustomNPCProjectiles> ProjectilesList = new List<CustomNPCProjectiles>();
-
         //this doesn't change unless you don't want biome spawns
         private List<BiomeTypes> BiomeList = new List<BiomeTypes>();
 
@@ -30,9 +27,18 @@ namespace TestNPC
             //Collision check = whether to check if it the projectile will collide with a tile before firing
             //ai0 ai1 = projectile ai's - don't use unless you know what these does (does different things depending on different projectiles)
             //Example of 3 different Shot Tile methods new ShotTile(x, y) - relative to centre of the Player, where positive values for x is down, and postive values for y is right
-            ProjectilesList.Add(new CustomNPCProjectiles(180, new List<ShotTile>() { ShotTile.Middle }, 10, 250, false, 100));
-            ProjectilesList.Add(new CustomNPCProjectiles(257, new List<ShotTile>() { new ShotTile(-100, 0) }, 170, 2000, false, 10));
-            ProjectilesList.Add(new CustomNPCProjectiles(174, new List<ShotTile>() { ShotTile.Middle, ShotTile.MiddleLeft, ShotTile.MiddleRight }, 70, 600, false, 50));
+            customProjectiles.Add(new CustomNPCProjectiles(180, new List<ShotTile>() { ShotTile.Middle }, 10, 250, false, 100));
+            customProjectiles.Add(new CustomNPCProjectiles(257, new List<ShotTile>() { new ShotTile(-100, 0) }, 170, 2000, false, 10));
+            customProjectiles.Add(new CustomNPCProjectiles(174, new List<ShotTile>() { ShotTile.Middle, ShotTile.MiddleLeft, ShotTile.MiddleRight }, 70, 600, false, 50));
+
+            //Custom loot
+            //(Loot ID, Prefix Lists, Stacks, Chance)
+            //Loot ID = item id
+            //Prefix List = list of prefixs it can drop with - if you set -1 it randomizes all prefixs, if you set a prefix it can't be set it will randomize the prefix as well
+            //stacks = how many drops at once
+            //chance = 0 - 100
+            customNPCLoots.Add(new CustomNPCLoot(808, new List<int> { 0 }, 1, 50));
+            customNPCLoots.Add(new CustomNPCLoot(806, new List<int> { 83 }, 1, 100));
 
             BiomeList.Add(BiomeTypes.Grass);
             BiomeList.Add(BiomeTypes.Corruption);
@@ -48,24 +54,6 @@ namespace TestNPC
         public override string customName
         {
             get { return "Test NPC"; }
-        }
-
-        //Custom loot
-        //(Loot ID, Prefix Lists, Stacks, Chance)
-        //Loot ID = item id
-        //Prefix List = list of prefixs it can drop with - if you set -1 it randomizes all prefixs, if you set a prefix it can't be set it will randomize the prefix as well
-        //stacks = how many drops at once
-        //chance = 0 - 100
-        public override IList<CustomNPCLoot> customNPCLoots
-        {
-            get
-            {
-                return new[]
-                {
-                    new CustomNPCLoot(808, new List<int> { 0 }, 1, 50), 
-                    new CustomNPCLoot(806, new List<int> { 83 }, 1, 100), 
-                };
-            }
         }
 
         public override int customAI
@@ -89,15 +77,6 @@ namespace TestNPC
             get
             {
                 return 1000;
-            }
-        }
-
-        //Does not change if you require projectiles
-        public override IList<CustomNPCProjectiles> customProjectiles
-        {
-            get
-            {
-                return this.ProjectilesList;
             }
         }
 
