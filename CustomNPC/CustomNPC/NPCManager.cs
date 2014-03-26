@@ -34,12 +34,12 @@ namespace CustomNPC
                     foreach (BiomeTypes biome in availableBiomes.Where(biomes.HasFlag))
                     {
                         // get list of mobs that can be spawned in that biome
-                        List<string> biomeSpawns;
+                        List<Tuple<string, CustomNPCSpawning>> biomeSpawns;
                         if (Data.BiomeSpawns.TryGetValue(biome, out biomeSpawns))
                         {
-                            foreach (string id in biomeSpawns)
+                            foreach (Tuple<string, CustomNPCSpawning> obj in biomeSpawns)
                             {
-                                CustomNPCDefinition customnpc = Data.GetNPCbyID(id);
+                                CustomNPCDefinition customnpc = Data.GetNPCbyID(obj.Item1);
 
                                 // get the last spawn attempt
                                 DateTime lastSpawnAttempt;
@@ -49,20 +49,66 @@ namespace CustomNPC
                                     Data.LastSpawnAttempt[customnpc.customID] = lastSpawnAttempt;
                                 }
 
-                                if ((DateTime.Now - lastSpawnAttempt).TotalSeconds >= customnpc.customSpawnTimer)
+                                if ((DateTime.Now - lastSpawnAttempt).TotalSeconds >= obj.Item2.spawnRate)
                                 {
-                                    if (NPCManager.Chance(customnpc.customSpawnChance))
+                                    if (NPCManager.Chance(obj.Item2.spawnChance))
                                     {
-                                        int npcid = SpawnMobAroundPlayer(player, customnpc);
-                                        if (npcid != -1)
+                                        if (obj.Item2.useTerrariaSpawn)
                                         {
-                                            Main.npc[npcid].target = player.Index;
+                                            int npcid = SpawnMobAroundPlayer(player, customnpc);
+                                            if (npcid != -1)
+                                            {
+                                                Main.npc[npcid].target = player.Index;
+                                                Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            int spawnX;
+                                            int spawnY;
+                                            TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
+                                            SpawnNPCAtLocation(spawnX * 16, spawnY * 16, customnpc);
                                             Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
                                         }
-                                        //int spawnX;
-                                        //int spawnY;
-                                        //TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
-                                        //SpawnMobsInStaticLocation(spawnX * 16, spawnY * 16, customnpc);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // then check regions as well
+                    Rectangle playerRectangle = new Rectangle(player.TileX, player.TileY, player.TPlayer.width, player.TPlayer.height);
+                    foreach (Region obj in Data.RegionSpawns.Keys.Where(region => region.InArea(playerRectangle)))
+                    {
+                        List<Tuple<string, CustomNPCSpawning>> regionSpawns;
+                        if (Data.RegionSpawns.TryGetValue(obj, out regionSpawns))
+                        {
+                            foreach (Tuple<string, CustomNPCSpawning> obj2 in regionSpawns)
+                            {
+                                CustomNPCDefinition customnpc = Data.GetNPCbyID(obj2.Item1);
+
+                                // get the last spawn attempt
+                                DateTime lastSpawnAttempt;
+                                if (!Data.LastSpawnAttempt.TryGetValue(customnpc.customID, out lastSpawnAttempt))
+                                {
+                                    lastSpawnAttempt = default(DateTime);
+                                    Data.LastSpawnAttempt[customnpc.customID] = lastSpawnAttempt;
+                                }
+
+                                if ((DateTime.Now - lastSpawnAttempt).TotalSeconds >= obj2.Item2.spawnRate)
+                                {
+                                    if (NPCManager.Chance(obj2.Item2.spawnChance))
+                                    {
+                                        int spawnX;
+                                        int spawnY;
+                                        TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
+                                        int npcid = SpawnNPCAtLocation(spawnX, spawnY, customnpc);
+                                        Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
+                                        if (npcid == -1)
+                                        {
+                                            return;
+                                        }
+                                        Main.npc[npcid].target = player.Index;
                                     }
                                 }
                             }

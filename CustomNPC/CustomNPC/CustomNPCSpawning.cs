@@ -16,13 +16,15 @@ namespace CustomNPC
         public int spawnRate { get; set; }
         public double spawnChance { get; set; }
         public List<SpawnConditions> spawnConditions { get; set; }
-        public CustomNPCSpawning(int spawnrate, List<SpawnConditions> spawnconditions, BiomeTypes spawnbiome = BiomeTypes.None, string spawnregion = "", double spawnchance = 100.0)
+        public bool useTerrariaSpawn { get; set; }
+        public CustomNPCSpawning(int spawnrate, List<SpawnConditions> spawnconditions, bool useterrariaspawn = true, BiomeTypes spawnbiome = BiomeTypes.None, string spawnregion = "", double spawnchance = 100.0)
         {
             spawnBiome = spawnbiome;
             spawnRegion = spawnregion;
             spawnRate = spawnrate;
             spawnChance = spawnchance;
             spawnConditions = spawnconditions;
+            useTerrariaSpawn = useterrariaspawn;
         }
     }
 }
