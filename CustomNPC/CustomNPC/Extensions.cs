@@ -40,7 +40,7 @@ namespace CustomNPC
 
             if (biome == BiomeTypes.None)
             {
-                biome |= BiomeTypes.Grass;
+                biome = BiomeTypes.Grass;
             }
 
             return biome;

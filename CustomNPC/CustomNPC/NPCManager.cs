@@ -22,6 +22,58 @@ namespace CustomNPC
 
         internal static void SpawnMobsInBiomeAndRegion()
         {
+            //loop through all players
+            foreach (TSPlayer player in TShock.Players)
+            {
+                //check if they exist or are connected
+                if (player != null && player.ConnectionAlive)
+                {
+                    //check all biome spawns
+                    BiomeTypes biomes = player.GetCurrentBiomes();
+                    var availableBiomes = Enum.GetValues(typeof(BiomeTypes)).Cast<Enum>();
+                    foreach (BiomeTypes biome in availableBiomes.Where(biomes.HasFlag))
+                    {
+                        // get list of mobs that can be spawned in that biome
+                        List<string> biomeSpawns;
+                        if (Data.BiomeSpawns.TryGetValue(biome, out biomeSpawns))
+                        {
+                            foreach (string id in biomeSpawns)
+                            {
+                                CustomNPCDefinition customnpc = Data.GetNPCbyID(id);
+
+                                // get the last spawn attempt
+                                DateTime lastSpawnAttempt;
+                                if (!Data.LastSpawnAttempt.TryGetValue(customnpc.customID, out lastSpawnAttempt))
+                                {
+                                    lastSpawnAttempt = default(DateTime);
+                                    Data.LastSpawnAttempt[customnpc.customID] = lastSpawnAttempt;
+                                }
+
+                                if ((DateTime.Now - lastSpawnAttempt).TotalSeconds >= customnpc.customSpawnTimer)
+                                {
+                                    if (NPCManager.Chance(customnpc.customSpawnChance))
+                                    {
+                                        int npcid = SpawnMobAroundPlayer(player, customnpc);
+                                        if (npcid != -1)
+                                        {
+                                            Main.npc[npcid].target = player.Index;
+                                            Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
+                                        }
+                                        //int spawnX;
+                                        //int spawnY;
+                                        //TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
+                                        //SpawnMobsInStaticLocation(spawnX * 16, spawnY * 16, customnpc);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /*internal static void SpawnMobsInBiomeAndRegion()
+        {
             foreach (TSPlayer player in TShock.Players)
             {
                 if (player != null && player.ConnectionAlive)
@@ -103,7 +155,7 @@ namespace CustomNPC
                     }
                 }
             }
-        }
+        }*/
 
         public static CustomNPCVars GetCustomNPCByIndex(int index)
         {
