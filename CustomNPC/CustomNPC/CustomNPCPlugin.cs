@@ -325,12 +325,12 @@ namespace CustomNPC
         {
             foreach (CustomNPCVars obj in NPCManager.NPCs)
             {
-                if (obj == null)
+                if (obj == null || obj.isDead)
                     continue;
 
                 foreach (TSPlayer player in TShock.Players)
                 {
-                    if (player == null)
+                    if (player == null || player.Dead)
                         continue;
 
                     Rectangle npcframe = new Rectangle((int)obj.mainNPC.position.X, (int)obj.mainNPC.position.Y, obj.mainNPC.width, obj.mainNPC.height);
@@ -504,6 +504,7 @@ namespace CustomNPC
                     };
 
                     eventManager.InvokeHandler(args, EventType.NpcUpdate);
+                    
                 }
             }
         }

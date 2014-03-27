@@ -39,6 +39,7 @@ namespace CustomNPC
                         {
                             foreach (Tuple<string, CustomNPCSpawning> obj in biomeSpawns)
                             {
+                                // check spawn conditions
                                 if (!CheckSpawnConditions(obj.Item2.spawnConditions))
                                 {
                                     continue;
@@ -54,10 +55,13 @@ namespace CustomNPC
 
                                 if ((DateTime.Now - lastSpawnAttempt).TotalSeconds >= obj.Item2.spawnRate)
                                 {
+                                    // check spawn chance
                                     if (NPCManager.Chance(obj.Item2.spawnChance))
                                     {
+                                        // check spawn method
                                         if (obj.Item2.useTerrariaSpawn)
                                         {
+                                            // all checks completed spawn mob
                                             int npcid = SpawnMobAroundPlayer(player, customnpc);
                                             if (npcid != -1)
                                             {
@@ -67,6 +71,7 @@ namespace CustomNPC
                                         }
                                         else
                                         {
+                                            // all checks completed spawn mob
                                             int spawnX;
                                             int spawnY;
                                             TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
