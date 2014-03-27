@@ -34,6 +34,7 @@ namespace TestNPC
             get { return new Version(0, 1); }
         }
 
+        //events are registered here
         public override void Initialize()
         {
             Register.RegisterHandler<NpcDamageEvent>(this, OnNpcDamage, EventType.NpcDamage);
@@ -44,6 +45,7 @@ namespace TestNPC
             Definitions.Add(new TestNPCDefinition());
         }
 
+        //events are diposed of here
         protected override void Dispose(bool disposing)
         {
             if (disposing)

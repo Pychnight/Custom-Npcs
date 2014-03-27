@@ -9,9 +9,6 @@ namespace TestNPC
 {
     public sealed class TestNPCDefinition : CustomNPCDefinition
     {
-        //this doesn't change unless you don't want biome spawns
-        private List<BiomeTypes> BiomeList = new List<BiomeTypes>();
-
         public TestNPCDefinition()
             //define base id type for Custom NPC
             : base(21)
@@ -40,8 +37,17 @@ namespace TestNPC
             customNPCLoots.Add(new CustomNPCLoot(808, new List<int> { 0 }, 1, 50));
             customNPCLoots.Add(new CustomNPCLoot(806, new List<int> { 83 }, 1, 100));
 
-            BiomeList.Add(BiomeTypes.Grass);
-            BiomeList.Add(BiomeTypes.Corruption);
+            //Custom Spawning
+            //(spawnrate, conditions, Terraria Spawn, Biomes, Regions, chance)
+            //spawnrate = seconds
+            //Conditions = when they can spawn, can define multiple, must all be true for it to run - separate them by |
+            //Terraria Spawn = use terraria spawning method or use static spawning method
+            //Biomes = BiomeTypes.None for no biome spawning, split by | if you want multiply biomes defined
+            //Regions = string.Empty for no regions, or define regions by inputting name of region (allows only 1 region)
+            //Chance = 100.0
+            //Notes: Can add multiple of spawn definitions
+            customNPCSpawning.Add(new CustomNPCSpawning(2, SpawnConditions.Raining | SpawnConditions.DayTime, true, BiomeTypes.Grass, string.Empty, 100.0));
+            customNPCSpawning.Add(new CustomNPCSpawning(1, SpawnConditions.NightTime));
         }
 
         //ID of Custom NPC - can be set to anything, this will be what is used to summon the npc in game ie/ c1, c2, c3 etc...

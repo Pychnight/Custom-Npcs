@@ -16,6 +16,7 @@ namespace CustomNPC
         private NPC baseNPC;
         private IList<CustomNPCProjectiles> projectiles;
         private IList<CustomNPCLoot> loots;
+        private IList<CustomNPCSpawning> spawns;
 
         protected CustomNPCDefinition(int id)
         {
@@ -27,6 +28,7 @@ namespace CustomNPC
 
             projectiles = new List<CustomNPCProjectiles>();
             loots = new List<CustomNPCLoot>();
+            spawns = new List<CustomNPCSpawning>();
         }
 
         /// <summary>
@@ -122,7 +124,7 @@ namespace CustomNPC
         /// </summary>
         public virtual IList<CustomNPCSpawning> customNPCSpawning
         {
-            get { return null; }
+            get { return spawns; }
         }
 
         /// <summary>
