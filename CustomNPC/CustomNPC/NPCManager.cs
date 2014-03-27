@@ -136,7 +136,7 @@ namespace CustomNPC
             {
                 return false;
             }
-            if (conditions.HasFlag(SpawnConditions.Bloodmoon) && !Main.bloodMoon)
+            if (conditions.HasFlag(SpawnConditions.BloodMoon) && !Main.bloodMoon)
             {
                 return false;
             }
