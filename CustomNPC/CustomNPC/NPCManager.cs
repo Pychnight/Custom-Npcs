@@ -11,7 +11,7 @@ namespace CustomNPC
 {
     public static class NPCManager
     {
-        private static IEnumerable<BiomeTypes> availableBiomes = Enum.GetValues(typeof(BiomeTypes)).Cast<BiomeTypes>();
+        private static BiomeTypes[] availableBiomes = Enum.GetValues(typeof(BiomeTypes)).Cast<BiomeTypes>().Where(x => x != BiomeTypes.None).ToArray();
         private static Random rand = new Random();
         internal static CustomNPCVars[] NPCs = new CustomNPCVars[200];
         internal static CustomNPCData Data = new CustomNPCData();
