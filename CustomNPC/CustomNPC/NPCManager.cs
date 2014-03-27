@@ -31,7 +31,7 @@ namespace CustomNPC
                 {
                     //check all biome spawns
                     BiomeTypes biomes = player.GetCurrentBiomes();
-                    foreach (BiomeTypes biome in availableBiomes.Where(biomes.HasFlag))
+                    foreach (BiomeTypes biome in availableBiomes.Where(x => biomes.HasFlag(x)))
                     {
                         // get list of mobs that can be spawned in that biome
                         List<Tuple<string, CustomNPCSpawning>> biomeSpawns;
@@ -39,9 +39,11 @@ namespace CustomNPC
                         {
                             foreach (Tuple<string, CustomNPCSpawning> obj in biomeSpawns)
                             {
-                                
+                                if (!CheckSpawnConditions(obj.Item2.spawnConditions))
+                                {
+                                    continue;
+                                }
                                 CustomNPCDefinition customnpc = Data.GetNPCbyID(obj.Item1);
-
                                 // get the last spawn attempt
                                 DateTime lastSpawnAttempt;
                                 if (!Data.LastSpawnAttempt.TryGetValue(customnpc.customID, out lastSpawnAttempt))
@@ -91,6 +93,10 @@ namespace CustomNPC
                         {
                             foreach (Tuple<string, CustomNPCSpawning> obj2 in regionSpawns)
                             {
+                                if (!CheckSpawnConditions(obj2.Item2.spawnConditions))
+                                {
+                                    continue;
+                                }
                                 CustomNPCDefinition customnpc = Data.GetNPCbyID(obj2.Item1);
 
                                 // get the last spawn attempt
@@ -126,11 +132,43 @@ namespace CustomNPC
 
         internal static bool CheckSpawnConditions(SpawnConditions conditions)
         {
+            if (conditions.HasFlag(SpawnConditions.None))
+            {
+                return false;
+            }
             if (conditions.HasFlag(SpawnConditions.Bloodmoon) && !Main.bloodMoon)
             {
                 return false;
             }
-            if (conditions.HasFlag(SpawnConditions.Eclipse) && !Main.bloodMoon)
+            if (conditions.HasFlag(SpawnConditions.Eclipse) && !Main.eclipse)
+            {
+                return false;
+            }
+            if (conditions.HasFlag(SpawnConditions.DayTime) && !Main.dayTime)
+            {
+                return false;
+            }
+            if (conditions.HasFlag(SpawnConditions.NightTime) && Main.dayTime)
+            {
+                return false;
+            }
+            if (conditions.HasFlag(SpawnConditions.Day) && (!Main.dayTime || (Main.dayTime && Main.time <= 150.0 && Main.time >= 26999.0)))
+            {
+                return false;
+            }
+            if (conditions.HasFlag(SpawnConditions.Noon) && (!Main.dayTime || (Main.dayTime && Main.time <= 16200.0 && Main.time >= 32400.0)))
+            {
+                return false;
+            }
+            if (conditions.HasFlag(SpawnConditions.Night) && (Main.dayTime || (!Main.dayTime && Main.time <= 27000.0 && Main.time >= 54000)))
+            {
+                return false;
+            }
+            if (conditions.HasFlag(SpawnConditions.Midnight) && (Main.dayTime || (!Main.dayTime && Main.time <= 16200 && Main.time >= 32400)))
+            {
+                return false;
+            }
+            if (conditions.HasFlag(SpawnConditions.Raining) && !Main.raining)
             {
                 return false;
             }
