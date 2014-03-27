@@ -67,7 +67,7 @@ namespace CustomNPC
                                             {
                                                 Main.npc[npcid].target = player.Index;
                                                 Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
-                                            }
+                                            }                                            
                                         }
                                         else
                                         {
@@ -78,7 +78,7 @@ namespace CustomNPC
                                             int npcid = SpawnNPCAtLocation(spawnX, spawnY, customnpc);
                                             if (npcid == -1)
                                             {
-                                                return;
+                                                continue;
                                             }
                                             Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
                                             Main.npc[npcid].target = player.Index;
