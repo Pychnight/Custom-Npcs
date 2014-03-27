@@ -63,7 +63,8 @@ namespace TestNPC
         //everytime the npc gets damaged
         private void OnNpcDamage(NpcDamageEvent args)
         {
-            if (NPCManager.GetCustomNPCByIndex(args.NpcIndex).customNPC.customName.ToLower() == "testnpc")
+            var npc = NPCManager.GetCustomNPCByIndex(args.NpcIndex);
+            if (npc != null && npc.customNPC.customName.ToLower() == "testnpc")
             {
                 NPCManager.AddBuffToPlayer(args.PlayerIndex, 20, 10);
             }
@@ -72,7 +73,8 @@ namespace TestNPC
         //everytime someone collides with an npc
         private void OnNpcCollision(NpcCollisionEvent args)
         {
-            if (NPCManager.GetCustomNPCByIndex(args.NpcIndex).customNPC.customName.ToLower() == "testnpc")
+            var npc = NPCManager.GetCustomNPCByIndex(args.NpcIndex);
+            if (npc != null && npc.customNPC.customName.ToLower() == "testnpc")
             {
                 NPCManager.AddBuffToPlayer(args.PlayerIndex, 24, 10);
             }

@@ -11,6 +11,7 @@ namespace CustomNPC
 {
     public static class NPCManager
     {
+        private static IEnumerable<BiomeTypes> availableBiomes = Enum.GetValues(typeof(BiomeTypes)).Cast<BiomeTypes>();
         private static Random rand = new Random();
         internal static CustomNPCVars[] NPCs = new CustomNPCVars[200];
         internal static CustomNPCData Data = new CustomNPCData();
@@ -30,7 +31,6 @@ namespace CustomNPC
                 {
                     //check all biome spawns
                     BiomeTypes biomes = player.GetCurrentBiomes();
-                    var availableBiomes = Enum.GetValues(typeof(BiomeTypes)).Cast<Enum>();
                     foreach (BiomeTypes biome in availableBiomes.Where(biomes.HasFlag))
                     {
                         // get list of mobs that can be spawned in that biome
@@ -39,6 +39,7 @@ namespace CustomNPC
                         {
                             foreach (Tuple<string, CustomNPCSpawning> obj in biomeSpawns)
                             {
+                                
                                 CustomNPCDefinition customnpc = Data.GetNPCbyID(obj.Item1);
 
                                 // get the last spawn attempt
@@ -67,8 +68,13 @@ namespace CustomNPC
                                             int spawnX;
                                             int spawnY;
                                             TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
-                                            SpawnNPCAtLocation(spawnX * 16, spawnY * 16, customnpc);
+                                            int npcid = SpawnNPCAtLocation(spawnX, spawnY, customnpc);
+                                            if (npcid == -1)
+                                            {
+                                                return;
+                                            }
                                             Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
+                                            Main.npc[npcid].target = player.Index;
                                         }
                                     }
                                 }
@@ -103,11 +109,11 @@ namespace CustomNPC
                                         int spawnY;
                                         TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
                                         int npcid = SpawnNPCAtLocation(spawnX, spawnY, customnpc);
-                                        Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
                                         if (npcid == -1)
                                         {
                                             return;
                                         }
+                                        Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
                                         Main.npc[npcid].target = player.Index;
                                     }
                                 }
@@ -116,6 +122,19 @@ namespace CustomNPC
                     }
                 }
             }
+        }
+
+        internal static bool CheckSpawnConditions(SpawnConditions conditions)
+        {
+            if (conditions.HasFlag(SpawnConditions.Bloodmoon) && !Main.bloodMoon)
+            {
+                return false;
+            }
+            if (conditions.HasFlag(SpawnConditions.Eclipse) && !Main.bloodMoon)
+            {
+                return false;
+            }
+            return true;
         }
 
         /*internal static void SpawnMobsInBiomeAndRegion()

@@ -15,9 +15,9 @@ namespace CustomNPC
         public string spawnRegion { get; set; }
         public int spawnRate { get; set; }
         public double spawnChance { get; set; }
-        public List<SpawnConditions> spawnConditions { get; set; }
+        public SpawnConditions spawnConditions { get; set; }
         public bool useTerrariaSpawn { get; set; }
-        public CustomNPCSpawning(int spawnrate, List<SpawnConditions> spawnconditions, bool useterrariaspawn = true, BiomeTypes spawnbiome = BiomeTypes.None, string spawnregion = "", double spawnchance = 100.0)
+        public CustomNPCSpawning(int spawnrate, SpawnConditions spawnconditions, bool useterrariaspawn = true, BiomeTypes spawnbiome = BiomeTypes.None, string spawnregion = "", double spawnchance = 100.0)
         {
             spawnBiome = spawnbiome;
             spawnRegion = spawnregion;
