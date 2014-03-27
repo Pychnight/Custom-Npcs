@@ -11,7 +11,7 @@ namespace CustomNPC
 {
     public static class NPCManager
     {
-        private static IEnumerable<BiomeTypes> availableBiomes = Enum.GetValues(typeof(BiomeTypes)).Cast<BiomeTypes>();
+        private static BiomeTypes[] availableBiomes = Enum.GetValues(typeof(BiomeTypes)).Cast<BiomeTypes>().Where(x => x != BiomeTypes.None).ToArray();
         private static Random rand = new Random();
         internal static CustomNPCVars[] NPCs = new CustomNPCVars[200];
         internal static CustomNPCData Data = new CustomNPCData();
@@ -31,7 +31,7 @@ namespace CustomNPC
                 {
                     //check all biome spawns
                     BiomeTypes biomes = player.GetCurrentBiomes();
-                    foreach (BiomeTypes biome in availableBiomes.Where(biomes.HasFlag))
+                    foreach (BiomeTypes biome in availableBiomes.Where(x => biomes.HasFlag(x)))
                     {
                         // get list of mobs that can be spawned in that biome
                         List<Tuple<string, CustomNPCSpawning>> biomeSpawns;
