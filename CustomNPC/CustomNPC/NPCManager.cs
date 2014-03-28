@@ -29,19 +29,23 @@ namespace CustomNPC
                 //check if they exist or are connected
                 if (player != null && player.ConnectionAlive)
                 {
+                    //Log.ConsoleInfo("{0} - Checking spawn for player", player.Name);
                     //check all biome spawns
                     BiomeTypes biomes = player.GetCurrentBiomes();
                     foreach (BiomeTypes biome in availableBiomes.Where(x => biomes.HasFlag(x)))
                     {
+                        //Log.ConsoleInfo("{0} - Checking biome for player", biome.ToString());
                         // get list of mobs that can be spawned in that biome
                         List<Tuple<string, CustomNPCSpawning>> biomeSpawns;
                         if (Data.BiomeSpawns.TryGetValue(biome, out biomeSpawns))
                         {
                             foreach (Tuple<string, CustomNPCSpawning> obj in biomeSpawns)
                             {
+                                //Log.ConsoleInfo("{0} - Checking mob spawn", obj.Item1);
                                 // check spawn conditions
                                 if (!CheckSpawnConditions(obj.Item2.spawnConditions))
                                 {
+                                    //Log.ConsoleInfo("False Conditions");
                                     continue;
                                 }
                                 CustomNPCDefinition customnpc = Data.GetNPCbyID(obj.Item1);
@@ -122,7 +126,7 @@ namespace CustomNPC
                                         int npcid = SpawnNPCAtLocation(spawnX, spawnY, customnpc);
                                         if (npcid == -1)
                                         {
-                                            return;
+                                            continue;
                                         }
                                         Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
                                         Main.npc[npcid].target = player.Index;
@@ -137,44 +141,54 @@ namespace CustomNPC
 
         internal static bool CheckSpawnConditions(SpawnConditions conditions)
         {
-            if (conditions.HasFlag(SpawnConditions.None))
+            if (conditions == SpawnConditions.None)
             {
+                //Log.ConsoleInfo("Failed on None");
                 return false;
             }
             if (conditions.HasFlag(SpawnConditions.BloodMoon) && !Main.bloodMoon)
             {
+                //Log.ConsoleInfo("Failed on BloodMoon");
                 return false;
             }
             if (conditions.HasFlag(SpawnConditions.Eclipse) && !Main.eclipse)
             {
+                //Log.ConsoleInfo("Failed on Eclipse");
                 return false;
             }
             if (conditions.HasFlag(SpawnConditions.DayTime) && !Main.dayTime)
             {
+                //Log.ConsoleInfo("Failed on DayTime");
                 return false;
             }
             if (conditions.HasFlag(SpawnConditions.NightTime) && Main.dayTime)
             {
+                //Log.ConsoleInfo("Failed on NightTime");
                 return false;
             }
             if (conditions.HasFlag(SpawnConditions.Day) && (!Main.dayTime || (Main.dayTime && Main.time <= 150.0 && Main.time >= 26999.0)))
             {
+                //Log.ConsoleInfo("Failed on Day");
                 return false;
             }
             if (conditions.HasFlag(SpawnConditions.Noon) && (!Main.dayTime || (Main.dayTime && Main.time <= 16200.0 && Main.time >= 32400.0)))
             {
+                //Log.ConsoleInfo("Failed on Noon");
                 return false;
             }
             if (conditions.HasFlag(SpawnConditions.Night) && (Main.dayTime || (!Main.dayTime && Main.time <= 27000.0 && Main.time >= 54000)))
             {
+                //Log.ConsoleInfo("Failed on Night");
                 return false;
             }
             if (conditions.HasFlag(SpawnConditions.Midnight) && (Main.dayTime || (!Main.dayTime && Main.time <= 16200 && Main.time >= 32400)))
             {
+                //Log.ConsoleInfo("Failed on Midnight");
                 return false;
             }
             if (conditions.HasFlag(SpawnConditions.Raining) && !Main.raining)
             {
+                //Log.ConsoleInfo("Failed on Raining");
                 return false;
             }
             return true;

@@ -293,14 +293,19 @@ namespace CustomNPC
         /// <param name="e"></param>
         void mainLoop_Elapsed(object sender, ElapsedEventArgs e)
         {
+            //Don't run this when there is no players
+            if (Main.numPlayers == 0)
+            {
+                return;
+            }
             eventManager.InvokeHandler(PluginUpdateEvent.Empty, EventType.PluginUpdate);
 
-            //test
+            //Spawn mobs into regions and specific biomes
+            SpawnMobsInBiomeAndRegion();
+            //Update All NPCs
             CustomNPCUpdate();
             //check if NPC has been deactivated (could mean NPC despawned)
             CheckActiveNPCs();
-            //Spawn mobs into regions and specific biomes
-            SpawnMobsInBiomeAndRegion();
             //fire projectiles towards closests player
             ProjectileCheck();
             //Check for player Collision with NPC
@@ -492,19 +497,22 @@ namespace CustomNPC
             foreach (CustomNPCVars obj in NPCManager.NPCs)
             {
                 //if CustomNPC has been defined, and hasn't been set to dead yet, check if the terraria npc is active
-                if (obj != null && !obj.isDead && (obj.mainNPC == null || obj.mainNPC.life <= 0 || obj.mainNPC.type == 0))
+                if (obj != null)
                 {
-                    obj.isDead = true;
-                }
-                else
-                {
-                    var args = new NpcUpdateEvent
+                    if (!obj.isDead && (obj.mainNPC == null || obj.mainNPC.life <= 0 || obj.mainNPC.type == 0))
                     {
-                        NpxIndex = obj.mainNPC.whoAmI
-                    };
+                        obj.isDead = true;
+                    }
+                    else
+                    {
+                        var args = new NpcUpdateEvent
+                        {
+                            NpxIndex = obj.mainNPC.whoAmI
+                        };
 
-                    eventManager.InvokeHandler(args, EventType.NpcUpdate);
-                    
+                        eventManager.InvokeHandler(args, EventType.NpcUpdate);
+
+                    }
                 }
             }
         }
