@@ -294,7 +294,7 @@ namespace CustomNPC
         void mainLoop_Elapsed(object sender, ElapsedEventArgs e)
         {
             //Don't run this when there is no players
-            if (Main.numPlayers == 0)
+            if (TShock.Utils.ActivePlayers() == 0)
             {
                 return;
             }
