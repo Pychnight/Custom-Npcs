@@ -74,7 +74,7 @@ namespace CustomNPC
 
         public override Version Version
         {
-            get { return new Version("0.1"); }
+            get { return new Version("1.0"); }
         }
 
         public override void Initialize()
