@@ -146,8 +146,35 @@ namespace CustomNPC
 
         private void OnInitialize(EventArgs args)
         {
+            Commands.ChatCommands.Add(new Command("customnpc.spawn", CommandSpawnNPC, "csm"));
             mainLoop.Elapsed += mainLoop_Elapsed;
             mainLoop.Enabled = true;
+        }
+
+        private void CommandSpawnNPC(CommandArgs args)
+        {
+            //error if too many or too few params specified
+            if (args.Parameters.Count == 0 || args.Parameters.Count > 2)
+            {
+                args.Player.SendInfoMessage("Info: /csm <id> [amount]");
+                return;
+            }
+            //get custom npc by id
+            var cvar = NPCManager.Data.GetNPCbyID(args.Parameters[0]);
+            if (cvar == null)
+            {
+                args.Player.SendErrorMessage("Error: The custom npc id \"{0}\" does not exist!", args.Parameters[0]);
+                return;
+            }
+            //default to 1 if amount is not defined
+            int amount = 1;
+            //check if amount is defined
+            if (args.Parameters.Count == 2)
+            {
+                int.TryParse(args.Parameters[1], out amount);
+            }
+            //all checks complete spawn mob
+            int npc = NPCManager.SpawnNPCAtLocation((int)args.Player.X + Main.rand.Next(0, 16) - 8, (int)args.Player.Y + Main.rand.Next(0, 16) - 8, cvar);
         }
 
         /// <summary>
