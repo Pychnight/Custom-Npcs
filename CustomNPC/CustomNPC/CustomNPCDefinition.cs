@@ -76,18 +76,11 @@ namespace CustomNPC
         {
             get { return customBase.lavaImmune; }
         }
-
-        /// <summary>
-        /// NPC Restrictions/Conditions
-        /// </summary>
-        //public virtual List<BiomeTypes> customBiomeSpawn
-        //{
-        //    get { return new List<BiomeTypes>(); }
-        //}
-        //public virtual IList<string> customRegionSpawn
-        //{
-        //    get { return null; }
-        //}
+        public virtual int maxSpawns
+        {
+            get { return -1; }
+        }
+        public int currSpawnsVar { get; set; }
 
         // NPC Projectile Variables
 
@@ -126,22 +119,6 @@ namespace CustomNPC
         {
             get { return spawns; }
         }
-
-        /// <summary>
-        /// Gets the number of seconds between spawn attempts.
-        /// </summary>
-        //public virtual int customSpawnTimer
-        //{
-        //    get { return 5; }
-        //}
-
-        /// <summary>
-        /// Gets the chance (out of 100) to spawn this NPC.
-        /// </summary>
-        //public virtual double customSpawnChance
-        //{
-        //    get { return 100.0; }
-        //}
 
         /// <summary>
         /// Gets the message displayed when this NPC is spawned.

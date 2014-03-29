@@ -263,6 +263,7 @@ namespace CustomNPC
                 if (npcvar != null)
                 {
                     npcvar.isDead = true;
+                    npcvar.customNPC.currSpawnsVar--;
                 }
                 var killedArgs = new NpcKilledEvent
                 {
