@@ -35,6 +35,7 @@ namespace CustomNPC
         /// <param name="additionalhealth">Amount to Increase by, if 0 - get new monsters health and add that to NPC</param>
         public void Transform(CustomNPCDefinition npcdef, bool addhealth = false, int additionalhealth = 0)
         {
+            customNPC = npcdef;
             mainNPC.type = npcdef.customBase.type;
             if (addhealth)
             {
@@ -47,6 +48,34 @@ namespace CustomNPC
                     mainNPC.life += additionalhealth;
                 }
             }
+        }
+
+        /// <summary>
+        /// Transforms a NPC to another Custom NPC
+        /// </summary>
+        /// <param name="id">CustomNPC that will be replacing it</param>
+        /// <param name="addhealth">Increase monsters Health</param>
+        /// <param name="additionalhealth">Amount to Increase by, if 0 - get new monsters health and add that to NPC</param>
+        public bool Transform(string id, bool addhealth = false, int additionalhealth = 0)
+        {
+            customNPC = NPCManager.Data.GetNPCbyID(id);
+            if (customNPC == null)
+                return false;
+
+            mainNPC.type = customNPC.customBase.type;
+            if (addhealth)
+            {
+                if (additionalhealth == 0)
+                {
+                    mainNPC.life += customNPC.customHealth;
+                }
+                else
+                {
+                    mainNPC.life += additionalhealth;
+                }
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -98,6 +127,9 @@ namespace CustomNPC
             for (int i = 0; i < amount; i++)
             {
                 int npc = NPCManager.SpawnNPCAtLocation((int)mainNPC.position.X + Main.rand.Next(0, 16) - 8, (int)mainNPC.position.Y + Main.rand.Next(0, 16) - 8, customNPC);
+                if (npc == -1)
+                    continue;
+
                 var spawned = NPCManager.GetCustomNPCByIndex(npc);
                 if (spawned != null)
                 {
