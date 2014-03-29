@@ -147,6 +147,39 @@ namespace CustomNPC
         }
 
         /// <summary>
+        /// Spawns monsters randomly around the current x y position.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="amount"></param>
+        /// <param name="sethealth"></param>
+        /// <param name="health"></param>
+        public void Multiply(string id, int amount, bool sethealth = false, int health = 0)
+        {
+            var def = NPCManager.Data.GetNPCbyID(id);
+            if (def == null)
+                return;
+
+            if (mainNPC == null)
+                return;
+
+            for (int i = 0; i < amount; i++)
+            {
+                int npc = NPCManager.SpawnNPCAtLocation((int)mainNPC.position.X + rand.Next(0, 16) - 8, (int)mainNPC.position.Y + rand.Next(0, 16) - 8, customNPC);
+                if (npc == -1)
+                    continue;
+
+                var spawned = NPCManager.GetCustomNPCByIndex(npc);
+                if (spawned != null)
+                {
+                    if (sethealth)
+                    {
+                        spawned.mainNPC.life = health;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Teleports a NPC to a specific location in a region
         /// </summary>
         /// <param name="region"></param>

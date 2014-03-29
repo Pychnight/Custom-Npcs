@@ -15,8 +15,8 @@ namespace TestNPC
     public class TestNPCPlugin : NPCPlugin
     {
         private Random _random = new Random();
-        private DateTime[] _lastTestMultiply = new DateTime[Main.maxNPCs];
-        private DateTime[] _lastTesterMultiply = new DateTime[Main.maxNPCs];
+        private DateTime?[] _lastTestMultiply = new DateTime?[Main.maxNPCs];
+        private DateTime?[] _lastTesterMultiply = new DateTime?[Main.maxNPCs];
 
         private string[] _transforms =
         {
@@ -27,15 +27,6 @@ namespace TestNPC
         public TestNPCPlugin(IEventRegister register, DefinitionManager definitions)
             : base(register, definitions)
         {
-            for (int i = 0; i < _lastTestMultiply.Length; i++)
-            {
-                _lastTestMultiply[i] = default(DateTime);
-            }
-
-            for (int i = 0; i < _lastTesterMultiply.Length; i++)
-            {
-                _lastTesterMultiply[i] = default(DateTime);
-            }
         }
         //generic plugin name
         public override string Name
@@ -88,21 +79,33 @@ namespace TestNPC
             switch (npc.customNPC.customID.ToLower())
             {
                 case "testnpc":
-                    if ((DateTime.Now - _lastTestMultiply[args.NpcIndex]).TotalMinutes >= 1)
+                    lock (_lastTestMultiply)
                     {
-                        npc.Transform(_transforms[_random.Next(_transforms.Length)]);
-                        npc.Multiply(npc, 1);
-                        _lastTestMultiply[args.NpcIndex] = DateTime.Now;
+                        if (_lastTestMultiply[args.NpcIndex] == null)
+                        {
+                            _lastTestMultiply[args.NpcIndex] = DateTime.Now;
+                        }
+                        else if ((DateTime.Now - _lastTestMultiply[args.NpcIndex]).Value.TotalMinutes >= 1)
+                        {
+                            npc.Multiply(_transforms[_random.Next(_transforms.Length)], 1);
+                            _lastTestMultiply[args.NpcIndex] = DateTime.Now;
+                        }
                     }
                     NPCManager.DebuffNearbyPlayers(80, args.NpcIndex, 100);
                     break;
 
                 case "testnpc2":
-                    if ((DateTime.Now - _lastTesterMultiply[args.NpcIndex]).TotalMinutes >= 2)
+                    lock (_lastTesterMultiply)
                     {
-                        npc.Transform("testnpc");
-                        npc.Multiply(npc, 1);
-                        _lastTesterMultiply[args.NpcIndex] = DateTime.Now;
+                        if (_lastTesterMultiply[args.NpcIndex] == null)
+                        {
+                            _lastTesterMultiply[args.NpcIndex] = DateTime.Now;
+                        }
+                        else if ((DateTime.Now - _lastTesterMultiply[args.NpcIndex].Value).TotalMinutes >= 2)
+                        {
+                            npc.Multiply("testnpc", 1);
+                            _lastTesterMultiply[args.NpcIndex] = DateTime.Now;
+                        }
                     }
                     break;
             }
