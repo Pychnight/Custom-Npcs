@@ -88,10 +88,8 @@ namespace TestNPC
             switch (npc.customNPC.customID.ToLower())
             {
                 case "testnpc":
-                    TShockAPI.Log.ConsoleInfo("NPCUpdate testnpc");
                     if ((DateTime.Now - _lastTestMultiply[args.NpcIndex]).TotalMinutes >= 1)
                     {
-                        TShockAPI.Log.ConsoleInfo("\tNPCUpdate testnpc multiply time");
                         npc.Transform(_transforms[_random.Next(_transforms.Length)]);
                         npc.Multiply(npc, 1);
                         _lastTestMultiply[args.NpcIndex] = DateTime.Now;
@@ -100,10 +98,8 @@ namespace TestNPC
                     break;
 
                 case "testnpc2":
-                    TShockAPI.Log.ConsoleInfo("NPCUpdate testnpc2");
                     if ((DateTime.Now - _lastTesterMultiply[args.NpcIndex]).TotalMinutes >= 2)
                     {
-                        TShockAPI.Log.ConsoleInfo("\tNPCUpdate testnpc2 multiply time");
                         npc.Transform("testnpc");
                         npc.Multiply(npc, 1);
                         _lastTesterMultiply[args.NpcIndex] = DateTime.Now;

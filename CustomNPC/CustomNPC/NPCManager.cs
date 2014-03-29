@@ -50,7 +50,7 @@ namespace CustomNPC
                                 }
                                 CustomNPCDefinition customnpc = Data.GetNPCbyID(obj.Item1);
                                 // make sure not spawning more then maxSpawns
-                                if (customnpc.currSpawnsVar >= customnpc.maxSpawns)
+                                if (customnpc.maxSpawns != -1 && customnpc.currSpawnsVar >= customnpc.maxSpawns)
                                 {
                                     continue;
                                 }
