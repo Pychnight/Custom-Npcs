@@ -17,6 +17,7 @@ namespace CustomNPC
         public bool isDead { get; set; }
         public NPC mainNPC { get; set; }
         public bool droppedLoot { get; set; }
+        private Random rand = new Random();
 
         public CustomNPCVars(CustomNPCDefinition customnpc, DateTime[] lastattemptedprojectile, NPC mainnpc, bool isdead = false)
         {
@@ -126,7 +127,11 @@ namespace CustomNPC
 
             for (int i = 0; i < amount; i++)
             {
-                int npc = NPCManager.SpawnNPCAtLocation((int)mainNPC.position.X + Main.rand.Next(0, 16) - 8, (int)mainNPC.position.Y + Main.rand.Next(0, 16) - 8, customNPC);
+                if (mainNPC == null)
+                {
+                    continue;
+                }
+                int npc = NPCManager.SpawnNPCAtLocation((int)mainNPC.position.X + rand.Next(0, 16) - 8, (int)mainNPC.position.Y + rand.Next(0, 16) - 8, customNPC);
                 if (npc == -1)
                     continue;
 

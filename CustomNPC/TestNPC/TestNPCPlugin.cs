@@ -89,7 +89,7 @@ namespace TestNPC
             {
                 case "testnpc":
                     TShockAPI.Log.ConsoleInfo("NPCUpdate testnpc");
-                    if ((DateTime.Now - _lastTestMultiply[args.NpcIndex]) >= TimeSpan.FromMinutes(1))
+                    if ((DateTime.Now - _lastTestMultiply[args.NpcIndex]).TotalMinutes >= 1)
                     {
                         TShockAPI.Log.ConsoleInfo("\tNPCUpdate testnpc multiply time");
                         npc.Transform(_transforms[_random.Next(_transforms.Length)]);
@@ -101,7 +101,7 @@ namespace TestNPC
 
                 case "testnpc2":
                     TShockAPI.Log.ConsoleInfo("NPCUpdate testnpc2");
-                    if ((DateTime.Now - _lastTesterMultiply[args.NpcIndex]) >= TimeSpan.FromMinutes(2))
+                    if ((DateTime.Now - _lastTesterMultiply[args.NpcIndex]).TotalMinutes >= 2)
                     {
                         TShockAPI.Log.ConsoleInfo("\tNPCUpdate testnpc2 multiply time");
                         npc.Transform("testnpc");

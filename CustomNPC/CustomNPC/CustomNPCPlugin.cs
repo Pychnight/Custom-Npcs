@@ -174,7 +174,7 @@ namespace CustomNPC
                 int.TryParse(args.Parameters[1], out amount);
             }
             //all checks complete spawn mob
-            int npc = NPCManager.SpawnNPCAtLocation((int)args.Player.X + Main.rand.Next(0, 16) - 8, (int)args.Player.Y + Main.rand.Next(0, 16) - 8, cvar);
+            int npc = NPCManager.SpawnNPCAtLocation((int)args.Player.X + rand.Next(0, 16) - 8, (int)args.Player.Y + rand.Next(0, 16) - 8, cvar);
         }
 
         /// <summary>
