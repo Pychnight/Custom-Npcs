@@ -79,11 +79,10 @@ namespace CustomNPC
                                             int spawnX;
                                             int spawnY;
                                             TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
-                                            int npcid = SpawnNPCAtLocation(spawnX, spawnY, customnpc);
+                                            int npcid = SpawnNPCAtLocation((spawnX * 16) + 8, spawnY * 16, customnpc);
                                             if (npcid == -1)
-                                            {
                                                 continue;
-                                            }
+
                                             Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
                                             Main.npc[npcid].target = player.Index;
                                         }
