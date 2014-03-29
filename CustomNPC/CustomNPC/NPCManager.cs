@@ -49,6 +49,11 @@ namespace CustomNPC
                                     continue;
                                 }
                                 CustomNPCDefinition customnpc = Data.GetNPCbyID(obj.Item1);
+                                // make sure not spawning more then maxSpawns
+                                if (customnpc.currSpawnsVar >= customnpc.maxSpawns)
+                                {
+                                    continue;
+                                }
                                 // get the last spawn attempt
                                 DateTime lastSpawnAttempt;
                                 if (!Data.LastSpawnAttempt.TryGetValue(customnpc.customID, out lastSpawnAttempt))
@@ -71,6 +76,7 @@ namespace CustomNPC
                                             {
                                                 Main.npc[npcid].target = player.Index;
                                                 Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
+                                                customnpc.currSpawnsVar++;
                                             }                                            
                                         }
                                         else
@@ -86,6 +92,7 @@ namespace CustomNPC
                                             }
                                             Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
                                             Main.npc[npcid].target = player.Index;
+                                            customnpc.currSpawnsVar++;
                                         }
                                     }
                                 }
@@ -130,6 +137,7 @@ namespace CustomNPC
                                         }
                                         Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
                                         Main.npc[npcid].target = player.Index;
+                                        customnpc.currSpawnsVar++;
                                     }
                                 }
                             }
@@ -193,91 +201,6 @@ namespace CustomNPC
             }
             return true;
         }
-
-        /*internal static void SpawnMobsInBiomeAndRegion()
-        {
-            foreach (TSPlayer player in TShock.Players)
-            {
-                if (player != null && player.ConnectionAlive)
-                {
-                    BiomeTypes biome = player.GetCurrentBiomes();
-
-                    // get list of mobs that can be spawned in that biome
-                    List<string> biomeSpawns;
-                    if (Data.BiomeSpawns.TryGetValue(biome, out biomeSpawns))
-                    {
-                        foreach (string id in biomeSpawns)
-                        {
-                            CustomNPCDefinition customnpc = Data.GetNPCbyID(id);
-
-                            // get the last spawn attempt
-                            DateTime lastSpawnAttempt;
-                            if (!Data.LastSpawnAttempt.TryGetValue(customnpc.customID, out lastSpawnAttempt))
-                            {
-                                lastSpawnAttempt = default(DateTime);
-                                Data.LastSpawnAttempt[customnpc.customID] = lastSpawnAttempt;
-                            }
-
-                            if ((DateTime.Now - lastSpawnAttempt).TotalSeconds >= customnpc.customSpawnTimer)
-                            {
-                                if (NPCManager.Chance(customnpc.customSpawnChance))
-                                {
-                                    int npcid = SpawnMobAroundPlayer(player, customnpc);
-                                    if (npcid != -1)
-                                    {
-                                        Main.npc[npcid].target = player.Index;
-                                        Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
-                                    }
-                                    //int spawnX;
-                                    //int spawnY;
-                                    //TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
-                                    //SpawnMobsInStaticLocation(spawnX * 16, spawnY * 16, customnpc);
-                                }
-                            }
-                        }
-                    }
-
-                    // then check regions as well
-                    Rectangle playerRectangle = new Rectangle(player.TileX, player.TileY, player.TPlayer.width, player.TPlayer.height);
-                    foreach (Region obj in Data.RegionSpawns.Keys.Where(region => region.InArea(playerRectangle)))
-                    {
-                        List<string> regionSpawns;
-                        if (Data.RegionSpawns.TryGetValue(obj, out regionSpawns))
-                        {
-                            foreach (string id in regionSpawns)
-                            {
-                                CustomNPCDefinition customnpc = Data.GetNPCbyID(id);
-
-                                // get the last spawn attempt
-                                DateTime lastSpawnAttempt;
-                                if (!Data.LastSpawnAttempt.TryGetValue(customnpc.customID, out lastSpawnAttempt))
-                                {
-                                    lastSpawnAttempt = default(DateTime);
-                                    Data.LastSpawnAttempt[customnpc.customID] = lastSpawnAttempt;
-                                }
-
-                                if ((DateTime.Now - lastSpawnAttempt).TotalSeconds >= customnpc.customSpawnTimer)
-                                {
-                                    if (NPCManager.Chance(customnpc.customSpawnChance))
-                                    {
-                                        int spawnX;
-                                        int spawnY;
-                                        TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
-                                        int npcid = SpawnNPCAtLocation(spawnX, spawnY, customnpc);
-                                        Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
-                                        if (npcid == -1)
-                                        {
-                                            return;
-                                        }
-                                        Main.npc[npcid].target = player.Index;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }*/
 
         public static CustomNPCVars GetCustomNPCByIndex(int index)
         {
