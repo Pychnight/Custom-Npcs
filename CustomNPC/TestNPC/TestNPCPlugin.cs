@@ -8,6 +8,7 @@ using CustomNPC.EventSystem;
 using CustomNPC.EventSystem.Events;
 using CustomNPC.Plugins;
 using Terraria;
+using TerrariaApi.Server;
 
 namespace TestNPC
 {
@@ -59,14 +60,14 @@ namespace TestNPC
         //this update happens every 1/60th of a second
         private void OnNpcUpdate(NpcUpdateEvent args)
         {
-            NPCManager.DebuffNearbyPlayers(80, args.NpxIndex, 100);
+            NPCManager.DebuffNearbyPlayers(80, args.NpcIndex, 100);
         }
 
         //everytime the npc gets damaged
         private void OnNpcDamage(NpcDamageEvent args)
         {
             var npc = NPCManager.GetCustomNPCByIndex(args.NpcIndex);
-            if (npc != null && npc.customNPC.customName.ToLower() == "testnpc")
+            if (npc != null && npc.customNPC.customID.ToLower() == "testnpc")
             {
                 NPCManager.AddBuffToPlayer(args.PlayerIndex, 20, 10);
             }
@@ -76,7 +77,7 @@ namespace TestNPC
         private void OnNpcCollision(NpcCollisionEvent args)
         {
             var npc = NPCManager.GetCustomNPCByIndex(args.NpcIndex);
-            if (npc != null && npc.customNPC.customName.ToLower() == "testnpc")
+            if (npc != null && npc.customNPC.customID.ToLower() == "testnpc")
             {
                 NPCManager.AddBuffToPlayer(args.PlayerIndex, 24, 10);
             }

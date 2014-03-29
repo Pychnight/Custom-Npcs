@@ -474,7 +474,7 @@ namespace CustomNPC
             Vector2 position = npc.position;
             foreach (TSPlayer player in PlayersNearBy(position, distance))
             {
-                player.TPlayer.AddBuff(debuffid, 5*60);
+                player.SetBuff(debuffid, 5 * 60);
             }
         }
 
@@ -553,14 +553,13 @@ namespace CustomNPC
             return mainNPC.buffType.Contains(buffid);
         }
 
-        public static void AddBuffToPlayer(int playerindex, int buffid, int duration)
+        public static void AddBuffToPlayer(int playerindex, int buffid, int seconds)
         {
-            Player player = Main.player[playerindex];
+            TSPlayer player = TShock.Players[playerindex];
             if (player == null)
-            {
                 return;
-            }
-            player.AddBuff(buffid, duration * 60);
+
+            player.SetBuff(buffid, seconds * 60);
         }
     }
 }

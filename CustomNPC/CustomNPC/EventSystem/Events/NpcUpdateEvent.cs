@@ -8,6 +8,6 @@ namespace CustomNPC.EventSystem.Events
 {
     public class NpcUpdateEvent
     {
-        public int NpxIndex { get; set; }
+        public int NpcIndex { get; set; }
     }
 }

@@ -507,7 +507,7 @@ namespace CustomNPC
                     {
                         var args = new NpcUpdateEvent
                         {
-                            NpxIndex = obj.mainNPC.whoAmI
+                            NpcIndex = obj.mainNPC.whoAmI
                         };
 
                         eventManager.InvokeHandler(args, EventType.NpcUpdate);
