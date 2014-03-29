@@ -328,12 +328,12 @@ namespace CustomNPC
             }
             eventManager.InvokeHandler(PluginUpdateEvent.Empty, EventType.PluginUpdate);
 
+            //check if NPC has been deactivated (could mean NPC despawned)
+            CheckActiveNPCs();
             //Spawn mobs into regions and specific biomes
             SpawnMobsInBiomeAndRegion();
             //Update All NPCs
             CustomNPCUpdate();
-            //check if NPC has been deactivated (could mean NPC despawned)
-            CheckActiveNPCs();
             //fire projectiles towards closests player
             ProjectileCheck();
             //Check for player Collision with NPC
@@ -530,6 +530,7 @@ namespace CustomNPC
                     if (!obj.isDead && (obj.mainNPC == null || obj.mainNPC.life <= 0 || obj.mainNPC.type == 0))
                     {
                         obj.isDead = true;
+                        obj.customNPC.currSpawnsVar--;
                     }
                     else
                     {
