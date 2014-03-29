@@ -425,13 +425,10 @@ namespace CustomNPC
 
             if (found)
             {
-                Log.ConsoleInfo("Spawning mob around player: plr[{0},{1}] mob[{2},{3}]", playerTileX, playerTileY, spawnX, spawnY);
-
                 int npcid = NPC.NewNPC((spawnX * 16) + 8, spawnY * 16, definition.customBase.type);
                 if (npcid == 200)
-                {
                     return -1;
-                }
+
                 Data.ConvertNPCToCustom(npcid, definition);
                 DateTime[] dt = null;
                 if (definition.customProjectiles != null)
