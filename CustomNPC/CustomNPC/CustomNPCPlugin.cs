@@ -532,7 +532,7 @@ namespace CustomNPC
                         obj.isDead = true;
                         obj.customNPC.currSpawnsVar--;
                     }
-                    else
+                    else if(!obj.isDead)
                     {
                         var args = new NpcUpdateEvent
                         {
@@ -540,7 +540,6 @@ namespace CustomNPC
                         };
 
                         eventManager.InvokeHandler(args, EventType.NpcUpdate);
-
                     }
                 }
             }

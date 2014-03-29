@@ -99,5 +99,10 @@ namespace TestNPC
                 NPCManager.SendPrivateMessageNearbyPlayers("TestNpc: Nooo! I failed to multiply!", Color.Purple, vars.mainNPC.whoAmI, 50);
             }
         }
+        //remove default loot
+        public override bool overrideBaseNPCLoot
+        {
+            get { return true; }
+        }
     }
 }
