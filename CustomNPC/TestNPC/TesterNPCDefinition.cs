@@ -10,11 +10,10 @@ namespace TestNPC
 {
     public sealed class TesterNPCDefinition : CustomNPCDefinition
     {
-        internal static DateTime[] LastMultiplyTimes = new DateTime[Main.maxNPCs];
-
         public TesterNPCDefinition()
             : base(-2)
         {
+            customNPCSpawning.Add(new CustomNPCSpawning(2, SpawnConditions.NightTime, true, BiomeTypes.None, "testregion", 100));
         }
 
         public override string customID
@@ -49,11 +48,6 @@ namespace TestNPC
             {
                 return 500;
             }
-        }
-
-        public override void OnDeath(CustomNPCVars vars)
-        {
-            LastMultiplyTimes[vars.mainNPC.whoAmI] = default(DateTime);
         }
     }
 }

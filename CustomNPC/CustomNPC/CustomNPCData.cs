@@ -14,7 +14,7 @@ namespace CustomNPC
     {
         internal Dictionary<string, CustomNPCDefinition> CustomNPCs = new Dictionary<string, CustomNPCDefinition>();
         internal Dictionary<BiomeTypes, List<Tuple<string, CustomNPCSpawning>>> BiomeSpawns = new Dictionary<BiomeTypes, List<Tuple<string, CustomNPCSpawning>>>();
-        internal Dictionary<Region, List<Tuple<string, CustomNPCSpawning>>> RegionSpawns = new Dictionary<Region,List<Tuple<string, CustomNPCSpawning>>>();
+        internal Dictionary<string, List<Tuple<string, CustomNPCSpawning>>> RegionSpawns = new Dictionary<string, List<Tuple<string, CustomNPCSpawning>>>();
         internal Dictionary<string, DateTime> LastSpawnAttempt = new Dictionary<string, DateTime>();
 
         /// <summary>
@@ -106,15 +106,11 @@ namespace CustomNPC
 
         private void AddCustomNPCToRegion(string regionName, string id, CustomNPCSpawning spawning)
         {
-            Region region = TShock.Regions.GetRegionByName(regionName);
-            if (region == null)
-                return;
-
             List<Tuple<string, CustomNPCSpawning>> spawns;
-            if (!RegionSpawns.TryGetValue(region, out spawns))
+            if (!RegionSpawns.TryGetValue(regionName, out spawns))
             {
                 spawns = new List<Tuple<string, CustomNPCSpawning>>();
-                RegionSpawns[region] = spawns;
+                RegionSpawns[regionName] = spawns;
             }
 
             var pair = Tuple.Create(id, spawning);

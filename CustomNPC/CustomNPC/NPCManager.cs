@@ -101,17 +101,16 @@ namespace CustomNPC
 
                     // then check regions as well
                     Rectangle playerRectangle = new Rectangle(player.TileX, player.TileY, player.TPlayer.width, player.TPlayer.height);
-                    foreach (Region obj in Data.RegionSpawns.Keys.Where(region => region.InArea(playerRectangle)))
+                    foreach (Region obj in Data.RegionSpawns.Keys.Select(name => TShock.Regions.GetRegionByName(name)).Where(region => region != null && region.InArea(playerRectangle)))
                     {
                         List<Tuple<string, CustomNPCSpawning>> regionSpawns;
-                        if (Data.RegionSpawns.TryGetValue(obj, out regionSpawns))
+                        if (Data.RegionSpawns.TryGetValue(obj.Name, out regionSpawns))
                         {
                             foreach (Tuple<string, CustomNPCSpawning> obj2 in regionSpawns)
                             {
                                 if (!CheckSpawnConditions(obj2.Item2.spawnConditions))
-                                {
                                     continue;
-                                }
+
                                 CustomNPCDefinition customnpc = Data.GetNPCbyID(obj2.Item1);
                                 // make sure not spawning more then maxSpawns
                                 if (customnpc.maxSpawns != -1 && customnpc.currSpawnsVar >= customnpc.maxSpawns)
@@ -133,11 +132,10 @@ namespace CustomNPC
                                         int spawnX;
                                         int spawnY;
                                         TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
-                                        int npcid = SpawnNPCAtLocation(spawnX, spawnY, customnpc);
+                                        int npcid = SpawnNPCAtLocation((spawnX * 16) + 8, spawnY * 16, customnpc);
                                         if (npcid == -1)
-                                        {
                                             continue;
-                                        }
+
                                         Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
                                         Main.npc[npcid].target = player.Index;
                                         customnpc.currSpawnsVar++;
