@@ -17,12 +17,14 @@ namespace CustomNPC
         public bool isDead { get; set; }
         public NPC mainNPC { get; set; }
         public bool droppedLoot { get; set; }
+        public bool isClone { get; set; }
         private Random rand = new Random();
 
-        public CustomNPCVars(CustomNPCDefinition customnpc, DateTime[] lastattemptedprojectile, NPC mainnpc, bool isdead = false)
+        public CustomNPCVars(CustomNPCDefinition customnpc, DateTime[] lastattemptedprojectile, NPC mainnpc, bool isclone = false)
         {
             lastAttemptedProjectile = lastattemptedprojectile;
-            isDead = isdead;
+            isDead = false;
+            isClone = isclone;
             customNPC = customnpc;
             mainNPC = mainnpc;
             droppedLoot = false;
@@ -142,6 +144,7 @@ namespace CustomNPC
                     {
                         spawned.mainNPC.life = health;
                     }
+                    spawned.isClone = true;
                 }
             }
         }
