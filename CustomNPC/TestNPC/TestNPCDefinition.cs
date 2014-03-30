@@ -46,8 +46,9 @@ namespace TestNPC
             //Regions = string.Empty for no regions, or define regions by inputting name of region (allows only 1 region)
             //Chance = 100.0
             //Notes: Can add multiple of spawn definitions
-            customNPCSpawning.Add(new CustomNPCSpawning(2, SpawnConditions.Raining | SpawnConditions.DayTime, true, BiomeTypes.Grass, string.Empty, 100.0));
-            customNPCSpawning.Add(new CustomNPCSpawning(1, SpawnConditions.NightTime, true, BiomeTypes.Grass));
+            //customNPCSpawning.Add(new CustomNPCSpawning(2, SpawnConditions.Raining | SpawnConditions.DayTime, true, BiomeTypes.Grass, string.Empty, 100.0));
+            //customNPCSpawning.Add(new CustomNPCSpawning(1, SpawnConditions.NightTime, true, BiomeTypes.Grass));
+            customNPCSpawning.Add(new CustomNPCSpawning(1, SpawnConditions.Raining | SpawnConditions.DayTime, true, BiomeTypes.None, "test", 100.0));
         }
 
         //ID of Custom NPC - can be set to anything, this will be what is used to summon the npc in game ie/ c1, c2, c3 etc...

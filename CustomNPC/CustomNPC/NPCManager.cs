@@ -113,7 +113,11 @@ namespace CustomNPC
                                     continue;
                                 }
                                 CustomNPCDefinition customnpc = Data.GetNPCbyID(obj2.Item1);
-
+                                // make sure not spawning more then maxSpawns
+                                if (customnpc.maxSpawns != -1 && customnpc.currSpawnsVar >= customnpc.maxSpawns)
+                                {
+                                    continue;
+                                }
                                 // get the last spawn attempt
                                 DateTime lastSpawnAttempt;
                                 if (!Data.LastSpawnAttempt.TryGetValue(customnpc.customID, out lastSpawnAttempt))
