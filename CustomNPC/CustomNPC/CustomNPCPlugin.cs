@@ -21,6 +21,10 @@ namespace CustomNPC
     public class CustomNPCPlugin : TerrariaPlugin
     {
         internal Random rand = new Random();
+        public CustomNPCConfig ConfigObj { get; set; }
+        private CustomNPCInvasion InvasionObj { get; set; }
+        private String SavePath = TShock.SavePath;
+        internal static string filepath { get { return Path.Combine(TShock.SavePath, "customnpcinvasion.json"); } }
 
         //16.66 milliseconds for 1/60th of a second.
         private Timer mainLoop = new Timer(1000 / 60.0);
@@ -107,6 +111,17 @@ namespace CustomNPC
         }
 #endif
 
+        private void OnInitialize(EventArgs args)
+        {
+            Commands.ChatCommands.Add(new Command("customnpc.spawn", CommandSpawnNPC, "csm"));
+            Commands.ChatCommands.Add(new Command("customnpc.invade", CommandInvade, "cinvade"));
+            ConfigObj = new CustomNPCConfig();
+            InvasionObj = new CustomNPCInvasion(this);
+            SetupConfig();
+            mainLoop.Elapsed += mainLoop_Elapsed;
+            mainLoop.Enabled = true;
+        }
+
         /// <summary>
         /// For Custom Loot
         /// </summary>
@@ -144,13 +159,10 @@ namespace CustomNPC
             }
         }
 
-        private void OnInitialize(EventArgs args)
-        {
-            Commands.ChatCommands.Add(new Command("customnpc.spawn", CommandSpawnNPC, "csm"));
-            mainLoop.Elapsed += mainLoop_Elapsed;
-            mainLoop.Enabled = true;
-        }
-
+        /// <summary>
+        /// Spawn custom npc using /csm <id> [amount]
+        /// </summary>
+        /// <param name="args"></param>
         private void CommandSpawnNPC(CommandArgs args)
         {
             //error if too many or too few params specified
@@ -550,6 +562,61 @@ namespace CustomNPC
         private void SpawnMobsInBiomeAndRegion()
         {
             NPCManager.SpawnMobsInBiomeAndRegion();
+        }
+
+        /// <summary>
+        /// Config for Custom Mob Invasions
+        /// </summary>
+        private void SetupConfig()
+        {
+            try
+            {
+                if (File.Exists(filepath))
+                {
+                    ConfigObj = new CustomNPCConfig();
+                    ConfigObj = CustomNPCConfig.Read(filepath);
+                    return;
+                }
+                else
+                {
+                    Log.ConsoleError("Config not found. Creating new one");
+                    ConfigObj.Write(filepath);
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.ConsoleError(ex.Message);
+                return;
+            }
+        }
+
+        /// <summary>
+        /// Start custom npc invasion using /cinvade <type>
+        /// </summary>
+        /// <param name="args"></param>
+        private void CommandInvade(CommandArgs args)
+        {
+            //error if too many or too few params specified
+            if (args.Parameters.Count == 0 || args.Parameters.Count > 1)
+            {
+                args.Player.SendInfoMessage("Info: /cinvade <invade>");
+                return;
+            }
+            //get custom invasion by name
+            
+            if (true)
+            {
+                args.Player.SendErrorMessage("Error: The custom npc id \"{0}\" does not exist!", args.Parameters[0]);
+                return;
+            }
+            //default to 1 if amount is not defined
+            int amount = 1;
+            //check if amount is defined
+            if (args.Parameters.Count == 2)
+            {
+                int.TryParse(args.Parameters[1], out amount);
+            }
         }
     }
 }
