@@ -19,6 +19,7 @@ namespace CustomNPC
         public bool droppedLoot { get; set; }
         public bool isClone { get; set; }
         private Random rand = new Random();
+        private IDictionary<string, object> variables = new Dictionary<string, object>();
 
         public CustomNPCVars(CustomNPCDefinition customnpc, DateTime[] lastattemptedprojectile, NPC mainnpc, bool isclone = false)
         {
@@ -252,6 +253,20 @@ namespace CustomNPC
                     }
                 }
             }
+        }
+
+        public void SetVariable<T>(string name, T value)
+        {
+            variables[name] = value;
+        }
+
+        public T GetVariable<T>(string name, T defaultValue = default(T))
+        {
+            object boxed;
+            if (!variables.TryGetValue(name, out boxed))
+                return defaultValue;
+
+            return (T)boxed;
         }
 
         public void OnDeath()

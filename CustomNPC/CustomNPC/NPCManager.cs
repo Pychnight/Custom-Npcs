@@ -127,6 +127,8 @@ namespace CustomNPC
 
                                 if ((DateTime.Now - lastSpawnAttempt).TotalSeconds >= obj2.Item2.spawnRate)
                                 {
+                                    Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
+
                                     if (NPCManager.Chance(obj2.Item2.spawnChance))
                                     {
                                         int spawnX;
@@ -136,7 +138,6 @@ namespace CustomNPC
                                         if (npcid == -1)
                                             continue;
 
-                                        Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
                                         Main.npc[npcid].target = player.Index;
                                         customnpc.currSpawnsVar++;
                                     }
