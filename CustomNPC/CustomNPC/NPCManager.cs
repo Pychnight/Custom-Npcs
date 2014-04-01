@@ -186,12 +186,12 @@ namespace CustomNPC
                 //Log.ConsoleInfo("Failed on Noon");
                 return false;
             }
-            if (conditions.HasFlag(SpawnConditions.Night) && (Main.dayTime || (!Main.dayTime && Main.time <= 27000.0 && Main.time >= 54000)))
+            if (conditions.HasFlag(SpawnConditions.Night) && (Main.dayTime || (!Main.dayTime && Main.time <= 27000.0 && Main.time >= 54000.0)))
             {
                 //Log.ConsoleInfo("Failed on Night");
                 return false;
             }
-            if (conditions.HasFlag(SpawnConditions.Midnight) && (Main.dayTime || (!Main.dayTime && Main.time <= 16200 && Main.time >= 32400)))
+            if (conditions.HasFlag(SpawnConditions.Midnight) && (Main.dayTime || (!Main.dayTime && Main.time <= 16200.0 && Main.time >= 32400.0)))
             {
                 //Log.ConsoleInfo("Failed on Midnight");
                 return false;
