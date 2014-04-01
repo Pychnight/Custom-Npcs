@@ -421,7 +421,7 @@ namespace CustomNPC
             {
                 if (player != null && !player.Dead)
                 {
-                    if (Math.Abs(Vector2.Distance(player.TPlayer.position, position)) <= distance)
+                    if (Math.Abs(Vector2.Distance(player.TPlayer.position, position)) <= distance * 16)
                     {
                         playerlist.Add(player);
                     }

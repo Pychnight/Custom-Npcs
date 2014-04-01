@@ -13,5 +13,7 @@
         public byte Direction { get; set; }
 
         public bool CriticalHit { get; set; }
+
+        public int NpcHealth { get; set; }
     }
 }

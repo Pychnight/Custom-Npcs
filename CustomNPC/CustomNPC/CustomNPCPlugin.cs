@@ -251,6 +251,13 @@ namespace CustomNPC
             byte direction = args.Data.ReadInt8();
             bool critical = args.Data.ReadBoolean();
 
+            NPC npc = Main.npc[npcIndex];
+            double damageDone = Main.CalculateDamage(damage, npc.ichor ? npc.defense - 20 : npc.defense);
+            if (critical)
+            {
+                damageDone *= 2;
+            }
+
             var e = new NpcDamageEvent
             {
                 NpcIndex = npcIndex,
@@ -258,17 +265,11 @@ namespace CustomNPC
                 Damage = damage,
                 Knockback = knockback,
                 Direction = direction,
-                CriticalHit = critical
+                CriticalHit = critical,
+                NpcHealth = Math.Max(0, npc.life - (int)damageDone)
             };
 
             eventManager.InvokeHandler(e, EventType.NpcDamage);
-
-            NPC npc = Main.npc[npcIndex];
-            double damageDone = Main.CalculateDamage(damage, npc.ichor ? npc.defense - 20 : npc.defense);
-            if (critical)
-            {
-                damageDone *= 2;
-            }
 
             if (npc.active && npc.life > 0 && damageDone >= npc.life)
             {
