@@ -16,7 +16,27 @@ namespace CustomNPC
         private Timer InvasionTimer = new Timer(1000);
         private WaveSet CurrentInvasion { get; set; }
         private Waves CurrentWave { get; set; }
-        public int WaveSize { get; set; }
+        private int CurrentWaveIndex { get; set; }
+        private int waveSize { get; set; }
+        public int WaveSize { 
+            get { return waveSize; }
+            set
+            {
+                waveSize = value;
+                if (waveSize == 0)
+                {
+
+                }
+            }
+        }
+
+        public void NextWave()
+        {
+            if (CurrentInvasion.Waves.Count - 1 == CurrentWaveIndex)
+            {
+
+            }
+        }
 
         public void StartInvasion(WaveSet waveset)
         {
@@ -27,6 +47,7 @@ namespace CustomNPC
                 WaveSize *= TShock.Utils.ActivePlayers();
             }
             CurrentWave = waveset.Waves[0];
+            CurrentWaveIndex = 0;
             InvasionTimer.Elapsed += InvasionTimer_Elapsed;
             InvasionTimer.Enabled = true;
         }
@@ -35,6 +56,8 @@ namespace CustomNPC
         {
             CurrentInvasion = null;
             CurrentWave = null;
+            WaveSize = 0;
+            CurrentWaveIndex = 0;
             InvasionTimer.Elapsed -= InvasionTimer_Elapsed;
             InvasionTimer.Enabled = false;
         }

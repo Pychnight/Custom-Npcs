@@ -291,6 +291,11 @@ namespace CustomNPC
                 };
 
                 eventManager.InvokeHandler(killedArgs, EventType.NpcKill);
+
+                if (npcvar.isInvasion)
+                {
+                    InvasionObj.WaveSize--;
+                }
             }
         }
 
