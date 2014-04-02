@@ -11,7 +11,7 @@ namespace CustomNPC
 {
     public static class NPCManager
     {
-        private static BiomeTypes[] availableBiomes = Enum.GetValues(typeof(BiomeTypes)).Cast<BiomeTypes>().Where(x => x != BiomeTypes.None).ToArray();
+        public static BiomeTypes[] availableBiomes = Enum.GetValues(typeof(BiomeTypes)).Cast<BiomeTypes>().Where(x => x != BiomeTypes.None).ToArray();
         private static Random rand = new Random();
         internal static CustomNPCVars[] NPCs = new CustomNPCVars[200];
         internal static CustomNPCData Data = new CustomNPCData();
@@ -228,7 +228,7 @@ namespace CustomNPC
             return npcid;
         }
 
-        private static int SpawnMobAroundPlayer(TSPlayer player, CustomNPCDefinition definition)
+        public static int SpawnMobAroundPlayer(TSPlayer player, CustomNPCDefinition definition)
         {
             const int SpawnSpaceX = 3;
             const int SpawnSpaceY = 3;

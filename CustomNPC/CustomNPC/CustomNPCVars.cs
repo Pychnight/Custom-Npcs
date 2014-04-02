@@ -18,6 +18,7 @@ namespace CustomNPC
         public NPC mainNPC { get; set; }
         public bool droppedLoot { get; set; }
         public bool isClone { get; set; }
+        public bool isInvasion { get; set; }
         private Random rand = new Random();
         private IDictionary<string, object> variables = new Dictionary<string, object>();
 

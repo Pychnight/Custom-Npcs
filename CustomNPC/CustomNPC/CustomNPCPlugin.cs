@@ -277,7 +277,7 @@ namespace CustomNPC
                 if (npcvar != null)
                 {
                     npcvar.isDead = true;
-                    if (!npcvar.isClone)
+                    if (!npcvar.isClone && !npcvar.isInvasion)
                         npcvar.customNPC.currSpawnsVar--;
                 }
                 var killedArgs = new NpcKilledEvent
@@ -545,7 +545,7 @@ namespace CustomNPC
                     if (!obj.isDead && (obj.mainNPC == null || obj.mainNPC.life <= 0 || obj.mainNPC.type == 0))
                     {
                         obj.isDead = true;
-                        if (!obj.isClone)
+                        if (!obj.isClone && !obj.isInvasion)
                             obj.customNPC.currSpawnsVar--;
                     }
                     else if(!obj.isDead)
