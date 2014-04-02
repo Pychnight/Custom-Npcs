@@ -59,5 +59,15 @@ namespace CustomNPC
 
             return (T)domain.CreateInstanceAndUnwrap(type.Assembly.FullName, type.FullName, true, BindingFlags.Default, null, args, null, null);
         }
+
+        public static Rectangle ToPixels(this Rectangle rectangle)
+        {
+            return new Rectangle(rectangle.X * 16, rectangle.Y * 16, rectangle.Width * 16, rectangle.Height * 16);
+        }
+
+        public static Rectangle ToTiles(this Rectangle rectangle)
+        {
+            return new Rectangle(rectangle.X / 16, rectangle.Y / 16, rectangle.Width / 16, rectangle.Height / 16);
+        }
     }
 }

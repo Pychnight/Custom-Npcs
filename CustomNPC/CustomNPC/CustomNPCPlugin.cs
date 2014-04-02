@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CustomNPC.EventSystem;
 using CustomNPC.EventSystem.Events;
+using CustomNPC.Invasions;
 using CustomNPC.Plugins;
 using Terraria;
 using TerrariaApi.Server;
