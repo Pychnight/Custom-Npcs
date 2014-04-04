@@ -169,7 +169,7 @@ namespace CustomNPC
 
             for (int i = 0; i < amount; i++)
             {
-                int npc = NPCManager.SpawnNPCAtLocation((int)mainNPC.position.X + rand.Next(0, 16) - 8, (int)mainNPC.position.Y + rand.Next(0, 16) - 8, customNPC);
+                int npc = NPCManager.SpawnNPCAtLocation((int)mainNPC.position.X + rand.Next(0, 16) - 8, (int)mainNPC.position.Y + rand.Next(0, 16) - 8, def);
                 if (npc == -1)
                     continue;
 
