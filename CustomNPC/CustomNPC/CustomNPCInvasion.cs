@@ -23,9 +23,9 @@ namespace CustomNPC
             set
             {
                 waveSize = value;
-                if (waveSize == 0)
+                if (value == 0)
                 {
-
+                    NextWave();
                 }
             }
         }
@@ -34,8 +34,14 @@ namespace CustomNPC
         {
             if (CurrentInvasion.Waves.Count - 1 == CurrentWaveIndex)
             {
-
+                TSPlayer.All.SendInfoMessage("{0} has been defeated!", CurrentInvasion.WaveSetName);
+                StopInvasion();
+                return;
             }
+            CurrentWaveIndex++;
+            CurrentWave = CurrentInvasion.Waves[CurrentWaveIndex];
+            WaveSize = CurrentWave.SpawnGroup.KillAmount;
+            TSPlayer.All.SendInfoMessage("Wave {0}: {1} has begun!", CurrentWaveIndex + 1, CurrentWave.WaveName);
         }
 
         public void StartInvasion(WaveSet waveset)
@@ -167,21 +173,21 @@ namespace CustomNPC
     }
     public class Waves
     {
-        public int WaveNumber { get; set; }
+        public string WaveName { get; set; }
         public SpawnsGroups SpawnGroup { get; set; }
-        public Waves(int wavenumber, SpawnsGroups spawngroup)
+        public Waves(string wavename, SpawnsGroups spawngroup)
         {
-            WaveNumber = wavenumber;
+            WaveName = wavename;
             SpawnGroup = spawngroup;
         }
     }
     public class WaveSet
     {
-        public string WaveName { get; set; }
+        public string WaveSetName { get; set; }
         public List<Waves> Waves { get; set; }
-        public WaveSet(string wavename, List<Waves> waves)
+        public WaveSet(string wavesetname, List<Waves> waves)
         {
-            WaveName = wavename;
+            WaveSetName = wavesetname;
             Waves = waves;
         }
     }
