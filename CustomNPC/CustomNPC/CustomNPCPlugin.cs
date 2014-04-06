@@ -129,7 +129,7 @@ namespace CustomNPC
         /// <param name="args"></param>
         private void OnLootDrop(NpcLootDropEventArgs args)
         {
-            CustomNPCVars npcvar = NPCManager.NPCs[args.NpcArrayIndex];
+            CustomNPCVars npcvar = NPCManager.GetCustomNPCByIndex(args.NpcArrayIndex);
             //check if monster has been customized
             if (npcvar == null || npcvar.droppedLoot)
             {

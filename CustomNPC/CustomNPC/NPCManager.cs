@@ -206,6 +206,10 @@ namespace CustomNPC
 
         public static CustomNPCVars GetCustomNPCByIndex(int index)
         {
+            // do a short range check here...
+            if (index < 0 || index >= NPCs.Length)
+                return null;
+
             return NPCs[index];
         }
 
