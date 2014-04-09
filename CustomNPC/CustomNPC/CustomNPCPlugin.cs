@@ -161,15 +161,15 @@ namespace CustomNPC
         }
 
         /// <summary>
-        /// Spawn custom npc using /csm <id> [amount]
+        /// Spawn custom npc using /csm <id> [amount] [x] [y]
         /// </summary>
         /// <param name="args"></param>
         private void CommandSpawnNPC(CommandArgs args)
         {
             //error if too many or too few params specified
-            if (args.Parameters.Count == 0 || args.Parameters.Count > 2)
+            if (args.Parameters.Count == 0 || args.Parameters.Count > 4)
             {
-                args.Player.SendInfoMessage("Info: /csm <id> [amount]");
+                args.Player.SendInfoMessage("Info: /csm <id> [amount] [x] [y]");
                 return;
             }
             //get custom npc by id
@@ -186,9 +186,29 @@ namespace CustomNPC
             {
                 int.TryParse(args.Parameters[1], out amount);
             }
+            int x = 0;
+            int y = 0;
+            if (args.Parameters.Count != 4)
+            {
+                x = (int)args.Player.X + rand.Next(0, 16) - 8;
+                y = (int)args.Player.Y + rand.Next(0, 16) - 8;
+            }
+            else
+            {
+                if (!int.TryParse(args.Parameters[2], out x))
+                {
+                    args.Player.SendErrorMessage("Error: Invalid x position defined!");
+                    return;
+                }
+                if (!int.TryParse(args.Parameters[3], out y))
+                {
+                    args.Player.SendErrorMessage("Error: Invalid y position defined!");
+                    return;
+                }
+            }
             //all checks complete spawn mob
             for (int i = 0; i < amount; i++)
-                NPCManager.SpawnNPCAtLocation((int)args.Player.X + rand.Next(0, 16) - 8, (int)args.Player.Y + rand.Next(0, 16) - 8, cvar);
+                NPCManager.SpawnNPCAtLocation(x, y, cvar);
         }
 
         /// <summary>
