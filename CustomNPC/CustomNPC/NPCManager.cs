@@ -511,5 +511,18 @@ namespace CustomNPC
 
             player.SetBuff(buffid, seconds * 60);
         }
+
+        public static int AliveCount(string customid)
+        {
+            int count = 0;
+            foreach(CustomNPCVars obj in NPCs)
+            {
+                if (obj.customNPC.customID.ToLower() == customid.ToLower())
+                {
+                    count++;
+                }
+            }
+            return count;
+        }
     }
 }
