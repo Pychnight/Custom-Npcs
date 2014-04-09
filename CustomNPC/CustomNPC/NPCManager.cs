@@ -232,6 +232,30 @@ namespace CustomNPC
             return npcid;
         }
 
+        public static int SpawnNPCAroundNPC(int npcindex, ShotTile shottile, CustomNPCDefinition customnpc)
+        {
+            NPC npc = Main.npc[npcindex];
+            if (npc == null)
+                return -1;
+            int x = (int)(npc.position.X + shottile.X);
+            int y = (int)(npc.position.Y + shottile.Y);
+            int npcid = NPC.NewNPC(x, y, customnpc.customBase.type);
+            if (npcid == 200)
+            {
+                return -1;
+            }
+            Data.ConvertNPCToCustom(npcid, customnpc);
+            DateTime[] dt = null;
+            if (customnpc.customProjectiles != null)
+            {
+                dt = Enumerable.Repeat(DateTime.Now, customnpc.customProjectiles.Count).ToArray();
+            }
+            NPCs[npcid] = new CustomNPCVars(customnpc, dt, Main.npc[npcid]);
+
+            TSPlayer.All.SendData(PacketTypes.NpcUpdate, "", npcid);
+            return npcid;
+        }
+
         public static int SpawnMobAroundPlayer(TSPlayer player, CustomNPCDefinition definition)
         {
             const int SpawnSpaceX = 3;
@@ -423,7 +447,7 @@ namespace CustomNPC
             List<TSPlayer> playerlist = new List<TSPlayer>();
             foreach (TSPlayer player in TShock.Players)
             {
-                if (player != null && !player.Dead)
+                if (player != null && !player.Dead && player.ConnectionAlive)
                 {
                     if (Math.Abs(Vector2.Distance(player.TPlayer.position, position)) <= distance * 16)
                     {
