@@ -517,6 +517,8 @@ namespace CustomNPC
             int count = 0;
             foreach(CustomNPCVars obj in NPCs)
             {
+                if (obj == null)
+                    continue;
                 if (obj.customNPC.customID.ToLower() == customid.ToLower())
                 {
                     count++;
