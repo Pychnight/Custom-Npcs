@@ -173,8 +173,8 @@ namespace CustomNPC
                 return;
             }
             //get custom npc by id
-            var cvar = NPCManager.Data.GetNPCbyID(args.Parameters[0]);
-            if (cvar == null)
+            var cdef = NPCManager.Data.GetNPCbyID(args.Parameters[0]);
+            if (cdef == null)
             {
                 args.Player.SendErrorMessage("Error: The custom npc id \"{0}\" does not exist!", args.Parameters[0]);
                 return;
@@ -208,7 +208,10 @@ namespace CustomNPC
             }
             //all checks complete spawn mob
             for (int i = 0; i < amount; i++)
-                NPCManager.SpawnNPCAtLocation(x, y, cvar);
+            {
+                NPCManager.SpawnNPCAtLocation(x, y, cdef);
+                cdef.currSpawnsVar++;
+            }
         }
 
         /// <summary>
