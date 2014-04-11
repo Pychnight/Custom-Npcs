@@ -18,6 +18,7 @@ namespace CustomNPC
         private Waves CurrentWave { get; set; }
         private int CurrentWaveIndex { get; set; }
         private int waveSize { get; set; }
+        public bool invasionStarted = false;
         public int WaveSize
         {
             get { return waveSize; }
@@ -57,6 +58,7 @@ namespace CustomNPC
             CurrentWaveIndex = 0;
             InvasionTimer.Elapsed += InvasionTimer_Elapsed;
             InvasionTimer.Enabled = true;
+            invasionStarted = true;
         }
 
         public void StopInvasion()
@@ -67,6 +69,7 @@ namespace CustomNPC
             CurrentWaveIndex = 0;
             InvasionTimer.Elapsed -= InvasionTimer_Elapsed;
             InvasionTimer.Enabled = false;
+            invasionStarted = false;
         }
 
         private void InvasionTimer_Elapsed(object sender, ElapsedEventArgs e)

@@ -76,6 +76,7 @@ namespace CustomNPC
             Waves1.Add(Wave1);
 
             //WaveSets
+            WaveSets = new Dictionary<string, WaveSet>();
             WaveSet WaveSets1 = new WaveSet("WaveName", Waves1);
             WaveSets.Add("WaveSet Name", WaveSets1);
 

@@ -635,18 +635,19 @@ namespace CustomNPC
                 return;
             }
             //get custom invasion by name
-            
-            if (true)
+            WaveSet waveset;
+            if (!ConfigObj.WaveSets.TryGetValue(args.Parameters[0], out waveset))
             {
                 args.Player.SendErrorMessage("Error: The custom npc id \"{0}\" does not exist!", args.Parameters[0]);
                 return;
             }
-            //default to 1 if amount is not defined
-            int amount = 1;
-            //check if amount is defined
-            if (args.Parameters.Count == 2)
+            if (!InvasionObj.invasionStarted)
             {
-                int.TryParse(args.Parameters[1], out amount);
+                InvasionObj.StartInvasion(waveset);
+            }
+            else
+            {
+                InvasionObj.StopInvasion();
             }
         }
     }
