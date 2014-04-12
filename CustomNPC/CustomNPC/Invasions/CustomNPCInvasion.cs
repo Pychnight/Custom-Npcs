@@ -34,6 +34,9 @@ namespace CustomNPC
 
         public void NextWave()
         {
+            if (CurrentInvasion == null)
+                return;
+
             if (CurrentInvasion.Waves.Count - 1 == CurrentWaveIndex)
             {
                 TSPlayer.All.SendInfoMessage("{0} has been defeated!", CurrentInvasion.WaveSetName);
@@ -80,17 +83,17 @@ namespace CustomNPC
             }
             int spawnX = Main.spawnTileX - 150;
             int spawnY = Main.spawnTileY - 150;
-            Rectangle SpawnRegion = new Rectangle(spawnX, spawnY, 300, 300);
+            Rectangle spawnRegion = new Rectangle(spawnX, spawnY, 300, 300).ToPixels();
             foreach (SpawnMinion minions in CurrentWave.SpawnGroup.SpawnMinions)
             {
-                foreach (TSPlayer player in TShock.Players.Where(x => x != null))
+                foreach (TSPlayer player in TShock.Players.Where(x => x != null && !x.Dead && x.Active))
                 {
-                    if (player.Dead || !player.Active || !NPCManager.Chance(minions.Chance))
+                    if (!NPCManager.Chance(minions.Chance))
                     {
                         continue;
                     }
-                    Rectangle playerframe = new Rectangle((int)player.TPlayer.position.X, (int)player.TPlayer.position.Y, player.TPlayer.width, player.TPlayer.height);
-                    if (!playerframe.Intersects(SpawnRegion))
+                    Rectangle playerFrame = new Rectangle((int)player.TPlayer.position.X, (int)player.TPlayer.position.Y, player.TPlayer.width, player.TPlayer.height);
+                    if (!playerFrame.Intersects(spawnRegion))
                     {
                         continue;
                     }
