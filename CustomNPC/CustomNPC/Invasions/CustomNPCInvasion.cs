@@ -49,12 +49,12 @@ namespace CustomNPC
         public void StartInvasion(WaveSet waveset)
         {
             CurrentInvasion = waveset;
+            CurrentWave = waveset.Waves[0];
             WaveSize = CurrentWave.SpawnGroup.KillAmount;
             if (CurrentWave.SpawnGroup.PlayerMultiplier)
             {
                 WaveSize *= TShock.Utils.ActivePlayers();
             }
-            CurrentWave = waveset.Waves[0];
             CurrentWaveIndex = 0;
             InvasionTimer.Elapsed += InvasionTimer_Elapsed;
             InvasionTimer.Enabled = true;
