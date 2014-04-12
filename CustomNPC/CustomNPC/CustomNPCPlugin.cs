@@ -644,10 +644,12 @@ namespace CustomNPC
             if (!InvasionObj.invasionStarted)
             {
                 InvasionObj.StartInvasion(waveset);
+                TSPlayer.All.SendInfoMessage("Invasion: {0} has started!", waveset.WaveSetName);
             }
             else
             {
                 InvasionObj.StopInvasion();
+                TSPlayer.All.SendInfoMessage("Invasion: {0} has stopped!", waveset.WaveSetName);
             }
         }
     }

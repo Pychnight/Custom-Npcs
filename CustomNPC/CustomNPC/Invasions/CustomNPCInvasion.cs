@@ -63,12 +63,12 @@ namespace CustomNPC
 
         public void StopInvasion()
         {
+            InvasionTimer.Elapsed -= InvasionTimer_Elapsed;
+            InvasionTimer.Enabled = false;
             CurrentInvasion = null;
             CurrentWave = null;
             WaveSize = 0;
             CurrentWaveIndex = 0;
-            InvasionTimer.Elapsed -= InvasionTimer_Elapsed;
-            InvasionTimer.Enabled = false;
             invasionStarted = false;
         }
 
