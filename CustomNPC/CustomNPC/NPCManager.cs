@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using Terraria;
 using TShockAPI;
 using TShockAPI.DB;
+using CustomNPC.Invasions;
 
 namespace CustomNPC
 {
@@ -525,6 +527,136 @@ namespace CustomNPC
                 }
             }
             return count;
+        }
+
+        public static class CustomNPCInvasion
+        {
+            public static Dictionary<string, WaveSet> WaveSets { get; set; }
+            private static Timer InvasionTimer = new Timer(1000);
+            private static WaveSet CurrentInvasion { get; set; }
+            private static Waves CurrentWave { get; set; }
+            private static int CurrentWaveIndex { get; set; }
+            private static int waveSize { get; set; }
+            public static bool invasionStarted = false;
+            public static int WaveSize
+            {
+                get { return waveSize; }
+                set
+                {
+                    waveSize = value;
+                    if (value == 0)
+                    {
+                        NextWave();
+                    }
+                }
+            }
+
+            public static void NextWave()
+            {
+                if (CurrentInvasion.Waves.Count - 1 == CurrentWaveIndex)
+                {
+                    TSPlayer.All.SendInfoMessage("{0} has been defeated!", CurrentInvasion.WaveSetName);
+                    StopInvasion();
+                    return;
+                }
+                CurrentWaveIndex++;
+                CurrentWave = CurrentInvasion.Waves[CurrentWaveIndex];
+                WaveSize = CurrentWave.SpawnGroup.KillAmount;
+                TSPlayer.All.SendInfoMessage("Wave {0}: {1} has begun!", CurrentWaveIndex + 1, CurrentWave.WaveName);
+            }
+
+            public static void StartInvasion(WaveSet waveset)
+            {
+                CurrentInvasion = waveset;
+                CurrentWave = waveset.Waves[0];
+                WaveSize = CurrentWave.SpawnGroup.KillAmount;
+                if (CurrentWave.SpawnGroup.PlayerMultiplier)
+                {
+                    WaveSize *= TShock.Utils.ActivePlayers();
+                }
+                CurrentWaveIndex = 0;
+                InvasionTimer.Elapsed += InvasionTimer_Elapsed;
+                InvasionTimer.Enabled = true;
+                invasionStarted = true;
+            }
+
+            public static void StopInvasion()
+            {
+                InvasionTimer.Elapsed -= InvasionTimer_Elapsed;
+                InvasionTimer.Enabled = false;
+                CurrentInvasion = null;
+                CurrentWave = null;
+                WaveSize = 0;
+                CurrentWaveIndex = 0;
+                invasionStarted = false;
+            }
+
+            private static void InvasionTimer_Elapsed(object sender, ElapsedEventArgs e)
+            {
+                if (TShock.Utils.ActivePlayers() == 0)
+                {
+                    return;
+                }
+                int spawnX = Main.spawnTileX - 150;
+                int spawnY = Main.spawnTileY - 150;
+                Rectangle SpawnRegion = new Rectangle(spawnX, spawnY, 300, 300);
+                foreach (SpawnMinion minions in CurrentWave.SpawnGroup.SpawnMinions)
+                {
+                    foreach (TSPlayer player in TShock.Players.Where(x => x != null))
+                    {
+                        if (player.Dead || !player.Active || !NPCManager.Chance(minions.Chance))
+                        {
+                            continue;
+                        }
+                        Rectangle playerframe = new Rectangle((int)player.TPlayer.position.X, (int)player.TPlayer.position.Y, player.TPlayer.width, player.TPlayer.height);
+                        if (!playerframe.Intersects(SpawnRegion))
+                        {
+                            continue;
+                        }
+                        var npcdef = NPCManager.Data.GetNPCbyID(minions.MobID);
+                        if (npcdef == null)
+                        {
+                            Log.ConsoleError("[CustomNPC]: Error! The custom mob id \"{0}\" does not exist!", minions.MobID);
+                            continue;
+                        }
+                        if (minions.SpawnConditions != SpawnConditions.None)
+                        {
+                            if (NPCManager.CheckSpawnConditions(minions.SpawnConditions))
+                            {
+                                continue;
+                            }
+                        }
+                        if (minions.BiomeConditions != BiomeTypes.None)
+                        {
+                            BiomeTypes biomes = player.GetCurrentBiomes();
+
+                            if ((minions.BiomeConditions & biomes) == 0)
+                            {
+                                continue;
+                            }
+                        }
+                        int mobid = -1;
+                        while (mobid == -1)
+                        {
+                            mobid = NPCManager.SpawnMobAroundPlayer(player, npcdef);
+                        }
+                        NPCManager.GetCustomNPCByIndex(mobid).isInvasion = true;
+                    }
+                }
+            }
+
+            public static WaveSet ReturnWaveSetByName(string name)
+            {
+                WaveSet waveset;
+                if (WaveSets.TryGetValue(name, out waveset))
+                {
+                    return waveset;
+                }
+                else
+                {
+                    return null;
+                }
+            }
         }
     }
 }
