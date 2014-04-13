@@ -594,7 +594,7 @@ namespace CustomNPC
                 invasionStarted = false;
             }
 
-            private void InvasionTimer_Elapsed(object sender, ElapsedEventArgs e)
+            private static void InvasionTimer_Elapsed(object sender, ElapsedEventArgs e)
             {
                 if (TShock.Utils.ActivePlayers() == 0)
                 {
