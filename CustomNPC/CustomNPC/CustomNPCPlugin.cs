@@ -367,7 +367,7 @@ namespace CustomNPC
         {
             foreach (CustomNPCVars obj in NPCManager.NPCs)
             {
-                if (obj != null && !obj.isDead)
+                if (obj != null && !obj.isDead && (obj.mainNPC.aiStyle != obj.customNPC.customAI))
                 {
                     NetMessage.SendData(23, -1, -1, "", obj.mainNPC.whoAmI, 0f, 0f, 0f, 0);
                 }
