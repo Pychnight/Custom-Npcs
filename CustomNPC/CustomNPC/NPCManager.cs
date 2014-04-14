@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using Terraria;
 using TShockAPI;
 using TShockAPI.DB;
+using CustomNPC.Invasions;
 
 namespace CustomNPC
 {
@@ -14,7 +16,7 @@ namespace CustomNPC
         public static BiomeTypes[] availableBiomes = Enum.GetValues(typeof(BiomeTypes)).Cast<BiomeTypes>().Where(x => x != BiomeTypes.None).ToArray();
         private static Random rand = new Random();
         internal static CustomNPCVars[] NPCs = new CustomNPCVars[200];
-        internal static CustomNPCData Data = new CustomNPCData();
+        public static CustomNPCData Data = new CustomNPCData();
 
         internal static void LoadFrom(DefinitionManager definitions)
         {
@@ -206,11 +208,39 @@ namespace CustomNPC
 
         public static CustomNPCVars GetCustomNPCByIndex(int index)
         {
+            // do a short range check here...
+            if (index < 0 || index >= NPCs.Length)
+                return null;
+
             return NPCs[index];
         }
 
         public static int SpawnNPCAtLocation(int x, int y, CustomNPCDefinition customnpc)
         {
+            int npcid = NPC.NewNPC(x, y, customnpc.customBase.type);
+            if (npcid == 200)
+            {
+                return -1;
+            }
+            Data.ConvertNPCToCustom(npcid, customnpc);
+            DateTime[] dt = null;
+            if (customnpc.customProjectiles != null)
+            {
+                dt = Enumerable.Repeat(DateTime.Now, customnpc.customProjectiles.Count).ToArray();
+            }
+            NPCs[npcid] = new CustomNPCVars(customnpc, dt, Main.npc[npcid]);
+
+            TSPlayer.All.SendData(PacketTypes.NpcUpdate, "", npcid);
+            return npcid;
+        }
+
+        public static int SpawnNPCAroundNPC(int npcindex, ShotTile shottile, CustomNPCDefinition customnpc)
+        {
+            NPC npc = Main.npc[npcindex];
+            if (npc == null)
+                return -1;
+            int x = (int)(npc.position.X + shottile.X);
+            int y = (int)(npc.position.Y + shottile.Y);
             int npcid = NPC.NewNPC(x, y, customnpc.customBase.type);
             if (npcid == 200)
             {
@@ -419,7 +449,7 @@ namespace CustomNPC
             List<TSPlayer> playerlist = new List<TSPlayer>();
             foreach (TSPlayer player in TShock.Players)
             {
-                if (player != null && !player.Dead)
+                if (player != null && !player.Dead && player.ConnectionAlive)
                 {
                     if (Math.Abs(Vector2.Distance(player.TPlayer.position, position)) <= distance * 16)
                     {
@@ -482,6 +512,154 @@ namespace CustomNPC
                 return;
 
             player.SetBuff(buffid, seconds * 60);
+        }
+
+        public static int AliveCount(string customid)
+        {
+            int count = 0;
+            foreach(CustomNPCVars obj in NPCs)
+            {
+                if (obj == null)
+                    continue;
+                if (obj.customNPC.customID.ToLower() == customid.ToLower())
+                {
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        public static class CustomNPCInvasion
+        {
+            public static Dictionary<string, WaveSet> WaveSets { get; set; }
+            private static Timer InvasionTimer = new Timer(1000);
+            private static WaveSet CurrentInvasion { get; set; }
+            private static Waves CurrentWave { get; set; }
+            private static int CurrentWaveIndex { get; set; }
+            private static int waveSize { get; set; }
+            public static bool invasionStarted = false;
+            public static int WaveSize
+            {
+                get { return waveSize; }
+                set
+                {
+                    waveSize = value;
+                    if (value == 0)
+                    {
+                        NextWave();
+                    }
+                }
+            }
+
+            public static void NextWave()
+            {
+                if (CurrentInvasion == null)
+                    return;
+
+                if (CurrentInvasion.Waves.Count - 1 == CurrentWaveIndex)
+                {
+                    TSPlayer.All.SendInfoMessage("{0} has been defeated!", CurrentInvasion.WaveSetName);
+                    StopInvasion();
+                    return;
+                }
+                CurrentWaveIndex++;
+                CurrentWave = CurrentInvasion.Waves[CurrentWaveIndex];
+                WaveSize = CurrentWave.SpawnGroup.KillAmount;
+                TSPlayer.All.SendInfoMessage("Wave {0}: {1} has begun!", CurrentWaveIndex + 1, CurrentWave.WaveName);
+            }
+
+            public static void StartInvasion(WaveSet waveset)
+            {
+                CurrentInvasion = waveset;
+                CurrentWave = waveset.Waves[0];
+                WaveSize = CurrentWave.SpawnGroup.KillAmount;
+                if (CurrentWave.SpawnGroup.PlayerMultiplier)
+                {
+                    WaveSize *= TShock.Utils.ActivePlayers();
+                }
+                CurrentWaveIndex = 0;
+                InvasionTimer.Elapsed += InvasionTimer_Elapsed;
+                InvasionTimer.Enabled = true;
+                invasionStarted = true;
+            }
+
+            public static void StopInvasion()
+            {
+                InvasionTimer.Elapsed -= InvasionTimer_Elapsed;
+                InvasionTimer.Enabled = false;
+                CurrentInvasion = null;
+                CurrentWave = null;
+                WaveSize = 0;
+                CurrentWaveIndex = 0;
+                invasionStarted = false;
+            }
+
+            private static void InvasionTimer_Elapsed(object sender, ElapsedEventArgs e)
+            {
+                if (TShock.Utils.ActivePlayers() == 0)
+                {
+                    return;
+                }
+                int spawnX = Main.spawnTileX - 150;
+                int spawnY = Main.spawnTileY - 150;
+                Rectangle spawnRegion = new Rectangle(spawnX, spawnY, 300, 300).ToPixels();
+                foreach (SpawnMinion minions in CurrentWave.SpawnGroup.SpawnMinions)
+                {
+                    foreach (TSPlayer player in TShock.Players.Where(x => x != null && !x.Dead && x.Active))
+                    {
+                        if (!NPCManager.Chance(minions.Chance))
+                        {
+                            continue;
+                        }
+                        Rectangle playerFrame = new Rectangle((int)player.TPlayer.position.X, (int)player.TPlayer.position.Y, player.TPlayer.width, player.TPlayer.height);
+                        if (!playerFrame.Intersects(spawnRegion))
+                        {
+                            continue;
+                        }
+                        var npcdef = NPCManager.Data.GetNPCbyID(minions.MobID);
+                        if (npcdef == null)
+                        {
+                            Log.ConsoleError("[CustomNPC]: Error! The custom mob id \"{0}\" does not exist!", minions.MobID);
+                            continue;
+                        }
+                        if (minions.SpawnConditions != SpawnConditions.None)
+                        {
+                            if (NPCManager.CheckSpawnConditions(minions.SpawnConditions))
+                            {
+                                continue;
+                            }
+                        }
+                        if (minions.BiomeConditions != BiomeTypes.None)
+                        {
+                            BiomeTypes biomes = player.GetCurrentBiomes();
+
+                            if ((minions.BiomeConditions & biomes) == 0)
+                            {
+                                continue;
+                            }
+                        }
+                        int mobid = -1;
+                        while (mobid == -1)
+                        {
+                            mobid = NPCManager.SpawnMobAroundPlayer(player, npcdef);
+                        }
+                        NPCManager.GetCustomNPCByIndex(mobid).isInvasion = true;
+                    }
+                }
+            }
+
+            public static WaveSet ReturnWaveSetByName(string name)
+            {
+                WaveSet waveset;
+                if (WaveSets.TryGetValue(name, out waveset))
+                {
+                    return waveset;
+                }
+                else
+                {
+                    return null;
+                }
+            }
         }
     }
 }

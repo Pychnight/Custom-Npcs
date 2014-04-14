@@ -2,13 +2,11 @@ namespace CustomNPC.Invasions
 {
     public class Waves
     {
-        public int WaveNumber { get; set; }
-
+        public string WaveName { get; set; }
         public SpawnsGroups SpawnGroup { get; set; }
-
-        public Waves(int wavenumber, SpawnsGroups spawngroup)
+        public Waves(string wavename, SpawnsGroups spawngroup)
         {
-            WaveNumber = wavenumber;
+            WaveName = wavename;
             SpawnGroup = spawngroup;
         }
     }

@@ -213,7 +213,7 @@ namespace CustomNPC
                 y += obj.Area.Top;
             }
             Vector2 pos = new Vector2(x, y);
-            npcvar.mainNPC.position = pos;
+            npcvar.mainNPC.position = pos * 16;
         }
 
         /// <summary>
@@ -224,7 +224,7 @@ namespace CustomNPC
         public void TeleportNPC(CustomNPCVars npcvar, int x, int y)
         {
             Vector2 pos = new Vector2(x, y);
-            npcvar.mainNPC.position = pos;
+            npcvar.mainNPC.position = pos * 16;
         }
 
         /// <summary>

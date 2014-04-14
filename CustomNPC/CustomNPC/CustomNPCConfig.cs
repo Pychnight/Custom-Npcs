@@ -60,6 +60,26 @@ namespace CustomNPC
         /// <param name="stream">stream</param>
         public void Write(Stream stream)
         {
+            //minion spawns
+            List<SpawnMinion> SpawnMinions1 = new List<SpawnMinion>();
+            SpawnMinion SpawnMinion1 = new SpawnMinion("customnpc id", 100, BiomeTypes.None, SpawnConditions.None, false, true);
+            SpawnMinion SpawnMinion2 = new SpawnMinion("customnpc id2", 100, BiomeTypes.None, SpawnConditions.None, false, true);
+            SpawnMinions1.Add(SpawnMinion1);
+            SpawnMinions1.Add(SpawnMinion2);
+
+            //SpawnGroups
+            SpawnsGroups SpawnGroup1 = new SpawnsGroups(true, true, SpawnMinions1, 100);
+
+            //Waves
+            List<Waves> Waves1 = new List<Waves>();
+            Waves Wave1 = new Waves("Insert Wavename", SpawnGroup1);
+            Waves1.Add(Wave1);
+
+            //WaveSets
+            WaveSets = new Dictionary<string, WaveSet>();
+            WaveSet WaveSets1 = new WaveSet("WaveName", Waves1);
+            WaveSets.Add("WaveSet Name", WaveSets1);
+
             var str = JsonConvert.SerializeObject(this, Formatting.Indented);
             using (var sw = new StreamWriter(stream))
             {

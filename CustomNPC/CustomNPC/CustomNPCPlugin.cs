@@ -23,7 +23,6 @@ namespace CustomNPC
     {
         internal Random rand = new Random();
         public CustomNPCConfig ConfigObj { get; set; }
-        private CustomNPCInvasion InvasionObj { get; set; }
         private String SavePath = TShock.SavePath;
         internal static string filepath { get { return Path.Combine(TShock.SavePath, "customnpcinvasion.json"); } }
 
@@ -117,8 +116,8 @@ namespace CustomNPC
             Commands.ChatCommands.Add(new Command("customnpc.spawn", CommandSpawnNPC, "csm"));
             Commands.ChatCommands.Add(new Command("customnpc.invade", CommandInvade, "cinvade"));
             ConfigObj = new CustomNPCConfig();
-            InvasionObj = new CustomNPCInvasion(this);
             SetupConfig();
+            NPCManager.CustomNPCInvasion.WaveSets = ConfigObj.WaveSets;
             mainLoop.Elapsed += mainLoop_Elapsed;
             mainLoop.Enabled = true;
         }
@@ -129,7 +128,7 @@ namespace CustomNPC
         /// <param name="args"></param>
         private void OnLootDrop(NpcLootDropEventArgs args)
         {
-            CustomNPCVars npcvar = NPCManager.NPCs[args.NpcArrayIndex];
+            CustomNPCVars npcvar = NPCManager.GetCustomNPCByIndex(args.NpcArrayIndex);
             //check if monster has been customized
             if (npcvar == null || npcvar.droppedLoot)
             {
@@ -161,20 +160,20 @@ namespace CustomNPC
         }
 
         /// <summary>
-        /// Spawn custom npc using /csm <id> [amount]
+        /// Spawn custom npc using /csm <id> [amount] [x] [y]
         /// </summary>
         /// <param name="args"></param>
         private void CommandSpawnNPC(CommandArgs args)
         {
             //error if too many or too few params specified
-            if (args.Parameters.Count == 0 || args.Parameters.Count > 2)
+            if (args.Parameters.Count == 0 || args.Parameters.Count > 4)
             {
-                args.Player.SendInfoMessage("Info: /csm <id> [amount]");
+                args.Player.SendInfoMessage("Info: /csm <id> [amount] [x] [y]");
                 return;
             }
             //get custom npc by id
-            var cvar = NPCManager.Data.GetNPCbyID(args.Parameters[0]);
-            if (cvar == null)
+            var cdef = NPCManager.Data.GetNPCbyID(args.Parameters[0]);
+            if (cdef == null)
             {
                 args.Player.SendErrorMessage("Error: The custom npc id \"{0}\" does not exist!", args.Parameters[0]);
                 return;
@@ -186,9 +185,32 @@ namespace CustomNPC
             {
                 int.TryParse(args.Parameters[1], out amount);
             }
+            int x = 0;
+            int y = 0;
+            if (args.Parameters.Count != 4)
+            {
+                x = (int)args.Player.X + rand.Next(0, 16) - 8;
+                y = (int)args.Player.Y + rand.Next(0, 16) - 8;
+            }
+            else
+            {
+                if (!int.TryParse(args.Parameters[2], out x))
+                {
+                    args.Player.SendErrorMessage("Error: Invalid x position defined!");
+                    return;
+                }
+                if (!int.TryParse(args.Parameters[3], out y))
+                {
+                    args.Player.SendErrorMessage("Error: Invalid y position defined!");
+                    return;
+                }
+            }
             //all checks complete spawn mob
             for (int i = 0; i < amount; i++)
-                NPCManager.SpawnNPCAtLocation((int)args.Player.X + rand.Next(0, 16) - 8, (int)args.Player.Y + rand.Next(0, 16) - 8, cvar);
+            {
+                NPCManager.SpawnNPCAtLocation(x, y, cdef);
+                cdef.currSpawnsVar++;
+            }
         }
 
         /// <summary>
@@ -293,9 +315,9 @@ namespace CustomNPC
 
                 eventManager.InvokeHandler(killedArgs, EventType.NpcKill);
 
-                if (npcvar.isInvasion)
+                if (npcvar != null && npcvar.isInvasion)
                 {
-                    InvasionObj.WaveSize--;
+                    NPCManager.CustomNPCInvasion.WaveSize--;
                 }
             }
         }
@@ -612,18 +634,21 @@ namespace CustomNPC
                 return;
             }
             //get custom invasion by name
-            
-            if (true)
+            WaveSet waveset;
+            if (!ConfigObj.WaveSets.TryGetValue(args.Parameters[0], out waveset))
             {
                 args.Player.SendErrorMessage("Error: The custom npc id \"{0}\" does not exist!", args.Parameters[0]);
                 return;
             }
-            //default to 1 if amount is not defined
-            int amount = 1;
-            //check if amount is defined
-            if (args.Parameters.Count == 2)
+            if (!NPCManager.CustomNPCInvasion.invasionStarted)
             {
-                int.TryParse(args.Parameters[1], out amount);
+                NPCManager.CustomNPCInvasion.StartInvasion(waveset);
+                TSPlayer.All.SendInfoMessage("Invasion: {0} has started!", waveset.WaveSetName);
+            }
+            else
+            {
+                NPCManager.CustomNPCInvasion.StopInvasion();
+                TSPlayer.All.SendInfoMessage("Invasion: {0} has stopped!", waveset.WaveSetName);
             }
         }
     }

@@ -58,7 +58,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CustomNPCConfig.cs" />
-    <Compile Include="Invasions\CustomNPCInvasion.cs" />
     <Compile Include="Invasions\SpawnMinion.cs" />
     <Compile Include="Invasions\SpawnsGroups.cs" />
     <Compile Include="Invasions\Waves.cs" />
