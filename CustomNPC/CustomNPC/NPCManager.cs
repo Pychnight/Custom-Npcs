@@ -581,10 +581,12 @@ namespace CustomNPC
                 InvasionTimer.Elapsed += InvasionTimer_Elapsed;
                 InvasionTimer.Enabled = true;
                 invasionStarted = true;
+                TSPlayer.All.SendInfoMessage("Invasion: {0} has started!", waveset.WaveSetName);
             }
 
             public static void StopInvasion()
             {
+                TSPlayer.All.SendInfoMessage("Invasion: {0} has stopped!", CurrentInvasion.WaveSetName);
                 InvasionTimer.Elapsed -= InvasionTimer_Elapsed;
                 InvasionTimer.Enabled = false;
                 CurrentInvasion = null;
@@ -611,10 +613,13 @@ namespace CustomNPC
                         {
                             continue;
                         }
-                        Rectangle playerFrame = new Rectangle((int)player.TPlayer.position.X, (int)player.TPlayer.position.Y, player.TPlayer.width, player.TPlayer.height);
-                        if (!playerFrame.Intersects(spawnRegion))
+                        if (!CurrentWave.SpawnAnywhere)
                         {
-                            continue;
+                            Rectangle playerFrame = new Rectangle((int)player.TPlayer.position.X, (int)player.TPlayer.position.Y, player.TPlayer.width, player.TPlayer.height);
+                            if (!playerFrame.Intersects(spawnRegion))
+                            {
+                                continue;
+                            }
                         }
                         var npcdef = NPCManager.Data.GetNPCbyID(minions.MobID);
                         if (npcdef == null)

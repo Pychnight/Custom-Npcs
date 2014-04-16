@@ -6,10 +6,12 @@ namespace CustomNPC.Invasions
     {
         public string WaveSetName { get; set; }
         public List<Waves> Waves { get; set; }
+        
         public WaveSet(string wavesetname, List<Waves> waves)
         {
             WaveSetName = wavesetname;
             Waves = waves;
+
         }
     }
 }

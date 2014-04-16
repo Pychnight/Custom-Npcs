@@ -643,12 +643,10 @@ namespace CustomNPC
             if (!NPCManager.CustomNPCInvasion.invasionStarted)
             {
                 NPCManager.CustomNPCInvasion.StartInvasion(waveset);
-                TSPlayer.All.SendInfoMessage("Invasion: {0} has started!", waveset.WaveSetName);
             }
             else
             {
                 NPCManager.CustomNPCInvasion.StopInvasion();
-                TSPlayer.All.SendInfoMessage("Invasion: {0} has stopped!", waveset.WaveSetName);
             }
         }
     }
