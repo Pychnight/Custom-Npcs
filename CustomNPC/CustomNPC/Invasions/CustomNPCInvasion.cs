@@ -119,12 +119,21 @@ namespace CustomNPC
                             continue;
                         }
                     }
-                    int mobid = -1;
-                    while (mobid == -1)
+
+                    // prevent multiple bosses from spawning during invasions
+                    if (minions.isBoss && NPCManager.AliveCount(minions.MobID) > 0)
                     {
-                        mobid = NPCManager.SpawnMobAroundPlayer(player, npcdef);
+                        continue;
                     }
-                    NPCManager.GetCustomNPCByIndex(mobid).isInvasion = true;
+
+                    int mobId;
+                    do
+                    {
+                        mobId = NPCManager.SpawnMobAroundPlayer(player, npcdef);
+                    }
+                    while (mobId == -1);
+
+                    NPCManager.GetCustomNPCByIndex(mobId).isInvasion = true;
                 }
             }
         }
