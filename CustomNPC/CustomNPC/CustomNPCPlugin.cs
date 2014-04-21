@@ -22,7 +22,6 @@ namespace CustomNPC
     {
         internal Random rand = new Random();
         public CustomNPCConfig ConfigObj { get; set; }
-        private CustomNPCInvasion InvasionObj { get; set; }
         private String SavePath = TShock.SavePath;
         internal static string filepath { get { return Path.Combine(TShock.SavePath, "customnpcinvasion.json"); } }
 
@@ -116,8 +115,8 @@ namespace CustomNPC
             Commands.ChatCommands.Add(new Command("customnpc.spawn", CommandSpawnNPC, "csm"));
             Commands.ChatCommands.Add(new Command("customnpc.invade", CommandInvade, "cinvade"));
             ConfigObj = new CustomNPCConfig();
-            InvasionObj = new CustomNPCInvasion(this);
             SetupConfig();
+            NPCManager.CustomNPCInvasion.WaveSets = ConfigObj.WaveSets;
             mainLoop.Elapsed += mainLoop_Elapsed;
             mainLoop.Enabled = true;
         }
@@ -317,7 +316,7 @@ namespace CustomNPC
 
                 if (npcvar != null && npcvar.isInvasion)
                 {
-                    InvasionObj.WaveSize--;
+                    NPCManager.CustomNPCInvasion.WaveSize--;
                 }
             }
         }
@@ -389,7 +388,7 @@ namespace CustomNPC
         {
             foreach (CustomNPCVars obj in NPCManager.NPCs)
             {
-                if (obj != null && !obj.isDead)
+                if (obj != null && !obj.isDead && (obj.mainNPC.aiStyle != obj.customNPC.customAI))
                 {
                     NetMessage.SendData(23, -1, -1, "", obj.mainNPC.whoAmI, 0f, 0f, 0f, 0);
                 }
@@ -640,15 +639,13 @@ namespace CustomNPC
                 args.Player.SendErrorMessage("Error: The custom npc id \"{0}\" does not exist!", args.Parameters[0]);
                 return;
             }
-            if (!InvasionObj.invasionStarted)
+            if (!NPCManager.CustomNPCInvasion.invasionStarted)
             {
-                InvasionObj.StartInvasion(waveset);
-                TSPlayer.All.SendInfoMessage("Invasion: {0} has started!", waveset.WaveSetName);
+                NPCManager.CustomNPCInvasion.StartInvasion(waveset);
             }
             else
             {
-                InvasionObj.StopInvasion();
-                TSPlayer.All.SendInfoMessage("Invasion: {0} has stopped!", waveset.WaveSetName);
+                NPCManager.CustomNPCInvasion.StopInvasion();
             }
         }
     }
