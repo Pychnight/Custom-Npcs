@@ -6,13 +6,12 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using CustomNPC.EventSystem;
 using CustomNPC.EventSystem.Events;
-using CustomNPC.Invasions;
 using CustomNPC.Plugins;
 using Terraria;
 using TerrariaApi.Server;
-using System.Timers;
 using TShockAPI;
 using TShockAPI.DB;
 

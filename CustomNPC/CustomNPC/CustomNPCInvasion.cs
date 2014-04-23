@@ -112,11 +112,20 @@ namespace CustomNPC
                             continue;
                         }
                     }
-                    int mobid = -1;
-                    while (mobid == -1)
+
+                    // prevent multiple bosses from spawning during invasions
+                    if (minions.isBoss && NPCManager.AliveCount(minions.MobID) > 0)
+                    {
+                        continue;
+                    }
+
+                    int mobid;
+                    do
                     {
                         mobid = NPCManager.SpawnMobAroundPlayer(player, npcdef);
                     }
+                    while (mobid == -1);
+
                     NPCManager.GetCustomNPCByIndex(mobid).isInvasion = true;                   
                 }
             }
@@ -175,10 +184,12 @@ namespace CustomNPC
     {
         public string WaveName { get; set; }
         public SpawnsGroups SpawnGroup { get; set; }
-        public Waves(string wavename, SpawnsGroups spawngroup)
+        public bool SpawnAnywhere { get; set; }
+        public Waves(string wavename, SpawnsGroups spawngroup, bool spawnanywhere = false)
         {
             WaveName = wavename;
             SpawnGroup = spawngroup;
+            SpawnAnywhere = spawnanywhere;
         }
     }
     public class WaveSet

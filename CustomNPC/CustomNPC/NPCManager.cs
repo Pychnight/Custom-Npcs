@@ -7,7 +7,6 @@ using System.Timers;
 using Terraria;
 using TShockAPI;
 using TShockAPI.DB;
-using CustomNPC.Invasions;
 
 namespace CustomNPC
 {
