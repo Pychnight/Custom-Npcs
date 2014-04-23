@@ -510,7 +510,7 @@ namespace CustomNPC
             TSPlayer player = TShock.Players[playerindex];
             if (player == null)
                 return;
-
+            player.TPlayer.AddBuff(40, seconds * 60);
             player.SetBuff(buffid, seconds * 60);
         }
 
@@ -566,6 +566,7 @@ namespace CustomNPC
                 CurrentWave = CurrentInvasion.Waves[CurrentWaveIndex];
                 WaveSize = CurrentWave.SpawnGroup.KillAmount;
                 TSPlayer.All.SendInfoMessage("Wave {0}: {1} has begun!", CurrentWaveIndex + 1, CurrentWave.WaveName);
+                SpawnBoss();
             }
 
             public static void StartInvasion(WaveSet waveset)
@@ -582,8 +583,66 @@ namespace CustomNPC
                 InvasionTimer.Enabled = true;
                 invasionStarted = true;
                 TSPlayer.All.SendInfoMessage("Invasion: {0} has started!", waveset.WaveSetName);
+                SpawnBoss();
             }
+            
+            public static void SpawnBoss()
+            {
+                if (TShock.Utils.ActivePlayers() == 0)
+                {
+                    return;
+                }
+                int spawnX = Main.spawnTileX - 150;
+                int spawnY = Main.spawnTileY - 150;
+                Rectangle spawnRegion = new Rectangle(spawnX, spawnY, 300, 300).ToPixels();
+                foreach (SpawnMinion minions in CurrentWave.SpawnGroup.SpawnMinions.Where(p => p.isBoss))
+                {
+                    foreach (TSPlayer player in TShock.Players.Where(x => x != null && !x.Dead && x.Active))
+                    {
+                        if (!NPCManager.Chance(minions.Chance))
+                        {
+                            continue;
+                        }
+                        if (!CurrentWave.SpawnAnywhere)
+                        {
+                            Rectangle playerFrame = new Rectangle((int)player.TPlayer.position.X, (int)player.TPlayer.position.Y, player.TPlayer.width, player.TPlayer.height);
+                            if (!playerFrame.Intersects(spawnRegion))
+                            {
+                                continue;
+                            }
+                        }
+                        var npcdef = NPCManager.Data.GetNPCbyID(minions.MobID);
+                        if (npcdef == null)
+                        {
+                            Log.ConsoleError("[CustomNPC]: Error! The custom mob id \"{0}\" does not exist!", minions.MobID);
+                            continue;
+                        }
+                        if (minions.SpawnConditions != SpawnConditions.None)
+                        {
+                            if (NPCManager.CheckSpawnConditions(minions.SpawnConditions))
+                            {
+                                continue;
+                            }
+                        }
+                        if (minions.BiomeConditions != BiomeTypes.None)
+                        {
+                            BiomeTypes biomes = player.GetCurrentBiomes();
 
+                            if ((minions.BiomeConditions & biomes) == 0)
+                            {
+                                continue;
+                            }
+                        }
+                        int mobid = -1;
+                        while (mobid == -1)
+                        {
+                            mobid = NPCManager.SpawnMobAroundPlayer(player, npcdef);
+                        }
+                        NPCManager.GetCustomNPCByIndex(mobid).isInvasion = true;
+                    }
+                }
+            }
+           
             public static void StopInvasion()
             {
                 TSPlayer.All.SendInfoMessage("Invasion: {0} has stopped!", CurrentInvasion.WaveSetName);
@@ -605,7 +664,7 @@ namespace CustomNPC
                 int spawnX = Main.spawnTileX - 150;
                 int spawnY = Main.spawnTileY - 150;
                 Rectangle spawnRegion = new Rectangle(spawnX, spawnY, 300, 300).ToPixels();
-                foreach (SpawnMinion minions in CurrentWave.SpawnGroup.SpawnMinions)
+                foreach (SpawnMinion minions in CurrentWave.SpawnGroup.SpawnMinions.Where(p => !p.isBoss))
                 {
                     foreach (TSPlayer player in TShock.Players.Where(x => x != null && !x.Dead && x.Active))
                     {

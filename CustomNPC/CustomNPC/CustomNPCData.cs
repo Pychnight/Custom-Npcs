@@ -51,14 +51,9 @@ namespace CustomNPC
         /// <returns></returns>
         public CustomNPCDefinition GetNPCbyID(string id)
         {
-            foreach (CustomNPCDefinition obj in CustomNPCs.Values)
-            {
-                if (obj.customID == id)
-                {
-                    return obj;
-                }
-            }
-            return null;
+            CustomNPCDefinition npcdef;
+            this.CustomNPCs.TryGetValue(id, out npcdef);
+            return npcdef;
         }
 
         /// <summary>

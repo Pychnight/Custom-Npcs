@@ -79,7 +79,7 @@ namespace CustomNPC
                     mainNPC.life += additionalhealth;
                 }
             }
-
+            NetMessage.SendData(23, -1, -1, "", mainNPC.whoAmI, 0f, 0f, 0f, 0);
             return true;
         }
 
@@ -104,6 +104,7 @@ namespace CustomNPC
                     mainNPC.life += additionalhealth;
                 }
             }
+            NetMessage.SendData(23, -1, -1, "", mainNPC.whoAmI, 0f, 0f, 0f, 0);
         }
 
         /// <summary>
