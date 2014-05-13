@@ -133,28 +133,24 @@ namespace CustomNPC
             {
                 return;
             }
-
+			npcvar.isDead = true;
+			npcvar.droppedLoot = true;
             args.Handled = npcvar.customNPC.overrideBaseNPCLoot;
-            if (!npcvar.droppedLoot)
+            if (npcvar.customNPC.customNPCLoots != null)
             {
-                if (npcvar.customNPC.customNPCLoots != null)
+                foreach (CustomNPCLoot obj in npcvar.customNPC.customNPCLoots)
                 {
-                    foreach (CustomNPCLoot obj in npcvar.customNPC.customNPCLoots)
+                    if (obj.itemDropChance >= 100 || NPCManager.Chance(obj.itemDropChance))
                     {
-                        if (obj.itemDropChance >= 100 || NPCManager.Chance(obj.itemDropChance))
+                        int pre = 0;
+                        if (obj.itemPrefix != null)
                         {
-                            int pre = 0;
-                            if (obj.itemPrefix != null)
-                            {
-                                pre = obj.itemPrefix[rand.Next(obj.itemPrefix.Count)];
-                            }
-
-                            Item.NewItem((int)npcvar.mainNPC.position.X, (int)npcvar.mainNPC.position.Y, npcvar.mainNPC.width, npcvar.mainNPC.height, obj.itemID, obj.itemStack, false, pre, false);
+                            pre = obj.itemPrefix[rand.Next(obj.itemPrefix.Count)];
                         }
+
+                        Item.NewItem((int)npcvar.mainNPC.position.X, (int)npcvar.mainNPC.position.Y, npcvar.mainNPC.width, npcvar.mainNPC.height, obj.itemID, obj.itemStack, false, pre, false);
                     }
                 }
-                npcvar.isDead = true;
-                npcvar.droppedLoot = true;
             }
         }
 
