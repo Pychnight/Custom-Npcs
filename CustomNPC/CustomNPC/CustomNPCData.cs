@@ -71,7 +71,7 @@ namespace CustomNPC
             npc.name = obj.customName;
             npc.displayName = obj.customName;
             npc.lifeMax = obj.customHealth;
-            npc.life = obj.customHealth;
+            npc.life = obj.customHealth - 1;
             npc.aiStyle = obj.customAI;
             npc.lavaImmune = obj.lavaImmune;
             npc.noGravity = obj.noGravity;
