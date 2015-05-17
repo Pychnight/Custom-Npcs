@@ -113,6 +113,7 @@ namespace CustomNPC
         private void OnInitialize(EventArgs args)
         {
             Commands.ChatCommands.Add(new Command("customnpc.spawn", CommandSpawnNPC, "csm"));
+            Commands.ChatCommands.Add(new Command("customnpc.list", CommandListNPCS, "csmlist"));
             Commands.ChatCommands.Add(new Command("customnpc.invade", CommandInvade, "cinvade"));
             ConfigObj = new CustomNPCConfig();
             SetupConfig();
@@ -159,7 +160,7 @@ namespace CustomNPC
         }
 
         /// <summary>
-        /// Spawn custom npc using /csm <id> [amount] [x] [y]
+        /// Spawn custom npc using /csm &lt;id&gt; [amount] [x] [y]
         /// </summary>
         /// <param name="args"></param>
         private void CommandSpawnNPC(CommandArgs args)
@@ -213,13 +214,65 @@ namespace CustomNPC
         }
 
         /// <summary>
+        /// List custom npcs using /csmlist &lt;page&gt;
+        /// </summary>
+        /// <param name="args"></param>
+        private void CommandListNPCS(CommandArgs args)
+        {
+            //error if too many or too few params specified
+            if (args.Parameters.Count == 0 || args.Parameters.Count > 1)
+            {
+                args.Player.SendInfoMessage("Info: /csmlist <page>");
+                return;
+            }
+
+            int page;
+            if (!int.TryParse(args.Parameters[0], out page))
+            {
+                args.Player.SendErrorMessage("Error: Invalid page defined! Please give a number.");
+                return;
+            }
+
+            //Check if page is valid
+            if (page < 1)
+            {
+                args.Player.SendErrorMessage("Error: Invalid page defined! Page has to be 1 or bigger.");
+                return;
+            }
+
+            var vals = NPCManager.Data.CustomNPCs.Values;
+
+            int start = (page - 1) * 5;
+            int end = start + 5;
+            int total = vals.Count();
+            int totalpages = (total + 5) / 5;
+
+            if (start > total)
+            {
+                args.Player.SendErrorMessage("Error: Page too large! The last page is \"{0}\".", totalpages);
+                return;
+            }
+
+            args.Player.SendInfoMessage("Page {0} / {1} ", page, totalpages);
+
+            for (int i = start; i < end && i < total; i++)
+            {
+                CustomNPCDefinition obj = vals.ElementAt(i);
+                if (obj == null) continue;
+                
+                args.Player.SendInfoMessage("[{0}]: {1}. Spawned: {2}", obj.customID, obj.customName, obj.currSpawnsVar);
+            }
+        }
+
+        /// <summary>
+        /// Called every time the server ticks.
         /// Adds Custom Monster to array for replacement
         /// </summary>
         /// <param name="args"></param>
         private void OnUpdate(EventArgs args)
         {
             //Update all Custom NPCs
-            CustomNPCUpdate();
+            CustomNPCUpdateSafe(false);
         }
 
         private void OnNPCSpawn(NpcSpawnEventArgs args)
@@ -374,8 +427,8 @@ namespace CustomNPC
             CheckActiveNPCs();
             //Spawn mobs into regions and specific biomes
             SpawnMobsInBiomeAndRegion();
-            //Update All NPCs
-            CustomNPCUpdate();
+            //Update All NPCs without custom AI (that are alive)
+            CustomNPCUpdateSafe(true);
             //fire projectiles towards closests player
             ProjectileCheck();
             //Check for player Collision with NPC
@@ -388,7 +441,27 @@ namespace CustomNPC
         {
             foreach (CustomNPCVars obj in NPCManager.NPCs)
             {
-                if (obj != null && !obj.isDead && (obj.mainNPC.aiStyle != obj.customNPC.customAI))
+                //
+                // && (obj.mainNPC.aiStyle != obj.customNPC.customAI)
+                if (obj != null && !obj.isDead)
+                {
+                    NetMessage.SendData(23, -1, -1, "", obj.mainNPC.whoAmI, 0f, 0f, 0f, 0);
+                }
+            }
+        }
+
+        private void CustomNPCUpdateSafe(bool extraCheck)
+        {
+            foreach (CustomNPCVars obj in NPCManager.NPCs)
+            {
+                if (obj == null) continue;
+
+                if (!obj.isDead && (obj.mainNPC == null || obj.mainNPC.life <= 0 || obj.mainNPC.type == 0))
+                {
+                    //This NPC SHOULD be dead.
+                    continue;
+                }
+                else if (!obj.isDead && (!extraCheck || (obj.mainNPC.aiStyle != obj.customNPC.customAI)))
                 {
                     NetMessage.SendData(23, -1, -1, "", obj.mainNPC.whoAmI, 0f, 0f, 0f, 0);
                 }

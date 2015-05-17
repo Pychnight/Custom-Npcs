@@ -32,6 +32,44 @@ namespace CustomNPC
             droppedLoot = false;
         }
 
+        private void UpdateSkin(NPC target)
+        {
+            //Proper type
+            mainNPC.type = target.type;
+            mainNPC.netID = target.netID;
+
+            //Color and size
+            mainNPC.color = target.color;
+            mainNPC.width = target.width;
+            mainNPC.height = target.height;
+            mainNPC.scale = target.scale;
+
+            //Sounds
+            mainNPC.soundHit = target.soundHit;
+            mainNPC.soundKilled = target.soundKilled;
+            mainNPC.soundDelay = target.soundDelay;
+        }
+
+        /// <summary>
+        /// Applies a new base type. Effect wise the same as replacing this custom NPC with a new one.
+        /// </summary>
+        private void CustomTransform()
+        {
+            UpdateSkin(customNPC.customBase);
+
+            //mainNPC.SetDefaults(customNPC.customBase.type);
+
+            //mainNPC.name = customNPC.customName;
+            //mainNPC.displayName = customNPC.customName;
+            mainNPC.lifeMax = customNPC.customHealth;
+            mainNPC.aiStyle = customNPC.customAI;
+            mainNPC.lavaImmune = customNPC.lavaImmune;
+            mainNPC.noGravity = customNPC.noGravity;
+            mainNPC.noTileCollide = customNPC.noTileCollide;
+
+            //mainNPC.target = oldtarget;
+        }
+
         /// <summary>
         /// Transforms a NPC to another Custom NPC
         /// </summary>
@@ -41,7 +79,10 @@ namespace CustomNPC
         public void Transform(CustomNPCDefinition npcdef, bool addhealth = false, int additionalhealth = 0)
         {
             customNPC = npcdef;
-            mainNPC.type = npcdef.customBase.type;
+            CustomTransform();
+            //mainNPC.Transform(customNPC.customBase.type);
+
+            //mainNPC.type = npcdef.customBase.type;
             if (addhealth)
             {
                 if (additionalhealth == 0)
@@ -53,6 +94,8 @@ namespace CustomNPC
                     mainNPC.life += additionalhealth;
                 }
             }
+
+
         }
 
         /// <summary>
@@ -63,11 +106,15 @@ namespace CustomNPC
         /// <param name="additionalhealth">Amount to Increase by, if 0 - get new monsters health and add that to NPC</param>
         public bool Transform(string id, bool addhealth = false, int additionalhealth = 0)
         {
-            customNPC = NPCManager.Data.GetNPCbyID(id);
-            if (customNPC == null)
+            CustomNPCDefinition search = NPCManager.Data.GetNPCbyID(id);
+            //If not found, return false
+            if (search == null)
                 return false;
 
-            mainNPC.type = customNPC.customBase.type;
+            customNPC = search;
+            CustomTransform();
+
+            //mainNPC.type = customNPC.customBase.type;
             if (addhealth)
             {
                 if (additionalhealth == 0)
@@ -92,7 +139,11 @@ namespace CustomNPC
         public void Transform(int id, bool addhealth = false, int additionalhealth = 0)
         {
             NPC obj = TShock.Utils.GetNPCById(id);
-            mainNPC.type = obj.netID;
+
+            //mainNPC.type = obj.netID;
+
+            UpdateSkin(obj);
+
             if (addhealth)
             {
                 if (additionalhealth == 0)
@@ -180,6 +231,8 @@ namespace CustomNPC
                     {
                         spawned.mainNPC.life = health;
                     }
+                    //TADD this should be here I think
+                    spawned.isClone = true;
                 }
             }
         }
