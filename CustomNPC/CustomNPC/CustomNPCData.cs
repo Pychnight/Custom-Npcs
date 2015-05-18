@@ -72,7 +72,6 @@ namespace CustomNPC
             npc.netDefaults(obj.customBase.netID);
             //npc.type = obj.customBaseID;
 
-            npc.life = obj.customHealth;
             npc.name = obj.customName;
             npc.displayName = obj.customName;
             npc.lifeMax = obj.customHealth;
@@ -81,6 +80,13 @@ namespace CustomNPC
             npc.lavaImmune = obj.lavaImmune;
             npc.noGravity = obj.noGravity;
             npc.noTileCollide = obj.noTileCollide;
+
+            //TADD
+            npc.defense = obj.customDefense;
+            npc.defDefense = obj.customDefense;
+            npc.damage = obj.customDamage;
+            npc.defDamage = obj.customDamage;
+
 
             if (!string.IsNullOrEmpty(obj.customSpawnMessage))
             {
