@@ -17,7 +17,7 @@ using TShockAPI.DB;
 
 namespace CustomNPC
 {
-    [ApiVersion(1, 15)]
+    [ApiVersion(1, 17)]
     public class CustomNPCPlugin : TerrariaPlugin
     {
         internal Random rand = new Random();
@@ -44,14 +44,14 @@ namespace CustomNPC
             pluginDomain = CreateNewPluginDomain();
 #endif
             ////pluginDomain.AssemblyResolve += PluginDomain_OnAssemblyResolve;
-/*
-            foreach (AssemblyName asm in Assembly.GetExecutingAssembly().GetReferencedAssemblies())
-            {
-                pluginDomain.Load(asm);
-            }
+            /*
+                        foreach (AssemblyName asm in Assembly.GetExecutingAssembly().GetReferencedAssemblies())
+                        {
+                            pluginDomain.Load(asm);
+                        }
 
-            pluginDomain.Load(Assembly.GetExecutingAssembly().GetName());
-*/
+                        pluginDomain.Load(Assembly.GetExecutingAssembly().GetName());
+            */
 
 #if USE_APPDOMAIN
             pluginManager = pluginDomain.CreateInstanceAndUnwrap<PluginManager<NPCPlugin>>(eventManager, definitionManager);
@@ -77,7 +77,7 @@ namespace CustomNPC
 
         public override Version Version
         {
-            get { return new Version("1.0"); }
+            get { return new Version("1.1"); }
         }
 
         public override void Initialize()
@@ -113,6 +113,7 @@ namespace CustomNPC
         private void OnInitialize(EventArgs args)
         {
             Commands.ChatCommands.Add(new Command("customnpc.spawn", CommandSpawnNPC, "csm"));
+            Commands.ChatCommands.Add(new Command("customnpc.list", CommandListNPCS, "csmlist"));
             Commands.ChatCommands.Add(new Command("customnpc.invade", CommandInvade, "cinvade"));
             ConfigObj = new CustomNPCConfig();
             SetupConfig();
@@ -133,29 +134,33 @@ namespace CustomNPC
             {
                 return;
             }
-			npcvar.isDead = true;
-			npcvar.droppedLoot = true;
-            args.Handled = npcvar.customNPC.overrideBaseNPCLoot;
-            if (npcvar.customNPC.customNPCLoots != null)
-            {
-                foreach (CustomNPCLoot obj in npcvar.customNPC.customNPCLoots)
-                {
-                    if (obj.itemDropChance >= 100 || NPCManager.Chance(obj.itemDropChance))
-                    {
-                        int pre = 0;
-                        if (obj.itemPrefix != null)
-                        {
-                            pre = obj.itemPrefix[rand.Next(obj.itemPrefix.Count)];
-                        }
 
-                        Item.NewItem((int)npcvar.mainNPC.position.X, (int)npcvar.mainNPC.position.Y, npcvar.mainNPC.width, npcvar.mainNPC.height, obj.itemID, obj.itemStack, false, pre, false);
+            args.Handled = npcvar.customNPC.overrideBaseNPCLoot;
+            if (!npcvar.droppedLoot)
+            {
+                if (npcvar.customNPC.customNPCLoots != null)
+                {
+                    foreach (CustomNPCLoot obj in npcvar.customNPC.customNPCLoots)
+                    {
+                        if (obj.itemDropChance >= 100 || NPCManager.Chance(obj.itemDropChance))
+                        {
+                            int pre = 0;
+                            if (obj.itemPrefix != null)
+                            {
+                                pre = obj.itemPrefix[rand.Next(obj.itemPrefix.Count)];
+                            }
+
+                            Item.NewItem((int)npcvar.mainNPC.position.X, (int)npcvar.mainNPC.position.Y, npcvar.mainNPC.width, npcvar.mainNPC.height, obj.itemID, obj.itemStack, false, pre, false);
+                        }
                     }
                 }
+                npcvar.isDead = true;
+                npcvar.droppedLoot = true;
             }
         }
 
         /// <summary>
-        /// Spawn custom npc using /csm <id> [amount] [x] [y]
+        /// Spawn custom npc using /csm &lt;id&gt; [amount] [x] [y]
         /// </summary>
         /// <param name="args"></param>
         private void CommandSpawnNPC(CommandArgs args)
@@ -205,22 +210,69 @@ namespace CustomNPC
             {
                 NPCManager.SpawnNPCAtLocation(x, y, cdef);
                 cdef.currSpawnsVar++;
-				if (args.Parameters.Count != 4)
-				{
-					x = (int)args.Player.X + rand.Next(0, 16) - 8;
-					y = (int)args.Player.Y + rand.Next(0, 16) - 8;
-				}
             }
         }
 
         /// <summary>
+        /// List custom npcs using /csmlist &lt;page&gt;
+        /// </summary>
+        /// <param name="args"></param>
+        private void CommandListNPCS(CommandArgs args)
+        {
+            //error if too many or too few params specified
+            if (args.Parameters.Count == 0 || args.Parameters.Count > 1)
+            {
+                args.Player.SendInfoMessage("Info: /csmlist <page>");
+                return;
+            }
+
+            int page;
+            if (!int.TryParse(args.Parameters[0], out page))
+            {
+                args.Player.SendErrorMessage("Error: Invalid page defined! Please give a number.");
+                return;
+            }
+
+            //Check if page is valid
+            if (page < 1)
+            {
+                args.Player.SendErrorMessage("Error: Invalid page defined! Page has to be 1 or bigger.");
+                return;
+            }
+
+            var vals = NPCManager.Data.CustomNPCs.Values;
+
+            int start = (page - 1) * 5;
+            int end = start + 5;
+            int total = vals.Count();
+            int totalpages = (total + 5) / 5;
+
+            if (start > total)
+            {
+                args.Player.SendErrorMessage("Error: Page too large! The last page is \"{0}\".", totalpages);
+                return;
+            }
+
+            args.Player.SendInfoMessage("Page {0} / {1} ", page, totalpages);
+
+            for (int i = start; i < end && i < total; i++)
+            {
+                CustomNPCDefinition obj = vals.ElementAt(i);
+                if (obj == null) continue;
+
+                args.Player.SendInfoMessage("[{0}]: {1}. Spawned: {2}", obj.customID, obj.customName, obj.currSpawnsVar);
+            }
+        }
+
+        /// <summary>
+        /// Called every time the server ticks.
         /// Adds Custom Monster to array for replacement
         /// </summary>
         /// <param name="args"></param>
         private void OnUpdate(EventArgs args)
         {
             //Update all Custom NPCs
-            CustomNPCUpdate();
+            CustomNPCUpdateSafe(false);
         }
 
         private void OnNPCSpawn(NpcSpawnEventArgs args)
@@ -375,8 +427,8 @@ namespace CustomNPC
             CheckActiveNPCs();
             //Spawn mobs into regions and specific biomes
             SpawnMobsInBiomeAndRegion();
-            //Update All NPCs
-            CustomNPCUpdate();
+            //Update All NPCs without custom AI (that are alive)
+            CustomNPCUpdateSafe(true);
             //fire projectiles towards closests player
             ProjectileCheck();
             //Check for player Collision with NPC
@@ -389,7 +441,27 @@ namespace CustomNPC
         {
             foreach (CustomNPCVars obj in NPCManager.NPCs)
             {
-                if (obj != null && !obj.isDead && obj.mainNPC.aiStyle != obj.customNPC.customAI)
+                //
+                // && (obj.mainNPC.aiStyle != obj.customNPC.customAI)
+                if (obj != null && !obj.isDead)
+                {
+                    NetMessage.SendData(23, -1, -1, "", obj.mainNPC.whoAmI, 0f, 0f, 0f, 0);
+                }
+            }
+        }
+
+        private void CustomNPCUpdateSafe(bool extraCheck)
+        {
+            foreach (CustomNPCVars obj in NPCManager.NPCs)
+            {
+                if (obj == null) continue;
+
+                if (!obj.isDead && (obj.mainNPC == null || obj.mainNPC.life <= 0 || obj.mainNPC.type == 0))
+                {
+                    //This NPC SHOULD be dead.
+                    continue;
+                }
+                else if (!obj.isDead && (!extraCheck || (obj.mainNPC.aiStyle != obj.customNPC.customAI)))
                 {
                     NetMessage.SendData(23, -1, -1, "", obj.mainNPC.whoAmI, 0f, 0f, 0f, 0);
                 }
@@ -568,23 +640,23 @@ namespace CustomNPC
             foreach (CustomNPCVars obj in NPCManager.NPCs)
             {
                 //if CustomNPC has been defined, and hasn't been set to dead yet, check if the terraria npc is active
-                if (obj != null)
-                {
-                    if (!obj.isDead && (obj.mainNPC == null || obj.mainNPC.life <= 0 || obj.mainNPC.type == 0))
-                    {
-                        obj.isDead = true;
-                        if (!obj.isClone && !obj.isInvasion)
-                            obj.customNPC.currSpawnsVar--;
-                    }
-                    else if(!obj.isDead)
-                    {
-                        var args = new NpcUpdateEvent
-                        {
-                            NpcIndex = obj.mainNPC.whoAmI
-                        };
+                if (obj == null)
+                    continue;
 
-                        eventManager.InvokeHandler(args, EventType.NpcUpdate);
-                    }
+                if (!obj.isDead && (obj.mainNPC == null || obj.mainNPC.life <= 0 || obj.mainNPC.type == 0))
+                {
+                    obj.isDead = true;
+                    if (!obj.isClone && !obj.isInvasion)
+                        obj.customNPC.currSpawnsVar--;
+                }
+                else if(!obj.isDead)
+                {
+                    var args = new NpcUpdateEvent
+                    {
+                        NpcIndex = obj.mainNPC.whoAmI
+                    };
+
+                    eventManager.InvokeHandler(args, EventType.NpcUpdate);
                 }
             }
         }
@@ -609,14 +681,14 @@ namespace CustomNPC
                 }
                 else
                 {
-                    Log.ConsoleError("Config not found. Creating new one");
+                    TShock.Log.ConsoleError("Config not found. Creating new one");
                     ConfigObj.Write(filepath);
                     return;
                 }
             }
             catch (Exception ex)
             {
-                Log.ConsoleError(ex.Message);
+                TShock.Log.ConsoleError(ex.Message);
                 return;
             }
         }
