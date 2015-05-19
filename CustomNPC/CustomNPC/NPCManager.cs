@@ -635,7 +635,7 @@ namespace CustomNPC
                         var npcdef = NPCManager.Data.GetNPCbyID(minions.MobID);
                         if (npcdef == null)
                         {
-                            Log.ConsoleError("[CustomNPC]: Error! The custom mob id \"{0}\" does not exist!", minions.MobID);
+                            TShock.Log.ConsoleError("[CustomNPC]: Error! The custom mob id \"{0}\" does not exist!", minions.MobID);
                             continue;
                         }
                         if (minions.SpawnConditions != SpawnConditions.None)

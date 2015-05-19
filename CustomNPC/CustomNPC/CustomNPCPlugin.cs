@@ -17,7 +17,7 @@ using TShockAPI.DB;
 
 namespace CustomNPC
 {
-    [ApiVersion(1, 15)]
+    [ApiVersion(1, 17)]
     public class CustomNPCPlugin : TerrariaPlugin
     {
         internal Random rand = new Random();
@@ -77,7 +77,7 @@ namespace CustomNPC
 
         public override Version Version
         {
-            get { return new Version("1.0"); }
+            get { return new Version("1.1"); }
         }
 
         public override void Initialize()
@@ -640,23 +640,23 @@ namespace CustomNPC
             foreach (CustomNPCVars obj in NPCManager.NPCs)
             {
                 //if CustomNPC has been defined, and hasn't been set to dead yet, check if the terraria npc is active
-                if (obj != null)
-                {
-                    if (!obj.isDead && (obj.mainNPC == null || obj.mainNPC.life <= 0 || obj.mainNPC.type == 0))
-                    {
-                        obj.isDead = true;
-                        if (!obj.isClone && !obj.isInvasion)
-                            obj.customNPC.currSpawnsVar--;
-                    }
-                    else if(!obj.isDead)
-                    {
-                        var args = new NpcUpdateEvent
-                        {
-                            NpcIndex = obj.mainNPC.whoAmI
-                        };
+                if (obj == null)
+                    continue;
 
-                        eventManager.InvokeHandler(args, EventType.NpcUpdate);
-                    }
+                if (!obj.isDead && (obj.mainNPC == null || obj.mainNPC.life <= 0 || obj.mainNPC.type == 0))
+                {
+                    obj.isDead = true;
+                    if (!obj.isClone && !obj.isInvasion)
+                        obj.customNPC.currSpawnsVar--;
+                }
+                else if(!obj.isDead)
+                {
+                    var args = new NpcUpdateEvent
+                    {
+                        NpcIndex = obj.mainNPC.whoAmI
+                    };
+
+                    eventManager.InvokeHandler(args, EventType.NpcUpdate);
                 }
             }
         }
@@ -681,14 +681,14 @@ namespace CustomNPC
                 }
                 else
                 {
-                    Log.ConsoleError("Config not found. Creating new one");
+                    TShock.Log.ConsoleError("Config not found. Creating new one");
                     ConfigObj.Write(filepath);
                     return;
                 }
             }
             catch (Exception ex)
             {
-                Log.ConsoleError(ex.Message);
+                TShock.Log.ConsoleError(ex.Message);
                 return;
             }
         }

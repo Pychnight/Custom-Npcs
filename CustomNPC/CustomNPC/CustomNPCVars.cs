@@ -32,7 +32,12 @@ namespace CustomNPC
             droppedLoot = false;
         }
 
-        private void UpdateSkin(NPC target)
+        /// <summary>
+        /// Updates this npc to the skin of the target NPC
+        /// </summary>
+        /// <param name="target">The NPC to take the skin of</param>
+        /// <param name="update">If a netupdate should be enforced.</param>
+        private void UpdateSkin(NPC target, bool update = true)
         {
             //Proper type
             mainNPC.type = target.type;
@@ -48,6 +53,9 @@ namespace CustomNPC
             mainNPC.soundHit = target.soundHit;
             mainNPC.soundKilled = target.soundKilled;
             mainNPC.soundDelay = target.soundDelay;
+
+            //Enforce update
+            if (update) mainNPC.netUpdate = true;
         }
 
         /// <summary>
@@ -55,19 +63,23 @@ namespace CustomNPC
         /// </summary>
         private void CustomTransform()
         {
-            UpdateSkin(customNPC.customBase);
+            UpdateSkin(customNPC.customBase, false);
 
-            //mainNPC.SetDefaults(customNPC.customBase.type);
-
-            //mainNPC.name = customNPC.customName;
-            //mainNPC.displayName = customNPC.customName;
+            mainNPC.name = customNPC.customName;
+            mainNPC.displayName = customNPC.customName;
             mainNPC.lifeMax = customNPC.customHealth;
             mainNPC.aiStyle = customNPC.customAI;
             mainNPC.lavaImmune = customNPC.lavaImmune;
             mainNPC.noGravity = customNPC.noGravity;
             mainNPC.noTileCollide = customNPC.noTileCollide;
 
-            //mainNPC.target = oldtarget;
+            mainNPC.damage = customNPC.customDamage;
+            mainNPC.defDamage = customNPC.customDamage;
+
+            mainNPC.defense = customNPC.customDefense;
+            mainNPC.defDefense = customNPC.customDefense;
+
+            mainNPC.netUpdate = true;
         }
 
         /// <summary>
@@ -76,13 +88,21 @@ namespace CustomNPC
         /// <param name="npcdef">CustomNPC that will be replacing it</param>
         /// <param name="addhealth">Increase monsters Health</param>
         /// <param name="additionalhealth">Amount to Increase by, if 0 - get new monsters health and add that to NPC</param>
-        public void Transform(CustomNPCDefinition npcdef, bool addhealth = false, int additionalhealth = 0)
+        public void Transform(CustomNPCDefinition npcdef, bool addhealth = false, int additionalhealth = 0, bool fullTransform = true)
         {
             customNPC = npcdef;
-            CustomTransform();
-            //mainNPC.Transform(customNPC.customBase.type);
+
+            if (fullTransform)
+            {
+                CustomTransform();
+            }
+            else
+            {
+                UpdateSkin(customNPC.customBase, true);
+            }
 
             //mainNPC.type = npcdef.customBase.type;
+
             if (addhealth)
             {
                 if (additionalhealth == 0)
@@ -94,8 +114,6 @@ namespace CustomNPC
                     mainNPC.life += additionalhealth;
                 }
             }
-
-
         }
 
         /// <summary>
@@ -104,29 +122,14 @@ namespace CustomNPC
         /// <param name="id">CustomNPC that will be replacing it</param>
         /// <param name="addhealth">Increase monsters Health</param>
         /// <param name="additionalhealth">Amount to Increase by, if 0 - get new monsters health and add that to NPC</param>
-        public bool Transform(string id, bool addhealth = false, int additionalhealth = 0)
+        /// <param name="fullTransform">When false, only the skin of the NPC changes. When true, also applies some of the given NPC's stats</param>
+        public bool Transform(string id, bool addhealth = false, int additionalhealth = 0, bool fullTransform = true)
         {
             CustomNPCDefinition search = NPCManager.Data.GetNPCbyID(id);
             //If not found, return false
-            if (search == null)
-                return false;
+            if (search == null) return false;
 
-            customNPC = search;
-            CustomTransform();
-
-            //mainNPC.type = customNPC.customBase.type;
-            if (addhealth)
-            {
-                if (additionalhealth == 0)
-                {
-                    mainNPC.life += customNPC.customHealth;
-                }
-                else
-                {
-                    mainNPC.life += additionalhealth;
-                }
-            }
-
+            Transform(search, addhealth, additionalhealth, fullTransform);
             return true;
         }
 
@@ -142,7 +145,7 @@ namespace CustomNPC
 
             //mainNPC.type = obj.netID;
 
-            UpdateSkin(obj);
+            UpdateSkin(obj, true);
 
             if (addhealth)
             {
@@ -176,16 +179,13 @@ namespace CustomNPC
         {
             //gets the npc
             if (npcvar == null)
-            {
                 return;
-            }
 
             for (int i = 0; i < amount; i++)
             {
                 if (mainNPC == null)
-                {
                     continue;
-                }
+                
                 int npc = NPCManager.SpawnNPCAtLocation((int)mainNPC.position.X + rand.Next(0, 16) - 8, (int)mainNPC.position.Y + rand.Next(0, 16) - 8, customNPC);
                 if (npc == -1)
                     continue;
@@ -253,7 +253,7 @@ namespace CustomNPC
             }
             catch
             {
-                Log.ConsoleError("Error: a defined region does not exist on this map \"{0}\"", region);
+                TShock.Log.ConsoleError("Error: a defined region does not exist on this map \"{0}\"", region);
                 return;
             }
             if (randompos)
@@ -297,11 +297,14 @@ namespace CustomNPC
         /// <param name="color"></param>
         public void MessageNearByPlayers(CustomNPCVars npcvar, int distance, string message, Color color)
         {
+            if (TShock.Players.Length == 0) return;
+
+            Vector2 temp = ReturnPos(npcvar);
             foreach (TSPlayer obj in TShock.Players)
             {
                 if (obj != null && obj.ConnectionAlive)
                 {
-                    if (Vector2.Distance(ReturnPos(npcvar), obj.LastNetPosition) <= distance)
+                    if (Vector2.Distance(temp, obj.LastNetPosition) <= distance)
                     {
                         obj.SendMessage(message, color);
                     }
