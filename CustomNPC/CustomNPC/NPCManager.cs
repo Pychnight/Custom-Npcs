@@ -214,6 +214,25 @@ namespace CustomNPC
             return NPCs[index];
         }
 
+        /// <summary>
+        /// Returns a list of all Custom NPC that are spawned of the given type.
+        /// </summary>
+        /// <param name="customnpc">The type to look for</param>
+        /// <returns></returns>
+        public static List<CustomNPCVars> GetAllOfType(CustomNPCDefinition customnpc)
+        {
+            List<CustomNPCVars> tbr = new List<CustomNPCVars>();
+            for (int i = 0; i < NPCs.Length; i++)
+            {
+                CustomNPCVars v = NPCs[i];
+                if (v == null) continue;
+
+                if (v.customNPC == customnpc) tbr.Add(v);
+            }
+
+            return tbr;
+        }
+
         public static int SpawnNPCAtLocation(int x, int y, CustomNPCDefinition customnpc)
         {
             int npcid = NPC.NewNPC(x, y, customnpc.customBase.type);
@@ -405,14 +424,7 @@ namespace CustomNPC
         /// <returns></returns>
         public static bool Chance(double percentage)
         {
-            if (rand.NextDouble() * 100 <= percentage)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return rand.NextDouble() * 100 <= percentage;
         }
 
         public static void DebuffNearbyPlayers(int debuffid, int npcindex, int distance)
@@ -682,7 +694,7 @@ namespace CustomNPC
                         var npcdef = NPCManager.Data.GetNPCbyID(minions.MobID);
                         if (npcdef == null)
                         {
-                            Log.ConsoleError("[CustomNPC]: Error! The custom mob id \"{0}\" does not exist!", minions.MobID);
+                            TShock.Log.ConsoleError("[CustomNPC]: Error! The custom mob id \"{0}\" does not exist!", minions.MobID);
                             continue;
                         }
                         if (minions.SpawnConditions != SpawnConditions.None)
