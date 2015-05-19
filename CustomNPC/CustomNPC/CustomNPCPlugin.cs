@@ -44,14 +44,14 @@ namespace CustomNPC
             pluginDomain = CreateNewPluginDomain();
 #endif
             ////pluginDomain.AssemblyResolve += PluginDomain_OnAssemblyResolve;
-            /*
-                        foreach (AssemblyName asm in Assembly.GetExecutingAssembly().GetReferencedAssemblies())
-                        {
-                            pluginDomain.Load(asm);
-                        }
+/*
+            foreach (AssemblyName asm in Assembly.GetExecutingAssembly().GetReferencedAssemblies())
+            {
+                pluginDomain.Load(asm);
+            }
 
-                        pluginDomain.Load(Assembly.GetExecutingAssembly().GetName());
-            */
+            pluginDomain.Load(Assembly.GetExecutingAssembly().GetName());
+*/
 
 #if USE_APPDOMAIN
             pluginManager = pluginDomain.CreateInstanceAndUnwrap<PluginManager<NPCPlugin>>(eventManager, definitionManager);
@@ -259,7 +259,7 @@ namespace CustomNPC
             {
                 CustomNPCDefinition obj = vals.ElementAt(i);
                 if (obj == null) continue;
-
+                
                 args.Player.SendInfoMessage("[{0}]: {1}. Spawned: {2}", obj.customID, obj.customName, obj.currSpawnsVar);
             }
         }

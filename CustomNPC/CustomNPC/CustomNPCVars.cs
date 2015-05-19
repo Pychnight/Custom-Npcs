@@ -185,7 +185,7 @@ namespace CustomNPC
             {
                 if (mainNPC == null)
                     continue;
-
+                
                 int npc = NPCManager.SpawnNPCAtLocation((int)mainNPC.position.X + rand.Next(0, 16) - 8, (int)mainNPC.position.Y + rand.Next(0, 16) - 8, customNPC);
                 if (npc == -1)
                     continue;
