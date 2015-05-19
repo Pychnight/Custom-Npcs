@@ -427,7 +427,7 @@ namespace CustomNPC
             return rand.NextDouble() * 100 <= percentage;
         }
 
-        public static void DebuffNearbyPlayers(int debuffid, int npcindex, int distance)
+        public static void DebuffNearbyPlayers(int debuffid, int seconds, int npcindex, int distance)
         {
             NPC npc = Main.npc[npcindex];
             if (npc == null)
@@ -437,7 +437,7 @@ namespace CustomNPC
             Vector2 position = npc.position;
             foreach (TSPlayer player in PlayersNearBy(position, distance))
             {
-                player.SetBuff(debuffid, 5 * 60);
+                player.SetBuff(debuffid, seconds * 60);
             }
         }
 
