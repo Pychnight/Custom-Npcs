@@ -27,111 +27,62 @@ namespace CustomNPC
             //loop through all players
             foreach (TSPlayer player in TShock.Players)
             {
-                //check if they exist or are connected
-                if (player != null && player.ConnectionAlive)
+                // check if they exist or are connected
+                if (player == null || !player.ConnectionAlive) continue;
+                
+                //Log.ConsoleInfo("{0} - Checking spawn for player", player.Name);
+                //check all biome spawns
+                BiomeTypes biomes = player.GetCurrentBiomes();
+                foreach (BiomeTypes biome in availableBiomes.Where(x => biomes.HasFlag(x)))
                 {
-                    //Log.ConsoleInfo("{0} - Checking spawn for player", player.Name);
-                    //check all biome spawns
-                    BiomeTypes biomes = player.GetCurrentBiomes();
-                    foreach (BiomeTypes biome in availableBiomes.Where(x => biomes.HasFlag(x)))
+                    //Log.ConsoleInfo("{0} - Checking biome for player", biome.ToString());
+                    // get list of mobs that can be spawned in that biome
+                    List<Tuple<string, CustomNPCSpawning>> biomeSpawns;
+                    if (Data.BiomeSpawns.TryGetValue(biome, out biomeSpawns))
                     {
-                        //Log.ConsoleInfo("{0} - Checking biome for player", biome.ToString());
-                        // get list of mobs that can be spawned in that biome
-                        List<Tuple<string, CustomNPCSpawning>> biomeSpawns;
-                        if (Data.BiomeSpawns.TryGetValue(biome, out biomeSpawns))
+                        foreach (Tuple<string, CustomNPCSpawning> obj in biomeSpawns)
                         {
-                            foreach (Tuple<string, CustomNPCSpawning> obj in biomeSpawns)
+                            //Log.ConsoleInfo("{0} - Checking mob spawn", obj.Item1);
+                            // check spawn conditions
+                            if (!CheckSpawnConditions(obj.Item2.spawnConditions))
                             {
-                                //Log.ConsoleInfo("{0} - Checking mob spawn", obj.Item1);
-                                // check spawn conditions
-                                if (!CheckSpawnConditions(obj.Item2.spawnConditions))
-                                {
-                                    //Log.ConsoleInfo("False Conditions");
-                                    continue;
-                                }
-                                CustomNPCDefinition customnpc = Data.GetNPCbyID(obj.Item1);
-                                // make sure not spawning more then maxSpawns
-                                if (customnpc.maxSpawns != -1 && customnpc.currSpawnsVar >= customnpc.maxSpawns)
-                                {
-                                    continue;
-                                }
-                                // get the last spawn attempt
-                                DateTime lastSpawnAttempt;
-                                if (!Data.LastSpawnAttempt.TryGetValue(customnpc.customID, out lastSpawnAttempt))
-                                {
-                                    lastSpawnAttempt = default(DateTime);
-                                    Data.LastSpawnAttempt[customnpc.customID] = lastSpawnAttempt;
-                                }
-
-                                if ((DateTime.Now - lastSpawnAttempt).TotalSeconds >= obj.Item2.spawnRate)
-                                {
-                                    // check spawn chance
-                                    if (NPCManager.Chance(obj.Item2.spawnChance))
-                                    {
-                                        // check spawn method
-                                        if (obj.Item2.useTerrariaSpawn)
-                                        {
-                                            // all checks completed spawn mob
-                                            int npcid = SpawnMobAroundPlayer(player, customnpc);
-                                            if (npcid != -1)
-                                            {
-                                                Main.npc[npcid].target = player.Index;
-                                                Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
-                                                customnpc.currSpawnsVar++;
-                                            }                                            
-                                        }
-                                        else
-                                        {
-                                            // all checks completed spawn mob
-                                            int spawnX;
-                                            int spawnY;
-                                            TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
-                                            int npcid = SpawnNPCAtLocation((spawnX * 16) + 8, spawnY * 16, customnpc);
-                                            if (npcid == -1)
-                                                continue;
-
-                                            Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
-                                            Main.npc[npcid].target = player.Index;
-                                            customnpc.currSpawnsVar++;
-                                        }
-                                    }
-                                }
+                                //Log.ConsoleInfo("False Conditions");
+                                continue;
                             }
-                        }
-                    }
-
-                    // then check regions as well
-                    Rectangle playerRectangle = new Rectangle(player.TileX, player.TileY, player.TPlayer.width, player.TPlayer.height);
-                    foreach (Region obj in Data.RegionSpawns.Keys.Select(name => TShock.Regions.GetRegionByName(name)).Where(region => region != null && region.InArea(playerRectangle)))
-                    {
-                        List<Tuple<string, CustomNPCSpawning>> regionSpawns;
-                        if (Data.RegionSpawns.TryGetValue(obj.Name, out regionSpawns))
-                        {
-                            foreach (Tuple<string, CustomNPCSpawning> obj2 in regionSpawns)
+                            CustomNPCDefinition customnpc = Data.GetNPCbyID(obj.Item1);
+                            // make sure not spawning more then maxSpawns
+                            if (customnpc.maxSpawns != -1 && customnpc.currSpawnsVar >= customnpc.maxSpawns)
                             {
-                                if (!CheckSpawnConditions(obj2.Item2.spawnConditions))
-                                    continue;
+                                continue;
+                            }
+                            // get the last spawn attempt
+                            DateTime lastSpawnAttempt;
+                            if (!Data.LastSpawnAttempt.TryGetValue(customnpc.customID, out lastSpawnAttempt))
+                            {
+                                lastSpawnAttempt = default(DateTime);
+                                Data.LastSpawnAttempt[customnpc.customID] = lastSpawnAttempt;
+                            }
 
-                                CustomNPCDefinition customnpc = Data.GetNPCbyID(obj2.Item1);
-                                // make sure not spawning more then maxSpawns
-                                if (customnpc.maxSpawns != -1 && customnpc.currSpawnsVar >= customnpc.maxSpawns)
+                            if ((DateTime.Now - lastSpawnAttempt).TotalSeconds >= obj.Item2.spawnRate)
+                            {
+                                // check spawn chance
+                                if (NPCManager.Chance(obj.Item2.spawnChance))
                                 {
-                                    continue;
-                                }
-                                // get the last spawn attempt
-                                DateTime lastSpawnAttempt;
-                                if (!Data.LastSpawnAttempt.TryGetValue(customnpc.customID, out lastSpawnAttempt))
-                                {
-                                    lastSpawnAttempt = default(DateTime);
-                                    Data.LastSpawnAttempt[customnpc.customID] = lastSpawnAttempt;
-                                }
-
-                                if ((DateTime.Now - lastSpawnAttempt).TotalSeconds >= obj2.Item2.spawnRate)
-                                {
-                                    Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
-
-                                    if (NPCManager.Chance(obj2.Item2.spawnChance))
+                                    // check spawn method
+                                    if (obj.Item2.useTerrariaSpawn)
                                     {
+                                        // all checks completed spawn mob
+                                        int npcid = SpawnMobAroundPlayer(player, customnpc);
+                                        if (npcid != -1)
+                                        {
+                                            Main.npc[npcid].target = player.Index;
+                                            Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
+                                            customnpc.currSpawnsVar++;
+                                        }                                            
+                                    }
+                                    else
+                                    {
+                                        // all checks completed spawn mob
                                         int spawnX;
                                         int spawnY;
                                         TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
@@ -139,9 +90,57 @@ namespace CustomNPC
                                         if (npcid == -1)
                                             continue;
 
+                                        Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
                                         Main.npc[npcid].target = player.Index;
                                         customnpc.currSpawnsVar++;
                                     }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // then check regions as well
+                Rectangle playerRectangle = new Rectangle(player.TileX, player.TileY, player.TPlayer.width, player.TPlayer.height);
+                foreach (Region obj in Data.RegionSpawns.Keys.Select(name => TShock.Regions.GetRegionByName(name)).Where(region => region != null && region.InArea(playerRectangle)))
+                {
+                    List<Tuple<string, CustomNPCSpawning>> regionSpawns;
+                    if (Data.RegionSpawns.TryGetValue(obj.Name, out regionSpawns))
+                    {
+                        foreach (Tuple<string, CustomNPCSpawning> obj2 in regionSpawns)
+                        {
+                            if (!CheckSpawnConditions(obj2.Item2.spawnConditions))
+                                continue;
+
+                            CustomNPCDefinition customnpc = Data.GetNPCbyID(obj2.Item1);
+                            // make sure not spawning more then maxSpawns
+                            if (customnpc.maxSpawns != -1 && customnpc.currSpawnsVar >= customnpc.maxSpawns)
+                            {
+                                continue;
+                            }
+                            // get the last spawn attempt
+                            DateTime lastSpawnAttempt;
+                            if (!Data.LastSpawnAttempt.TryGetValue(customnpc.customID, out lastSpawnAttempt))
+                            {
+                                lastSpawnAttempt = default(DateTime);
+                                Data.LastSpawnAttempt[customnpc.customID] = lastSpawnAttempt;
+                            }
+
+                            if ((DateTime.Now - lastSpawnAttempt).TotalSeconds >= obj2.Item2.spawnRate)
+                            {
+                                Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
+
+                                if (NPCManager.Chance(obj2.Item2.spawnChance))
+                                {
+                                    int spawnX;
+                                    int spawnY;
+                                    TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
+                                    int npcid = SpawnNPCAtLocation((spawnX * 16) + 8, spawnY * 16, customnpc);
+                                    if (npcid == -1)
+                                        continue;
+
+                                    Main.npc[npcid].target = player.Index;
+                                    customnpc.currSpawnsVar++;
                                 }
                             }
                         }
@@ -625,7 +624,7 @@ namespace CustomNPC
                         var npcdef = NPCManager.Data.GetNPCbyID(minions.MobID);
                         if (npcdef == null)
                         {
-                            Log.ConsoleError("[CustomNPC]: Error! The custom mob id \"{0}\" does not exist!", minions.MobID);
+                            TShock.Log.ConsoleError("[CustomNPC]: Error! The custom mob id \"{0}\" does not exist!", minions.MobID);
                             continue;
                         }
                         if (minions.SpawnConditions != SpawnConditions.None)

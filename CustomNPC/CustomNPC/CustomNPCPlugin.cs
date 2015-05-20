@@ -130,33 +130,29 @@ namespace CustomNPC
         {
             CustomNPCVars npcvar = NPCManager.GetCustomNPCByIndex(args.NpcArrayIndex);
             //check if monster has been customized
-            if (npcvar == null || npcvar.droppedLoot)
-            {
-                return;
-            }
+            if (npcvar == null || npcvar.droppedLoot) return;
 
             args.Handled = npcvar.customNPC.overrideBaseNPCLoot;
-            if (!npcvar.droppedLoot)
+            if (npcvar.droppedLoot) return;
+            
+            if (npcvar.customNPC.customNPCLoots != null)
             {
-                if (npcvar.customNPC.customNPCLoots != null)
+                foreach (CustomNPCLoot obj in npcvar.customNPC.customNPCLoots)
                 {
-                    foreach (CustomNPCLoot obj in npcvar.customNPC.customNPCLoots)
+                    if (obj.itemDropChance >= 100 || NPCManager.Chance(obj.itemDropChance))
                     {
-                        if (obj.itemDropChance >= 100 || NPCManager.Chance(obj.itemDropChance))
+                        int pre = 0;
+                        if (obj.itemPrefix != null)
                         {
-                            int pre = 0;
-                            if (obj.itemPrefix != null)
-                            {
-                                pre = obj.itemPrefix[rand.Next(obj.itemPrefix.Count)];
-                            }
-
-                            Item.NewItem((int)npcvar.mainNPC.position.X, (int)npcvar.mainNPC.position.Y, npcvar.mainNPC.width, npcvar.mainNPC.height, obj.itemID, obj.itemStack, false, pre, false);
+                            pre = obj.itemPrefix[rand.Next(obj.itemPrefix.Count)];
                         }
+
+                        Item.NewItem((int)npcvar.mainNPC.position.X, (int)npcvar.mainNPC.position.Y, npcvar.mainNPC.width, npcvar.mainNPC.height, obj.itemID, obj.itemStack, false, pre, false);
                     }
                 }
-                npcvar.isDead = true;
-                npcvar.droppedLoot = true;
             }
+            npcvar.isDead = true;
+            npcvar.droppedLoot = true;
         }
 
         /// <summary>
@@ -271,26 +267,64 @@ namespace CustomNPC
         /// <param name="args"></param>
         private void OnUpdate(EventArgs args)
         {
-            //Update all Custom NPCs
-            CustomNPCUpdateSafe(false);
+            //Update all NPCs with custom AI
+            CustomNPCUpdate(true, false);
         }
 
         private void OnNPCSpawn(NpcSpawnEventArgs args)
         {
+            //If the id falls outside the possible range, we can return.
+            if (args.NpcId < 0 || args.NpcId >= 200) return;
+
+            //This NPC is custom and not dead.
+            if (NPCManager.NPCs[args.NpcId] != null && !NPCManager.NPCs[args.NpcId].isDead) return;
+
+            NPC spawned = Main.npc[args.NpcId];
+            foreach (CustomNPCDefinition customnpc in NPCManager.Data.CustomNPCs.Values)
+            {
+                if (!customnpc.isReplacement || spawned.netID != customnpc.customBase.netID) continue;
+
+                DateTime[] dt = null;
+                if (customnpc.customProjectiles != null)
+                {
+                    dt = Enumerable.Repeat(DateTime.Now, customnpc.customProjectiles.Count).ToArray();
+                }
+                NPCManager.NPCs[spawned.whoAmI] = new CustomNPCVars(customnpc, dt, spawned);
+                NPCManager.Data.ConvertNPCToCustom(spawned.whoAmI, customnpc);
+
+                break;
+            }
+        }
+
+        /// <summary>
+        /// Old version of the OnNPCSpawn, which goes over ALL NPCs on the server for some reason.
+        /// </summary>
+        /// <param name="args"></param>
+        private void AlternateOnNPCSpawn(NpcSpawnEventArgs args)
+        {
+            //Filter replacements beforehand
+            List<CustomNPCDefinition> replacements = NPCManager.Data.CustomNPCs.Values.Where(cm => cm.isReplacement).ToList();
+            if (replacements.Count == 0) return;
+
             foreach (NPC obj in Main.npc)
             {
-                foreach (CustomNPCDefinition customnpc in NPCManager.Data.CustomNPCs.Values)
+                if (obj == null) continue;
+
+                //Skip mobs which are already custom (and the custom is still alive)
+                if (NPCManager.NPCs[obj.whoAmI] != null && !NPCManager.NPCs[obj.whoAmI].isDead) continue;
+
+                foreach (CustomNPCDefinition customnpc in replacements)
                 {
-                    if (customnpc.isReplacement && obj.netID == customnpc.customBase.netID && (NPCManager.NPCs[obj.whoAmI] == null || NPCManager.NPCs[obj.whoAmI].isDead))
+                    //Wrong type
+                    if (obj.netID != customnpc.customBase.netID) continue;
+
+                    DateTime[] dt = null;
+                    if (customnpc.customProjectiles != null)
                     {
-                        DateTime[] dt = null;
-                        if (customnpc.customProjectiles != null)
-                        {
-                            dt = Enumerable.Repeat(DateTime.Now, customnpc.customProjectiles.Count).ToArray();
-                        }
-                        NPCManager.NPCs[obj.whoAmI] = new CustomNPCVars(customnpc, dt, obj);
-                        NPCManager.Data.ConvertNPCToCustom(obj.whoAmI, customnpc);
+                        dt = Enumerable.Repeat(DateTime.Now, customnpc.customProjectiles.Count).ToArray();
                     }
+                    NPCManager.NPCs[obj.whoAmI] = new CustomNPCVars(customnpc, dt, obj);
+                    NPCManager.Data.ConvertNPCToCustom(obj.whoAmI, customnpc);
                 }
             }
         }
@@ -352,8 +386,12 @@ namespace CustomNPC
                 if (npcvar != null)
                 {
                     npcvar.isDead = true;
-                    if (!npcvar.isClone && !npcvar.isInvasion)
-                        npcvar.customNPC.currSpawnsVar--;
+                    if (!npcvar.isUncounted)
+                    {
+                        npcvar.isUncounted = true;
+                        if (!npcvar.isClone && !npcvar.isInvasion)
+                            npcvar.customNPC.currSpawnsVar--;
+                    }
                 }
                 var killedArgs = new NpcKilledEvent
                 {
@@ -427,8 +465,11 @@ namespace CustomNPC
             CheckActiveNPCs();
             //Spawn mobs into regions and specific biomes
             SpawnMobsInBiomeAndRegion();
-            //Update All NPCs without custom AI (that are alive)
-            CustomNPCUpdateSafe(true);
+
+            //Commented out, since this should happen on the main thread
+            //Update All NPCs with custom AI (that are alive)
+            //CustomNPCUpdateSafe(true);
+
             //fire projectiles towards closests player
             ProjectileCheck();
             //Check for player Collision with NPC
@@ -437,49 +478,43 @@ namespace CustomNPC
             eventManager.InvokeHandler(PluginUpdateEvent.Empty, EventType.PostPluginUpdate);
         }
 
-        private void CustomNPCUpdate()
+        private void CustomNPCUpdate(bool onlyCustom = true, bool updateDead = false)
         {
             foreach (CustomNPCVars obj in NPCManager.NPCs)
             {
-                //
-                // && (obj.mainNPC.aiStyle != obj.customNPC.customAI)
-                if (obj != null && !obj.isDead)
-                {
-                    NetMessage.SendData(23, -1, -1, "", obj.mainNPC.whoAmI, 0f, 0f, 0f, 0);
-                }
-            }
-        }
-
-        private void CustomNPCUpdateSafe(bool extraCheck)
-        {
-            foreach (CustomNPCVars obj in NPCManager.NPCs)
-            {
+                //Dead
                 if (obj == null) continue;
 
-                if (!obj.isDead && (obj.mainNPC == null || obj.mainNPC.life <= 0 || obj.mainNPC.type == 0))
+                //Should be dead
+                if (obj.isDead || obj.mainNPC == null || obj.mainNPC.life <= 0 || obj.mainNPC.type == 0)
                 {
-                    //This NPC SHOULD be dead.
+                    if (updateDead && obj.isUncounted)
+                    {
+                        obj.isDead = true;
+                        obj.isUncounted = true;
+                        if (!obj.isClone && !obj.isInvasion)
+                            obj.customNPC.currSpawnsVar--;
+                    }
+
                     continue;
                 }
-                else if (!obj.isDead && (!extraCheck || (obj.mainNPC.aiStyle != obj.customNPC.customAI)))
+
+                if (!onlyCustom || obj.usingCustomAI)
                 {
                     NetMessage.SendData(23, -1, -1, "", obj.mainNPC.whoAmI, 0f, 0f, 0f, 0);
                 }
             }
         }
-
 
         private void CollisionDetection()
         {
             foreach (CustomNPCVars obj in NPCManager.NPCs)
             {
-                if (obj == null || obj.isDead)
-                    continue;
+                if (obj == null || obj.isDead) continue;
 
                 foreach (TSPlayer player in TShock.Players)
                 {
-                    if (player == null || player.Dead)
-                        continue;
+                    if (player == null || player.Dead) continue;
 
                     Rectangle npcframe = new Rectangle((int)obj.mainNPC.position.X, (int)obj.mainNPC.position.Y, obj.mainNPC.width, obj.mainNPC.height);
                     Rectangle playerframe = new Rectangle((int)player.TPlayer.position.X, (int)player.TPlayer.position.Y, player.TPlayer.width, player.TPlayer.height);
@@ -505,66 +540,72 @@ namespace CustomNPC
             // loop through all custom npcs currently spawned
             foreach (CustomNPCVars obj in NPCManager.NPCs)
             {
-                // check if they exists and are active
-                if (obj != null && !obj.isDead && obj.mainNPC.active)
+                // Check if they exists and are active
+                if (obj == null || obj.isDead || !obj.mainNPC.active) continue;
+
+                // We only want the npcs with custom projectiles
+                if (obj.customNPC.customProjectiles == null) continue;
+
+                // Loop through all npc projectiles they can fire
+                DateTime savedNow = DateTime.Now;
+
+                int k = 0;
+                foreach (CustomNPCProjectiles projectile in obj.customNPC.customProjectiles)
                 {
-                    if (obj.customNPC.customProjectiles != null)
+                    //custom projectile index
+                    //int projectileIndex = obj.customNPC.customProjectiles.IndexOf(projectile);
+
+                    // check if projectile last fire time is greater then equal to its next allowed fire time
+                    if ((savedNow - obj.lastAttemptedProjectile[k]).TotalMilliseconds >= projectile.projectileFireRate)
                     {
-                        // loop through all npc projectiles they can fire
-                        foreach (CustomNPCProjectiles projectile in obj.customNPC.customProjectiles)
+                        // make sure chance is checked too, don't bother checking if its 100
+                        if (projectile.projectileFireChance == 100 || NPCManager.Chance(projectile.projectileFireChance))
                         {
-                            //custom projectile index
-                            int projectileIndex = obj.customNPC.customProjectiles.IndexOf(projectile);
-                            // check if projectile last fire time is greater then equal to its next allowed fire time
-                            if ((DateTime.Now - obj.lastAttemptedProjectile[projectileIndex]).TotalMilliseconds >= projectile.projectileFireRate)
+                            TSPlayer target = null;
+                            if (projectile.projectileLookForTarget)
                             {
-                                // make sure chance is checked too, don't bother checking if its 100
-                                if (projectile.projectileFireChance == 100 || NPCManager.Chance(projectile.projectileFireChance))
+                                // find a target for it to shoot that isn't dead or disconnected
+                                foreach (TSPlayer player in TShock.Players.Where(x => x != null && !x.Dead && x.ConnectionAlive))
                                 {
-                                    TSPlayer target = null;
-                                    if (projectile.projectileLookForTarget)
+                                    // check if that target can be shot ie/ no obstacles, or if it if projectile goes through walls ignore this check
+                                    if (!projectile.projectileCheckCollision || Collision.CanHit(player.TPlayer.position, player.TPlayer.bodyFrame.Width, player.TPlayer.bodyFrame.Height, obj.mainNPC.position, obj.mainNPC.width, obj.mainNPC.height))
                                     {
-                                        // find a target for it to shoot that isn't dead or disconnected
-                                        foreach (TSPlayer player in TShock.Players.Where(x => x != null && !x.Dead && x.ConnectionAlive))
+                                        // make sure distance isn't further then what tshock allows
+                                        float currDistance = Math.Abs(Vector2.Distance(player.TPlayer.position, obj.mainNPC.center()));
+                                        if (currDistance < 2048)
                                         {
-                                            // check if that target can be shot ie/ no obstacles, or if it if projectile goes through walls ignore this check
-                                            if (!projectile.projectileCheckCollision || Collision.CanHit(player.TPlayer.position, player.TPlayer.bodyFrame.Width, player.TPlayer.bodyFrame.Height, obj.mainNPC.position, obj.mainNPC.width, obj.mainNPC.height))
-                                            {
-                                                // make sure distance isn't further then what tshock allows
-                                                float currDistance = Math.Abs(Vector2.Distance(player.TPlayer.position, obj.mainNPC.center()));
-                                                if (currDistance < 2048)
-                                                {
-                                                    // set the target player
-                                                    target = player;
-                                                    // set npcs target to the player its shooting at
-                                                    obj.mainNPC.target = player.Index;
-                                                    // break since no need to find another target
-                                                    break;
-                                                }
-                                            }
+                                            // set the target player
+                                            target = player;
+                                            // set npcs target to the player its shooting at
+                                            obj.mainNPC.target = player.Index;
+                                            // break since no need to find another target
+                                            break;
                                         }
                                     }
-                                    else
-                                    {
-                                        target = TShock.Players[obj.mainNPC.target];
-                                    }
-
-                                    // check if previous for loop was broken out of, or just ended because no valid target
-                                    if (target != null)
-                                    {
-                                        // all checks completed fire projectile
-                                        FireProjectile(target, obj, projectile);
-                                        // set last attempted projectile to now
-                                        obj.lastAttemptedProjectile[projectileIndex] = DateTime.Now;
-                                    }
-                                }
-                                else
-                                {
-                                    obj.lastAttemptedProjectile[projectileIndex] = DateTime.Now;
                                 }
                             }
+                            else
+                            {
+                                target = TShock.Players[obj.mainNPC.target];
+                            }
+
+                            // check if previous for loop was broken out of, or just ended because no valid target
+                            if (target != null)
+                            {
+                                // all checks completed fire projectile
+                                FireProjectile(target, obj, projectile);
+                                // set last attempted projectile to now
+                                obj.lastAttemptedProjectile[k] = savedNow;
+                            }
+                        }
+                        else
+                        {
+                            obj.lastAttemptedProjectile[k] = savedNow;
                         }
                     }
+
+                    // Increment Index
+                    k++;
                 }
             }
         }
@@ -640,16 +681,19 @@ namespace CustomNPC
             foreach (CustomNPCVars obj in NPCManager.NPCs)
             {
                 //if CustomNPC has been defined, and hasn't been set to dead yet, check if the terraria npc is active
-                if (obj == null)
-                    continue;
+                if (obj == null) continue;
 
-                if (!obj.isDead && (obj.mainNPC == null || obj.mainNPC.life <= 0 || obj.mainNPC.type == 0))
+                if ((obj.isDead && !obj.isUncounted) || obj.mainNPC == null || obj.mainNPC.life <= 0 || obj.mainNPC.type == 0)
                 {
                     obj.isDead = true;
-                    if (!obj.isClone && !obj.isInvasion)
-                        obj.customNPC.currSpawnsVar--;
+                    if (!obj.isUncounted)
+                    {
+                        obj.isUncounted = true;
+                        if (!obj.isClone && !obj.isInvasion)
+                            obj.customNPC.currSpawnsVar--;
+                    }
                 }
-                else if(!obj.isDead)
+                else if (!obj.isDead)
                 {
                     var args = new NpcUpdateEvent
                     {

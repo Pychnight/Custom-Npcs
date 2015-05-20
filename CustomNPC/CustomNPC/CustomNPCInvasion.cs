@@ -74,14 +74,37 @@ namespace CustomNPC
             {
                 return;
             }
+            
+            int spawnFails = 0;
+            int spawnsThisWave = 0;
+
             int spawnX = Main.spawnTileX - 150;
             int spawnY = Main.spawnTileY - 150;
             Rectangle SpawnRegion = new Rectangle(spawnX, spawnY, 300, 300);
             foreach(SpawnMinion minions in CurrentWave.SpawnGroup.SpawnMinions)
             {
-                foreach(TSPlayer player in TShock.Players.Where(x => x != null))
+                var npcdef = NPCManager.Data.GetNPCbyID(minions.MobID);
+                if (npcdef == null)
                 {
-                    if (player.Dead || !player.Active || !NPCManager.Chance(minions.Chance))
+                    TShock.Log.ConsoleError("[CustomNPC]: Error! The custom mob id \"{0}\" does not exist!", minions.MobID);
+                    continue;
+                }
+
+                // Check spawn conditions
+                if (minions.SpawnConditions != SpawnConditions.None)
+                {
+                    if (NPCManager.CheckSpawnConditions(minions.SpawnConditions))
+                    {
+                        continue;
+                    }
+                }
+
+                foreach (TSPlayer player in TShock.Players)
+                {
+                    //Skip spawning more NPCs when we have likely hit the server's mob limit.
+                    if (spawnFails > 40 && spawnsThisWave >= 150) continue;
+
+                    if (player == null || player.Dead || !player.Active || !NPCManager.Chance(minions.Chance))
                     {
                         continue;
                     }
@@ -90,19 +113,7 @@ namespace CustomNPC
                     {
                         continue;
                     }
-                    var npcdef = NPCManager.Data.GetNPCbyID(minions.MobID);
-                    if (npcdef == null)
-                    {
-                        TShock.Log.ConsoleError("[CustomNPC]: Error! The custom mob id \"{0}\" does not exist!", minions.MobID);
-                        continue;
-                    }
-                    if (minions.SpawnConditions != SpawnConditions.None)
-                    {
-                        if (NPCManager.CheckSpawnConditions(minions.SpawnConditions))
-                        {
-                            continue;
-                        }
-                    }
+                    
                     if (minions.BiomeConditions != BiomeTypes.None)
                     {
                         BiomeTypes biomes = player.GetCurrentBiomes();
@@ -113,21 +124,34 @@ namespace CustomNPC
                         }
                     }
 
-                    // prevent multiple bosses from spawning during invasions
+                    // Prevent multiple bosses from spawning during invasions
                     if (minions.isBoss && NPCManager.AliveCount(minions.MobID) > 0)
                     {
                         continue;
                     }
 
-                    int mobid;
-                    do
+                    int mobid = -1;
+                    //Try max 3 times. Since every try checks 50 positions around the player to spawn the mob,
+                    //3 tries means a maximum of 150 spawn attempts.
+                    for (int i = 0; mobid == -1 && i < 3; i++)
                     {
                         mobid = NPCManager.SpawnMobAroundPlayer(player, npcdef);
                     }
-                    while (mobid == -1);
+                    
+                    if (mobid == -1)
+                    {
+                        spawnFails++;
+                        continue;
+                    }
 
-                    NPCManager.GetCustomNPCByIndex(mobid).isInvasion = true;                   
+                    NPCManager.GetCustomNPCByIndex(mobid).isInvasion = true;
+                    spawnsThisWave++;
                 }
+            }
+
+            if (spawnFails > 0)
+            {
+                TShock.Log.ConsoleInfo("[CustomNPC]: Failed to spawn {0} npcs this wave!", spawnFails);
             }
         }
 

@@ -15,10 +15,12 @@ namespace CustomNPC
         public CustomNPCDefinition customNPC { get; set; }
         public DateTime[] lastAttemptedProjectile { get; set; }
         public bool isDead { get; set; }
+        public bool isUncounted { get; set; }
         public NPC mainNPC { get; set; }
         public bool droppedLoot { get; set; }
         public bool isClone { get; set; }
         public bool isInvasion { get; set; }
+        public bool usingCustomAI { get; set; }
         private Random rand = new Random();
         private IDictionary<string, object> variables = new Dictionary<string, object>();
 
@@ -26,36 +28,19 @@ namespace CustomNPC
         {
             lastAttemptedProjectile = lastattemptedprojectile;
             isDead = false;
+            isUncounted = false;
             isClone = isclone;
             customNPC = customnpc;
             mainNPC = mainnpc;
             droppedLoot = false;
+
+            //Update if this mob is using custom ai.
+            updateCustomAI();
         }
 
-        /// <summary>
-        /// Updates this npc to the skin of the target NPC
-        /// </summary>
-        /// <param name="target">The NPC to take the skin of</param>
-        /// <param name="update">If a netupdate should be enforced.</param>
-        private void UpdateSkin(NPC target, bool update = true)
+        private void updateCustomAI()
         {
-            //Proper type
-            mainNPC.type = target.type;
-            mainNPC.netID = target.netID;
-
-            //Color and size
-            mainNPC.color = target.color;
-            mainNPC.width = target.width;
-            mainNPC.height = target.height;
-            mainNPC.scale = target.scale;
-
-            //Sounds
-            mainNPC.soundHit = target.soundHit;
-            mainNPC.soundKilled = target.soundKilled;
-            mainNPC.soundDelay = target.soundDelay;
-
-            //Enforce update
-            if (update) mainNPC.netUpdate = true;
+            usingCustomAI = (customNPC.customAI != customNPC.customBase.aiStyle || customNPC.noGravity != customNPC.customBase.noGravity);
         }
 
         /// <summary>
@@ -63,23 +48,63 @@ namespace CustomNPC
         /// </summary>
         private void CustomTransform()
         {
-            UpdateSkin(customNPC.customBase, false);
+            int oldLife = mainNPC.life;
+            int[] array = new int[5];
+            int[] array2 = new int[5];
+            for (int i = 0; i < 5; i++)
+            {
+                array[i] = mainNPC.buffType[i];
+                array2[i] = mainNPC.buffTime[i];
+            }
+            Vector2 vector = mainNPC.velocity;
+            mainNPC.position.Y = mainNPC.position.Y + (float)mainNPC.height;
+            int spriteDir = mainNPC.spriteDirection;
+
+            mainNPC.netDefaults(customNPC.customBase.netID);
+
+            mainNPC.spriteDirection = spriteDir;
+            mainNPC.velocity = vector;
+            mainNPC.position.Y = mainNPC.position.Y - (float)mainNPC.height;
 
             mainNPC.name = customNPC.customName;
             mainNPC.displayName = customNPC.customName;
             mainNPC.lifeMax = customNPC.customHealth;
+            mainNPC.life = oldLife;
             mainNPC.aiStyle = customNPC.customAI;
             mainNPC.lavaImmune = customNPC.lavaImmune;
             mainNPC.noGravity = customNPC.noGravity;
             mainNPC.noTileCollide = customNPC.noTileCollide;
+            mainNPC.boss = customNPC.isBoss;
 
-            mainNPC.damage = customNPC.customDamage;
-            mainNPC.defDamage = customNPC.customDamage;
+            updateCustomAI();
 
-            mainNPC.defense = customNPC.customDefense;
-            mainNPC.defDefense = customNPC.customDefense;
+            for (int j = 0; j < 5; j++)
+            {
+                mainNPC.buffType[j] = array[j];
+                mainNPC.buffTime[j] = array2[j];
+            }
+        }
 
-            mainNPC.netUpdate = true;
+        private void NormalTransform(NPC baseType)
+        {
+            int oldLife = mainNPC.life;
+
+            mainNPC.netDefaults(baseType.netID);
+
+            mainNPC.name = customNPC.customName;
+            mainNPC.displayName = customNPC.customName;
+            mainNPC.lifeMax = customNPC.customHealth;
+            mainNPC.life = oldLife;
+        }
+
+        private void postTransform()
+        {
+            if (Main.netMode == 2)
+            {
+                mainNPC.netUpdate = true;
+                NetMessage.SendData(23, -1, -1, "", mainNPC.whoAmI, 0f, 0f, 0f, 0);
+                NetMessage.SendData(54, -1, -1, "", mainNPC.whoAmI, 0f, 0f, 0f, 0);
+            }
         }
 
         /// <summary>
@@ -88,18 +113,11 @@ namespace CustomNPC
         /// <param name="npcdef">CustomNPC that will be replacing it</param>
         /// <param name="addhealth">Increase monsters Health</param>
         /// <param name="additionalhealth">Amount to Increase by, if 0 - get new monsters health and add that to NPC</param>
-        public void Transform(CustomNPCDefinition npcdef, bool addhealth = false, int additionalhealth = 0, bool fullTransform = true)
+        public void Transform(CustomNPCDefinition npcdef, bool addhealth = false, int additionalhealth = 0)
         {
             customNPC = npcdef;
 
-            if (fullTransform)
-            {
-                CustomTransform();
-            }
-            else
-            {
-                UpdateSkin(customNPC.customBase, true);
-            }
+            CustomTransform();
 
             //mainNPC.type = npcdef.customBase.type;
 
@@ -114,6 +132,8 @@ namespace CustomNPC
                     mainNPC.life += additionalhealth;
                 }
             }
+
+            postTransform();
         }
 
         /// <summary>
@@ -123,13 +143,13 @@ namespace CustomNPC
         /// <param name="addhealth">Increase monsters Health</param>
         /// <param name="additionalhealth">Amount to Increase by, if 0 - get new monsters health and add that to NPC</param>
         /// <param name="fullTransform">When false, only the skin of the NPC changes. When true, also applies some of the given NPC's stats</param>
-        public bool Transform(string id, bool addhealth = false, int additionalhealth = 0, bool fullTransform = true)
+        public bool Transform(string id, bool addhealth = false, int additionalhealth = 0)
         {
             CustomNPCDefinition search = NPCManager.Data.GetNPCbyID(id);
             //If not found, return false
             if (search == null) return false;
 
-            Transform(search, addhealth, additionalhealth, fullTransform);
+            Transform(search, addhealth, additionalhealth);
             return true;
         }
 
@@ -144,8 +164,7 @@ namespace CustomNPC
             NPC obj = TShock.Utils.GetNPCById(id);
 
             //mainNPC.type = obj.netID;
-
-            UpdateSkin(obj, true);
+            NormalTransform(obj);
 
             if (addhealth)
             {
@@ -158,6 +177,8 @@ namespace CustomNPC
                     mainNPC.life += additionalhealth;
                 }
             }
+
+            postTransform();
         }
 
         /// <summary>
@@ -170,23 +191,22 @@ namespace CustomNPC
         }
 
         /// <summary>
-        /// Spawns monsters randomly around the current x y position.
+        /// (Attempts to) Spawn monsters randomly around the current x y position.
         /// </summary>
-        /// <param name="amount"></param>
+        /// <param name="npcvar">The Custom NPC to use to spawn children</param>
+        /// <param name="amount">The amount to spawn</param>
         /// <param name="sethealth"></param>
         /// <param name="health"></param>
-        public void Multiply(CustomNPCVars npcvar, int amount, bool sethealth = false, int health = 0)
+        public void Multiply(CustomNPCDefinition type, int amount, bool sethealth = false, int health = 0)
         {
-            //gets the npc
-            if (npcvar == null)
-                return;
+            // MainNPC is gone.
+            if (mainNPC == null) return;
+
+            if (type == null) return;
 
             for (int i = 0; i < amount; i++)
             {
-                if (mainNPC == null)
-                    continue;
-                
-                int npc = NPCManager.SpawnNPCAtLocation((int)mainNPC.position.X + rand.Next(0, 16) - 8, (int)mainNPC.position.Y + rand.Next(0, 16) - 8, customNPC);
+                int npc = NPCManager.SpawnNPCAtLocation((int)mainNPC.position.X + rand.Next(0, 16) - 8, (int)mainNPC.position.Y + rand.Next(0, 16) - 8, type);
                 if (npc == -1)
                     continue;
 
@@ -203,38 +223,38 @@ namespace CustomNPC
         }
 
         /// <summary>
-        /// Spawns monsters randomly around the current x y position.
+        /// (Attempts to) Spawn monsters randomly around the current x y position.
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="amount"></param>
+        /// <param name="npcvar">The Custom NPC to use to spawn children</param>
+        /// <param name="amount">The amount to spawn</param>
+        /// <param name="sethealth"></param>
+        /// <param name="health"></param>
+        public void Multiply(CustomNPCVars npcvar, int amount, bool sethealth = false, int health = 0)
+        {
+            // MainNPC is gone.
+            if (mainNPC == null) return;
+
+            if (npcvar == null) return;
+
+            Multiply(npcvar.customNPC, amount, sethealth, health);
+        }
+
+        /// <summary>
+        /// (Attempts to) Spawn monsters randomly around the current x y position.
+        /// </summary>
+        /// <param name="id">The type that the children should have</param>
+        /// <param name="amount">The amount to spawn</param>
         /// <param name="sethealth"></param>
         /// <param name="health"></param>
         public void Multiply(string id, int amount, bool sethealth = false, int health = 0)
         {
+            // MainNPC is gone.
+            if (mainNPC == null) return;
+
             var def = NPCManager.Data.GetNPCbyID(id);
-            if (def == null)
-                return;
+            if (def == null) return;
 
-            if (mainNPC == null)
-                return;
-
-            for (int i = 0; i < amount; i++)
-            {
-                int npc = NPCManager.SpawnNPCAtLocation((int)mainNPC.position.X + rand.Next(0, 16) - 8, (int)mainNPC.position.Y + rand.Next(0, 16) - 8, def);
-                if (npc == -1)
-                    continue;
-
-                var spawned = NPCManager.GetCustomNPCByIndex(npc);
-                if (spawned != null)
-                {
-                    if (sethealth)
-                    {
-                        spawned.mainNPC.life = health;
-                    }
-                    //TADD this should be here I think
-                    spawned.isClone = true;
-                }
-            }
+            Multiply(def, amount, sethealth, health);
         }
 
         /// <summary>
