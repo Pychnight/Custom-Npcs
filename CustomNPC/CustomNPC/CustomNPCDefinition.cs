@@ -48,6 +48,10 @@ namespace CustomNPC
         {
             get { return customBase.lifeMax; }
         }
+        public virtual int customDefense
+        {
+            get { return customBase.defense; }
+        }
         protected virtual int customSpeed
         {
             get { throw new NotImplementedException(); }

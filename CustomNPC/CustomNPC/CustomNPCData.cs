@@ -76,6 +76,9 @@ namespace CustomNPC
             npc.noGravity = obj.noGravity;
             npc.noTileCollide = obj.noTileCollide;
 
+            npc.defense = obj.customDefense;
+            npc.defDamage = obj.customDefense;
+
             npc.boss = obj.isBoss;
 
             if (!string.IsNullOrEmpty(obj.customSpawnMessage))

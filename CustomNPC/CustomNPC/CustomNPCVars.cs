@@ -76,6 +76,9 @@ namespace CustomNPC
             mainNPC.noTileCollide = customNPC.noTileCollide;
             mainNPC.boss = customNPC.isBoss;
 
+            mainNPC.defense = customNPC.customDefense;
+            mainNPC.defDamage = customNPC.customDefense;
+
             updateCustomAI();
 
             for (int j = 0; j < 5; j++)
