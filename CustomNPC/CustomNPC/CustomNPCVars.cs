@@ -77,7 +77,7 @@ namespace CustomNPC
             mainNPC.boss = customNPC.isBoss;
 
             mainNPC.defense = customNPC.customDefense;
-            mainNPC.defDamage = customNPC.customDefense;
+            mainNPC.defDefense = customNPC.customDefense;
 
             updateCustomAI();
 

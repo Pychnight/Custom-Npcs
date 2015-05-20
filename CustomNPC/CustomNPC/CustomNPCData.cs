@@ -77,7 +77,7 @@ namespace CustomNPC
             npc.noTileCollide = obj.noTileCollide;
 
             npc.defense = obj.customDefense;
-            npc.defDamage = obj.customDefense;
+            npc.defDefense = obj.customDefense;
 
             npc.boss = obj.isBoss;
 
