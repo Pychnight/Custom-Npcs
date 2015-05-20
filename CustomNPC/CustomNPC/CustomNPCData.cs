@@ -76,12 +76,10 @@ namespace CustomNPC
             npc.noGravity = obj.noGravity;
             npc.noTileCollide = obj.noTileCollide;
 
-            //TADD
             npc.defense = obj.customDefense;
             npc.defDefense = obj.customDefense;
-            npc.damage = obj.customDamage;
-            npc.defDamage = obj.customDamage;
 
+            npc.boss = obj.isBoss;
 
             if (!string.IsNullOrEmpty(obj.customSpawnMessage))
             {

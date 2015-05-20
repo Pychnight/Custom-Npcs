@@ -52,10 +52,6 @@ namespace CustomNPC
         {
             get { return customBase.defense; }
         }
-        public virtual int customDamage
-        {
-            get { return customBase.damage; }
-        }
         protected virtual int customSpeed
         {
             get { throw new NotImplementedException(); }
