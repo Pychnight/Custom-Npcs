@@ -501,7 +501,17 @@ namespace CustomNPC
 
                 if (!onlyCustom || obj.usingCustomAI)
                 {
-                    NetMessage.SendData(23, -1, -1, "", obj.mainNPC.whoAmI, 0f, 0f, 0f, 0);
+                    if (Main.netMode == 2)
+                    {
+                        //Schedule updates to occur every server tick (once every 1/60th second)
+                        if (obj.mainNPC.netSpam > 0) obj.mainNPC.netSpam = 0;
+                        obj.mainNPC.netUpdate = true;
+                        obj.mainNPC.netUpdate2 = true;
+                    }
+                    else
+                    {
+                        NetMessage.SendData(23, -1, -1, "", obj.mainNPC.whoAmI, 0f, 0f, 0f, 0);
+                    }
                 }
             }
         }
