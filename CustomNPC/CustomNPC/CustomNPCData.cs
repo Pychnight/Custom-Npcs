@@ -79,7 +79,7 @@ namespace CustomNPC
             npc.defense = obj.customDefense;
             npc.defDefense = obj.customDefense;
 
-            npc.boss = obj.isBoss;
+            //npc.boss = obj.isBoss;
 
             if (!string.IsNullOrEmpty(obj.customSpawnMessage))
             {
