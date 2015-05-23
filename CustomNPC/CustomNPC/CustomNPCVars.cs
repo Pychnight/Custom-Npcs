@@ -48,6 +48,10 @@ namespace CustomNPC
         /// </summary>
         private void CustomTransform()
         {
+            //DEBUG
+            TShock.Log.ConsoleInfo("DEBUG [CustomTransform] entry. NPC Pos={0}, {1} OldNet={2} OldType={3}", mainNPC.position.X, mainNPC.position.Y, mainNPC.netID, mainNPC.type);
+            //DEBUG
+
             int oldLife = mainNPC.life;
             int[] array = new int[5];
             int[] array2 = new int[5];
@@ -61,6 +65,9 @@ namespace CustomNPC
             int spriteDir = mainNPC.spriteDirection;
 
             mainNPC.netDefaults(customNPC.customBase.netID);
+            //DEBUG
+            TShock.Log.ConsoleInfo("DEBUG [CustomTransform] Post netDefaults. NPC Pos={0}, {1} NewNet={2} NewType={3}", mainNPC.position.X, mainNPC.position.Y, mainNPC.netID, mainNPC.type);
+            //DEBUG
 
             mainNPC.spriteDirection = spriteDir;
             mainNPC.velocity = vector;
@@ -74,7 +81,7 @@ namespace CustomNPC
             mainNPC.lavaImmune = customNPC.lavaImmune;
             mainNPC.noGravity = customNPC.noGravity;
             mainNPC.noTileCollide = customNPC.noTileCollide;
-            mainNPC.boss = customNPC.isBoss;
+            //mainNPC.boss = customNPC.isBoss;
 
             mainNPC.defense = customNPC.customDefense;
             mainNPC.defDefense = customNPC.customDefense;
@@ -86,10 +93,18 @@ namespace CustomNPC
                 mainNPC.buffType[j] = array[j];
                 mainNPC.buffTime[j] = array2[j];
             }
+
+            //DEBUG
+            TShock.Log.ConsoleInfo("DEBUG [CustomTransform] exit. NPC Pos={0}, {1} NewNet={2} NewType={3}", mainNPC.position.X, mainNPC.position.Y, mainNPC.netID, mainNPC.type);
+            //DEBUG
         }
 
         private void NormalTransform(NPC baseType)
         {
+            //DEBUG
+            TShock.Log.ConsoleInfo("DEBUG [NormalTransform] entry. NPC Pos={0}, {1} OldNet={2} OldType={3}", mainNPC.position.X, mainNPC.position.Y, mainNPC.netID, mainNPC.type);
+            //DEBUG
+
             int oldLife = mainNPC.life;
 
             mainNPC.netDefaults(baseType.netID);
@@ -98,15 +113,28 @@ namespace CustomNPC
             mainNPC.displayName = customNPC.customName;
             mainNPC.lifeMax = customNPC.customHealth;
             mainNPC.life = oldLife;
+
+            //DEBUG
+            TShock.Log.ConsoleInfo("DEBUG [NormalTransform] exit. NPC Pos={0}, {1} NewNet={2} NewType={3}", mainNPC.position.X, mainNPC.position.Y, mainNPC.netID, mainNPC.type);
+            //DEBUG
         }
 
         private void postTransform()
         {
             if (Main.netMode == 2)
             {
+                //DEBUG
+                TShock.Log.ConsoleInfo("DEBUG [PostTransform] NetMode=2, updating");
+                //DEBUG
                 mainNPC.netUpdate = true;
                 NetMessage.SendData(23, -1, -1, "", mainNPC.whoAmI, 0f, 0f, 0f, 0);
                 NetMessage.SendData(54, -1, -1, "", mainNPC.whoAmI, 0f, 0f, 0f, 0);
+            }
+            else
+            {
+                //DEBUG
+                TShock.Log.ConsoleInfo("DEBUG [PostTransform] Wrong Netmode, no update. NetMode={0}", Main.netMode);
+                //DEBUG
             }
         }
 
@@ -118,6 +146,10 @@ namespace CustomNPC
         /// <param name="additionalhealth">Amount to Increase by, if 0 - get new monsters health and add that to NPC</param>
         public void Transform(CustomNPCDefinition npcdef, bool addhealth = false, int additionalhealth = 0)
         {
+            //DEBUG
+            TShock.Log.ConsoleInfo("DEBUG [TransformToCustom] addHealth={0} additionalHealth={1}", addhealth, additionalhealth);
+            //DEBUG
+
             customNPC = npcdef;
 
             CustomTransform();
@@ -164,6 +196,10 @@ namespace CustomNPC
         /// <param name="additionalhealth">Amount to Increase by, if 0 - get new monsters health and add that to NPC</param>
         public void Transform(int id, bool addhealth = false, int additionalhealth = 0)
         {
+            //DEBUG
+            TShock.Log.ConsoleInfo("DEBUG [TransformToNormal] addHealth={0} additionalHealth={1}", addhealth, additionalhealth);
+            //DEBUG
+
             NPC obj = TShock.Utils.GetNPCById(id);
 
             //mainNPC.type = obj.netID;
@@ -202,6 +238,10 @@ namespace CustomNPC
         /// <param name="health"></param>
         public void Multiply(CustomNPCDefinition type, int amount, bool sethealth = false, int health = 0)
         {
+            //DEBUG
+            TShock.Log.ConsoleInfo("DEBUG [Multiply] entry. amount={0}, sethealth={1}, health={2}", amount, sethealth, health);
+            //DEBUG
+
             // MainNPC is gone.
             if (mainNPC == null) return;
 
@@ -209,9 +249,16 @@ namespace CustomNPC
 
             for (int i = 0; i < amount; i++)
             {
-                int npc = NPCManager.SpawnNPCAtLocation((int)mainNPC.position.X + rand.Next(0, 16) - 8, (int)mainNPC.position.Y + rand.Next(0, 16) - 8, type);
+                int x = (int)mainNPC.position.X + rand.Next(0, 16) - 8;
+                int y = (int)mainNPC.position.Y + rand.Next(0, 16) - 8;
+                int npc = NPCManager.SpawnNPCAtLocation(x, y, type);
                 if (npc == -1)
+                {
+                    //DEBUG
+                    TShock.Log.ConsoleInfo("DEBUG [Multiply] spawn failed. location={0}, {1}", x, y);
+                    //DEBUG
                     continue;
+                }
 
                 var spawned = NPCManager.GetCustomNPCByIndex(npc);
                 if (spawned != null)

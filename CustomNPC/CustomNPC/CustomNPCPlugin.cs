@@ -204,8 +204,16 @@ namespace CustomNPC
             //all checks complete spawn mob
             for (int i = 0; i < amount; i++)
             {
-                NPCManager.SpawnNPCAtLocation(x, y, cdef);
-                cdef.currSpawnsVar++;
+                int j = NPCManager.SpawnNPCAtLocation(x, y, cdef);
+
+                if (j == -1)
+                {
+                    //DEBUG
+                    TShock.Log.ConsoleInfo("DEBUG [SpawnCommand] SpawningAtLocation failed! {0}, {1}", x, y);
+                    //DEBUG
+                }
+
+                if (j != -1) cdef.currSpawnsVar++;
             }
         }
 
@@ -267,12 +275,20 @@ namespace CustomNPC
         /// <param name="args"></param>
         private void OnUpdate(EventArgs args)
         {
+            //DEBUG
+            TShock.Log.ConsoleInfo("DEBUG [OnUpdate] Normal update");
+            //DEBUG
+
             //Update all NPCs with custom AI
             CustomNPCUpdate(true, false);
         }
 
         private void OnNPCSpawn(NpcSpawnEventArgs args)
         {
+            //DEBUG
+            TShock.Log.ConsoleInfo("DEBUG [NPCSpawn] NPCIndex {0}", args.NpcId);
+            //DEBUG
+
             //If the id falls outside the possible range, we can return.
             if (args.NpcId < 0 || args.NpcId >= 200) return;
 
@@ -359,6 +375,10 @@ namespace CustomNPC
             float knockback = args.Data.ReadSingle();
             byte direction = args.Data.ReadInt8();
             bool critical = args.Data.ReadBoolean();
+
+            //DEBUG
+            TShock.Log.ConsoleInfo("DEBUG [NPCDamage] NPCIndex {0}", npcIndex);
+            //DEBUG
 
             NPC npc = Main.npc[npcIndex];
             double damageDone = Main.CalculateDamage(damage, npc.ichor ? npc.defense - 20 : npc.defense);
@@ -480,6 +500,9 @@ namespace CustomNPC
 
         private void CustomNPCUpdate(bool onlyCustom = true, bool updateDead = false)
         {
+            //DEBUG
+            TShock.Log.ConsoleInfo("DEBUG [CustomUpdate] NetMode {0}", Main.netMode);
+            //DEBUG
             foreach (CustomNPCVars obj in NPCManager.NPCs)
             {
                 //Dead
@@ -563,7 +586,11 @@ namespace CustomNPC
                 foreach (CustomNPCProjectiles projectile in obj.customNPC.customProjectiles)
                 {
                     //custom projectile index
-                    //int projectileIndex = obj.customNPC.customProjectiles.IndexOf(projectile);
+                    int projIndex = obj.customNPC.customProjectiles.IndexOf(projectile);
+
+                    //DEBUG
+                    TShock.Log.ConsoleInfo("ProjDebug: Equal = {0} K: {1} ProjIndex: {2}", (k == projIndex), k, projIndex);
+                    //DEBUG
 
                     // check if projectile last fire time is greater then equal to its next allowed fire time
                     if ((savedNow - obj.lastAttemptedProjectile[k]).TotalMilliseconds >= projectile.projectileFireRate)

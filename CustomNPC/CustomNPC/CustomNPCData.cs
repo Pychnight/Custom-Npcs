@@ -67,6 +67,8 @@ namespace CustomNPC
             npc.netDefaults(obj.customBase.netID);
             //npc.type = obj.customBaseID;
 
+            npc.life = obj.customHealth;
+
             npc.name = obj.customName;
             npc.displayName = obj.customName;
             npc.lifeMax = obj.customHealth;

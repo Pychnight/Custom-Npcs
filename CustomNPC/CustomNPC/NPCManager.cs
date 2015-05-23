@@ -234,11 +234,21 @@ namespace CustomNPC
 
         public static int SpawnNPCAtLocation(int x, int y, CustomNPCDefinition customnpc)
         {
+            //DEBUG
+            TShock.Log.ConsoleInfo("DEBUG [SpawnAt] Spawning NPC at {0}, {1}", x, y);
+            //DEBUG
             int npcid = NPC.NewNPC(x, y, customnpc.customBase.type);
             if (npcid == 200)
             {
+                //DEBUG
+                TShock.Log.ConsoleInfo("DEBUG [SpawnAt] Spawning FAILED (mobcap) at {0}, {1}", x, y);
+                //DEBUG
                 return -1;
             }
+
+            //DEBUG
+            TShock.Log.ConsoleInfo("DEBUG [SpawnAt] Spawned NPC id={0}, now converting to custom {1}, {2}", npcid, x, y);
+            //DEBUG
             Data.ConvertNPCToCustom(npcid, customnpc);
             DateTime[] dt = null;
             if (customnpc.customProjectiles != null)
@@ -247,7 +257,16 @@ namespace CustomNPC
             }
             NPCs[npcid] = new CustomNPCVars(customnpc, dt, Main.npc[npcid]);
 
+            //DEBUG
+            TShock.Log.ConsoleInfo("DEBUG [SpawnAt] Attached CustomNPCVars");
+            //DEBUG
+
             TSPlayer.All.SendData(PacketTypes.NpcUpdate, "", npcid);
+
+            //DEBUG
+            TShock.Log.ConsoleInfo("DEBUG [SpawnAt] Sent NPCUpdate to players");
+            //DEBUG
+
             return npcid;
         }
 
