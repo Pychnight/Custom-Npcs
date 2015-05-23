@@ -276,7 +276,7 @@ namespace CustomNPC
         private void OnUpdate(EventArgs args)
         {
             //Update all NPCs with custom AI
-            CustomNPCUpdate(true, false);
+            CustomNPCUpdate(true);
         }
 
         private void OnNPCSpawn(NpcSpawnEventArgs args)
@@ -494,7 +494,7 @@ namespace CustomNPC
             eventManager.InvokeHandler(PluginUpdateEvent.Empty, EventType.PostPluginUpdate);
         }
 
-        private void CustomNPCUpdate(bool onlyCustom = true, bool updateDead = false)
+        private void CustomNPCUpdate(bool onlyCustom = true)
         {
             foreach (CustomNPCVars obj in NPCManager.NPCs)
             {
@@ -502,33 +502,32 @@ namespace CustomNPC
                 if (obj == null) continue;
 
                 //Should be dead
-                if (obj.isDead || obj.mainNPC == null || obj.mainNPC.life <= 0 || obj.mainNPC.type == 0)
+                if (obj.isDead || obj.mainNPC == null)// || obj.mainNPC.life <= 0 || obj.mainNPC.type == 0)
                 {
-                    if (updateDead && obj.isUncounted)
-                    {
-                        obj.isDead = true;
-                        obj.isUncounted = true;
-                        if (!obj.isClone && !obj.isInvasion)
-                            obj.customNPC.currSpawnsVar--;
-                    }
-
                     continue;
                 }
 
-                if (!onlyCustom || obj.usingCustomAI)
+                if (obj.mainNPC.aiStyle != obj.customNPC.customAI)
                 {
-                    if (Main.netMode == 2)
-                    {
-                        //Schedule updates to occur every server tick (once every 1/60th second)
-                        if (obj.mainNPC.netSpam > 0) obj.mainNPC.netSpam = 0;
-                        obj.mainNPC.netUpdate = true;
-                        obj.mainNPC.netUpdate2 = true;
-                    }
-                    else
-                    {
-                        NetMessage.SendData(23, -1, -1, "", obj.mainNPC.whoAmI, 0f, 0f, 0f, 0);
-                    }
+                    TShock.Log.ConsoleInfo("[DEBUG] [IMPORTANT] AIStyle != customAI, updating npc {0}", obj.mainNPC.whoAmI);
+
+                    NetMessage.SendData(23, -1, -1, "", obj.mainNPC.whoAmI, 0f, 0f, 0f, 0);
                 }
+
+                //if (!onlyCustom || obj.usingCustomAI)
+                //{
+                    //if (Main.netMode == 2)
+                    //{
+                        //Schedule updates to occur every server tick (once every 1/60th second)
+                        //if (obj.mainNPC.netSpam > 0) obj.mainNPC.netSpam = 0;
+                        //obj.mainNPC.netUpdate = true;
+                        //obj.mainNPC.netUpdate2 = true;
+                    //}
+                    //else
+                    //{
+                        //NetMessage.SendData(23, -1, -1, "", obj.mainNPC.whoAmI, 0f, 0f, 0f, 0);
+                    //}
+                //}
             }
         }
 

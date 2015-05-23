@@ -67,7 +67,7 @@ namespace CustomNPC
             if (netDef) npc.netDefaults(obj.customBase.netID);
             //npc.type = obj.customBaseID;
 
-            npc.netAlways = true;
+            //npc.netAlways = true;
             npc.life = obj.customHealth;
 
             npc.name = obj.customName;
