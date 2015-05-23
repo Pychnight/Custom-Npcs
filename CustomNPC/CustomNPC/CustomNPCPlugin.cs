@@ -275,10 +275,6 @@ namespace CustomNPC
         /// <param name="args"></param>
         private void OnUpdate(EventArgs args)
         {
-            //DEBUG
-            TShock.Log.ConsoleInfo("DEBUG [OnUpdate] Normal update");
-            //DEBUG
-
             //Update all NPCs with custom AI
             CustomNPCUpdate(true, false);
         }
@@ -500,9 +496,6 @@ namespace CustomNPC
 
         private void CustomNPCUpdate(bool onlyCustom = true, bool updateDead = false)
         {
-            //DEBUG
-            TShock.Log.ConsoleInfo("DEBUG [CustomUpdate] NetMode {0}", Main.netMode);
-            //DEBUG
             foreach (CustomNPCVars obj in NPCManager.NPCs)
             {
                 //Dead
