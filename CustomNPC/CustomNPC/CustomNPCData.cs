@@ -61,12 +61,13 @@ namespace CustomNPC
         /// </summary>
         /// <param name="index"></param>
         /// <param name="obj"></param>
-        public void ConvertNPCToCustom(int index, CustomNPCDefinition obj)
+        public void ConvertNPCToCustom(int index, CustomNPCDefinition obj, bool netDef = true)
         {
             NPC npc = Main.npc[index];
-            npc.netDefaults(obj.customBase.netID);
+            if (netDef) npc.netDefaults(obj.customBase.netID);
             //npc.type = obj.customBaseID;
 
+            npc.netAlways = true;
             npc.life = obj.customHealth;
 
             npc.name = obj.customName;
