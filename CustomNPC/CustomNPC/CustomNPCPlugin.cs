@@ -468,7 +468,7 @@ namespace CustomNPC
 
             //Commented out, since this should happen on the main thread
             //Update All NPCs with custom AI (that are alive)
-            //CustomNPCUpdateSafe(true);
+            CustomNPCUpdate(true, false);
 
             //fire projectiles towards closests player
             ProjectileCheck();
