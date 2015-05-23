@@ -94,7 +94,7 @@ namespace CustomNPC
                 mainNPC.buffTime[j] = array2[j];
             }
 
-            //mainNPC.netAlways = true;
+            mainNPC.netAlways = true;
 
             //DEBUG
             TShock.Log.ConsoleInfo("DEBUG [CustomTransform] exit. NPC Pos={0}, {1} NewNet={2} NewType={3}", mainNPC.position.X, mainNPC.position.Y, mainNPC.netID, mainNPC.type);
@@ -111,7 +111,7 @@ namespace CustomNPC
 
             mainNPC.netDefaults(baseType.netID);
 
-            //mainNPC.netAlways = true;
+            mainNPC.netAlways = true;
             mainNPC.name = customNPC.customName;
             mainNPC.displayName = customNPC.customName;
             mainNPC.lifeMax = customNPC.customHealth;
