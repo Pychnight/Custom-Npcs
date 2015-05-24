@@ -113,8 +113,9 @@ namespace CustomNPC
         private void OnInitialize(EventArgs args)
         {
             Commands.ChatCommands.Add(new Command("customnpc.spawn", CommandSpawnNPC, "csm"));
-            Commands.ChatCommands.Add(new Command("customnpc.list", CommandListNPCS, "csmlist"));
-            Commands.ChatCommands.Add(new Command("customnpc.invade", CommandInvade, "cinvade"));
+            Commands.ChatCommands.Add(new Command("customnpc.list", CommandListNPCS, "csmlist", "clist"));
+            Commands.ChatCommands.Add(new Command("customnpc.invade", CommandInvade, "csminvade", "cinvade"));
+            Commands.ChatCommands.Add(new Command("customnpc.info", CommandNPCInfo, "csminfo", "cinfo"));
             ConfigObj = new CustomNPCConfig();
             SetupConfig();
             NPCManager.CustomNPCInvasion.WaveSets = ConfigObj.WaveSets;
@@ -156,38 +157,69 @@ namespace CustomNPC
         }
 
         /// <summary>
-        /// Spawn custom npc using /csm &lt;id&gt; [amount] [x] [y]
+        /// Spawn custom npc using /csm &lt;id&gt; [amount] [&lt;x&gt; &lt;y&gt;]
         /// </summary>
         /// <param name="args"></param>
         private void CommandSpawnNPC(CommandArgs args)
         {
-            //error if too many or too few params specified
+            //Error if too many or too few params specified
             if (args.Parameters.Count == 0 || args.Parameters.Count > 4)
             {
-                args.Player.SendInfoMessage("Info: /csm <id> [amount] [x] [y]");
+                args.Player.SendInfoMessage("Usage: /csm <id> [<amount>] [<x> <y>]");
                 return;
             }
-            //get custom npc by id
+
+            //Get custom npc by id
             var cdef = NPCManager.Data.GetNPCbyID(args.Parameters[0]);
             if (cdef == null)
             {
-                args.Player.SendErrorMessage("Error: The custom npc id \"{0}\" does not exist!", args.Parameters[0]);
+                args.Player.SendErrorMessage("Error: The custom npc with id \"{0}\" does not exist!", args.Parameters[0]);
                 return;
             }
-            //default to 1 if amount is not defined
+
+            //Default to 1 if amount is not defined
             int amount = 1;
-            //check if amount is defined
-            if (args.Parameters.Count == 2)
+
+            //Check if amount is defined
+            if (args.Parameters.Count == 2 || args.Parameters.Count == 4)
             {
                 int.TryParse(args.Parameters[1], out amount);
+
+                //Check for too many mobs
+                if (amount > 200)
+                {
+                    args.Player.SendErrorMessage("Error: Amount needs to be lower than 200!");
+                    return;
+                }
             }
-            int x = 0;
-            int y = 0;
-            if (args.Parameters.Count != 4)
+
+            //Check for X and Y
+            int x;
+            int y;
+
+            //Not specified, use player's coordinates. (/csm <id> [amount])
+            if (args.Parameters.Count <= 2)
             {
-                x = (int)args.Player.X + rand.Next(0, 16) - 8;
-                y = (int)args.Player.Y + rand.Next(0, 16) - 8;
+                x = (int)args.Player.X + rand.Next(-8, 9);
+                y = (int)args.Player.Y + rand.Next(-8, 9);
             }
+
+            //Specified, no amount (/csm <id> <x> <y>)
+            else if (args.Parameters.Count == 3)
+            {
+                if (!int.TryParse(args.Parameters[1], out x))
+                {
+                    args.Player.SendErrorMessage("Error: Invalid x position defined!");
+                    return;
+                }
+                if (!int.TryParse(args.Parameters[2], out y))
+                {
+                    args.Player.SendErrorMessage("Error: Invalid y position defined!");
+                    return;
+                }
+            }
+
+            //All arguments specified (/csm <id> <amount> <x> <y>)
             else
             {
                 if (!int.TryParse(args.Parameters[2], out x))
@@ -201,32 +233,38 @@ namespace CustomNPC
                     return;
                 }
             }
-            //all checks complete spawn mob
+
+            //Keep track of spawns that fail.
+            int failed = 0;
+
+            //Spawn mobs
             for (int i = 0; i < amount; i++)
             {
                 int j = NPCManager.SpawnNPCAtLocation(x, y, cdef);
 
                 if (j == -1)
-                {
-                    //DEBUG
-                    TShock.Log.ConsoleInfo("DEBUG [SpawnCommand] SpawningAtLocation failed! {0}, {1}", x, y);
-                    //DEBUG
-                }
-
-                if (j != -1) cdef.currSpawnsVar++;
+                    failed++;
+                else
+                    cdef.currSpawnsVar++;
             }
+
+            //Inform player
+            if (failed > 0)
+                args.Player.SendWarningMessage("Failed to spawn {0} of {1} \"{2}\"'s at ({3}, {4})", failed, amount, args.Parameters[0], x, y);
+            else
+                args.Player.SendSuccessMessage("Spawned {0} \"{1}\"'s at ({2}, {3})", amount, args.Parameters[0], x, y);
         }
 
         /// <summary>
-        /// List custom npcs using /csmlist &lt;page&gt;
+        /// List custom npcs using /csmlist &lt;page&gt; [onlyalive]
         /// </summary>
         /// <param name="args"></param>
         private void CommandListNPCS(CommandArgs args)
         {
-            //error if too many or too few params specified
-            if (args.Parameters.Count == 0 || args.Parameters.Count > 1)
+            //Error if too many or too few params specified
+            if (args.Parameters.Count == 0 || args.Parameters.Count > 2)
             {
-                args.Player.SendInfoMessage("Info: /csmlist <page>");
+                args.Player.SendInfoMessage("Usage: /csmlist <page> [onlyalive]");
                 return;
             }
 
@@ -237,6 +275,13 @@ namespace CustomNPC
                 return;
             }
 
+            bool onlyalive = false;
+            if (args.Parameters.Count == 2 && !bool.TryParse(args.Parameters[1], out onlyalive))
+            {
+                args.Player.SendErrorMessage("Error: Invalid onlyalive flag! onlyalive can be true or false.");
+                return;
+            }
+
             //Check if page is valid
             if (page < 1)
             {
@@ -244,12 +289,12 @@ namespace CustomNPC
                 return;
             }
 
-            var vals = NPCManager.Data.CustomNPCs.Values;
+            var vals = NPCManager.Data.CustomNPCs.Values.Where(cd => cd != null && (!onlyalive || cd.currSpawnsVar > 0));
 
-            int start = (page - 1) * 5;
-            int end = start + 5;
+            int start = (page - 1) * 6;
+            int end = start + 6;
             int total = vals.Count();
-            int totalpages = (total + 5) / 5;
+            int totalpages = (total + 5) / 6;
 
             if (start > total)
             {
@@ -257,15 +302,58 @@ namespace CustomNPC
                 return;
             }
 
-            args.Player.SendInfoMessage("Page {0} / {1} ", page, totalpages);
+            args.Player.SendInfoMessage("Page {0} / {1}. Only Alive = {2}", page, totalpages, onlyalive);
 
             for (int i = start; i < end && i < total; i++)
             {
                 CustomNPCDefinition obj = vals.ElementAt(i);
-                if (obj == null) continue;
                 
                 args.Player.SendInfoMessage("[{0}]: {1}. Spawned: {2}", obj.customID, obj.customName, obj.currSpawnsVar);
             }
+        }
+
+        /// <summary>
+        /// List custom npcs using /csminfo &lt;id&gt;
+        /// </summary>
+        /// <param name="args"></param>
+        private void CommandNPCInfo(CommandArgs args)
+        {
+            //Error if too many or too few params specified
+            if (args.Parameters.Count != 1)
+            {
+                args.Player.SendInfoMessage("Usage: /csminfo <id>");
+                return;
+            }
+
+            //Get custom npc by id
+            var cdef = NPCManager.Data.GetNPCbyID(args.Parameters[0]);
+            if (cdef == null)
+            {
+                args.Player.SendErrorMessage("Error: The custom npc with id \"{0}\" does not exist!", args.Parameters[0]);
+                return;
+            }
+
+            //Info About CustomSlime
+            //Custom Name: Slimenator (Default: Slime)
+            //Base: Slime (10)
+            //Custom AI: No (Default: 1)
+            //Custom Health: 20 (Default: 15) -- Custom Defense: 10 (Default: 3)
+            //NoGravity: Yes (Default: No) -- NoTileCollide: Yes (Default: No)
+            //Boss: Yes (Default: No) -- Immune to Lava: Yes (Default: No)
+            //Custom Projectiles: No -- Custom Loot: Yes
+            //Custom Spawn Message: Yaaaarrrrrgh
+            //Alive: 2 / 20
+
+            args.Player.SendInfoMessage("Info About {0}", cdef.customID);
+            args.Player.SendInfoMessage("Custom Name: {0} (Default: {1})", TaeirUtil.ValOrNo(cdef.customName), cdef.customBase.name);
+            args.Player.SendInfoMessage("Base: {0} ({1})", TaeirUtil.GetNPCName(cdef.customBase.netID), cdef.customBase.netID);
+            args.Player.SendInfoMessage("Custom AI: {0} (Default: {1})", TaeirUtil.ValOrNo(cdef.customAI, cdef.customBase.aiStyle), cdef.customBase.aiStyle);
+            args.Player.SendInfoMessage("Custom Health: {0} (Default: {1}) -- Custom Defense: {2} (Default: {3})", TaeirUtil.ValOrNo(cdef.customHealth, cdef.customBase.lifeMax), cdef.customBase.lifeMax, TaeirUtil.ValOrNo(cdef.customDefense, cdef.customBase.defense), cdef.customBase.defense);
+            args.Player.SendInfoMessage("NoGravity: {0} (Default: {1}) -- NoTileCollide: {2} (Default: {3})", TaeirUtil.YesNo(cdef.noGravity), TaeirUtil.YesNo(cdef.customBase.noGravity), TaeirUtil.YesNo(cdef.noTileCollide), TaeirUtil.YesNo(cdef.customBase.noTileCollide));
+            args.Player.SendInfoMessage("Boss: {0} (Default: {1}) -- Immune to Lava: {2} (Default: {3})", TaeirUtil.YesNo(cdef.isBoss), TaeirUtil.YesNo(cdef.customBase.boss), TaeirUtil.YesNo(cdef.lavaImmune), TaeirUtil.YesNo(cdef.customBase.lavaImmune));
+            args.Player.SendInfoMessage("Custom Projectiles: {0} -- Custom Loot: {1}", TaeirUtil.YesNo(cdef.customProjectiles.Count != 0), TaeirUtil.YesNo(cdef.customNPCLoots.Count != 0));
+            args.Player.SendInfoMessage("Custom Spawn Message: {0}", TaeirUtil.ValOrNo(cdef.customSpawnMessage));
+            args.Player.SendInfoMessage("Alive: {0} / {1}", cdef.currSpawnsVar, TaeirUtil.ValOrNo(cdef.maxSpawns, -1, "No Max"));
         }
 
         /// <summary>
