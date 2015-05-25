@@ -472,15 +472,22 @@ namespace CustomNPC
                     Damage = damage,
                     Knockback = knockback,
                     Direction = direction,
-                    CriticalHit = critical
+                    CriticalHit = critical,
+                    LastPosition = npc.position
                 };
 
                 eventManager.InvokeHandler(killedArgs, EventType.NpcKill);
 
-                if (npcvar != null && npcvar.isInvasion)
+                if (npcvar != null)
                 {
-                    NPCManager.CustomNPCInvasion.WaveSize--;
+                    npcvar.OnDeath();
+
+                    if (npcvar.isInvasion)
+                    {
+                        NPCManager.CustomNPCInvasion.WaveSize--;
+                    }
                 }
+                
             }
         }
 
