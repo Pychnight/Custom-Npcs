@@ -130,12 +130,12 @@ namespace CustomNPC
         private void OnLootDrop(NpcLootDropEventArgs args)
         {
             CustomNPCVars npcvar = NPCManager.GetCustomNPCByIndex(args.NpcArrayIndex);
-            //check if monster has been customized
+            
             if (npcvar == null || npcvar.droppedLoot) return;
 
             args.Handled = npcvar.customNPC.overrideBaseNPCLoot;
-            if (npcvar.droppedLoot) return;
-            
+
+            //Check if monster has been customized
             if (npcvar.customNPC.customNPCLoots != null)
             {
                 foreach (CustomNPCLoot obj in npcvar.customNPC.customNPCLoots)
@@ -152,8 +152,11 @@ namespace CustomNPC
                     }
                 }
             }
+
             npcvar.isDead = true;
             npcvar.droppedLoot = true;
+
+            npcvar.OnDeath();
         }
 
         /// <summary>
@@ -478,16 +481,10 @@ namespace CustomNPC
 
                 eventManager.InvokeHandler(killedArgs, EventType.NpcKill);
 
-                if (npcvar != null)
+                if (npcvar != null && npcvar.isInvasion)
                 {
-                    if (npcvar.isInvasion)
-                    {
-                        NPCManager.CustomNPCInvasion.WaveSize--;
-                    }
-
-                    npcvar.OnDeath();
+                    NPCManager.CustomNPCInvasion.WaveSize--;
                 }
-                
             }
         }
 
