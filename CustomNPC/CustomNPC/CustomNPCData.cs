@@ -61,19 +61,16 @@ namespace CustomNPC
         /// </summary>
         /// <param name="index"></param>
         /// <param name="obj"></param>
+        /// <param name="netDef">If false, this method doesn't set netDefaults on the npc in question.</param>
         public void ConvertNPCToCustom(int index, CustomNPCDefinition obj, bool netDef = true)
         {
             NPC npc = Main.npc[index];
             if (netDef) npc.netDefaults(obj.customBase.netID);
-            //npc.type = obj.customBaseID;
-
-            npc.netAlways = true;
-            npc.life = obj.customHealth;
 
             npc.name = obj.customName;
             npc.displayName = obj.customName;
             npc.lifeMax = obj.customHealth;
-            npc.life = obj.customHealth;
+            npc.life = obj.customHealth + 1;
             npc.aiStyle = obj.customAI;
             npc.lavaImmune = obj.lavaImmune;
             npc.noGravity = obj.noGravity;
@@ -82,7 +79,7 @@ namespace CustomNPC
             npc.defense = obj.customDefense;
             npc.defDefense = obj.customDefense;
 
-            //npc.boss = obj.isBoss;
+            npc.boss = obj.isBoss;
 
             if (!string.IsNullOrEmpty(obj.customSpawnMessage))
             {

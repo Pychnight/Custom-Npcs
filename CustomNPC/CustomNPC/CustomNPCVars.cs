@@ -38,6 +38,15 @@ namespace CustomNPC
             updateCustomAI();
         }
 
+        public void markDead()
+        {
+            isDead = true;
+            if (isUncounted) return;
+
+            isUncounted = true;
+            if (!isClone && !isInvasion) customNPC.currSpawnsVar--;
+        }
+
         private void updateCustomAI()
         {
             usingCustomAI = (customNPC.customAI != customNPC.customBase.aiStyle || customNPC.noGravity != customNPC.customBase.noGravity);
@@ -252,8 +261,9 @@ namespace CustomNPC
 
             for (int i = 0; i < amount; i++)
             {
-                int x = (int)mainNPC.position.X + rand.Next(0, 16) - 8;
-                int y = (int)mainNPC.position.Y + rand.Next(0, 16) - 8;
+                int x = (int)mainNPC.position.X + rand.Next(-8, 9);
+                int y = (int)mainNPC.position.Y + rand.Next(-8, 9);
+
                 int npc = NPCManager.SpawnNPCAtLocation(x, y, type);
                 if (npc == -1)
                 {
@@ -264,14 +274,11 @@ namespace CustomNPC
                 }
 
                 var spawned = NPCManager.GetCustomNPCByIndex(npc);
-                if (spawned != null)
-                {
-                    if (sethealth)
-                    {
-                        spawned.mainNPC.life = health;
-                    }
-                    spawned.isClone = true;
-                }
+                if (spawned == null) continue;
+
+                if (sethealth) spawned.mainNPC.life = health;
+                
+                spawned.isClone = true;
             }
         }
 
@@ -329,6 +336,7 @@ namespace CustomNPC
                 TShock.Log.ConsoleError("Error: a defined region does not exist on this map \"{0}\"", region);
                 return;
             }
+
             if (randompos)
             {
                 TShock.Utils.GetRandomClearTileWithInRange(obj.Area.Left, obj.Area.Top, obj.Area.Width, obj.Area.Height, out x, out y);
@@ -338,8 +346,8 @@ namespace CustomNPC
                 x += obj.Area.Left;
                 y += obj.Area.Top;
             }
-            Vector2 pos = new Vector2(x, y);
-            npcvar.mainNPC.position = pos * 16;
+
+            TeleportNPC(npcvar, x, y);
         }
 
         /// <summary>
@@ -347,10 +355,20 @@ namespace CustomNPC
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
+        public void TeleportNPC_NoUpdate(CustomNPCVars npcvar, int x, int y)
+        {
+            npcvar.mainNPC.position = new Vector2(x * 16, y * 16);
+        }
+
+        /// <summary>
+        /// Properly teleports an NPC to a new location.
+        /// </summary>
+        /// <param name="npcvar"></param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
         public void TeleportNPC(CustomNPCVars npcvar, int x, int y)
         {
-            Vector2 pos = new Vector2(x, y);
-            npcvar.mainNPC.position = pos * 16;
+            npcvar.mainNPC.Teleport(new Vector2(x * 16, y * 16));
         }
 
         /// <summary>
@@ -370,17 +388,16 @@ namespace CustomNPC
         /// <param name="color"></param>
         public void MessageNearByPlayers(CustomNPCVars npcvar, int distance, string message, Color color)
         {
-            if (TShock.Players.Length == 0) return;
-
             Vector2 temp = ReturnPos(npcvar);
+            int squaredist = distance * distance;
+
             foreach (TSPlayer obj in TShock.Players)
             {
-                if (obj != null && obj.ConnectionAlive)
+                if (obj == null || !obj.ConnectionAlive) continue;
+                
+                if (Vector2.DistanceSquared(temp, obj.LastNetPosition) <= squaredist)
                 {
-                    if (Vector2.Distance(temp, obj.LastNetPosition) <= distance)
-                    {
-                        obj.SendMessage(message, color);
-                    }
+                    obj.SendMessage(message, color);
                 }
             }
         }

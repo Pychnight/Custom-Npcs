@@ -27,123 +27,125 @@ namespace CustomNPC
             //loop through all players
             foreach (TSPlayer player in TShock.Players)
             {
-                // check if they exist or are connected
+                //Check if player exist and is connected
                 if (player == null || !player.ConnectionAlive) continue;
                 
                 //Log.ConsoleInfo("{0} - Checking spawn for player", player.Name);
-                //check all biome spawns
+
+                //Check all biome spawns
                 BiomeTypes biomes = player.GetCurrentBiomes();
                 foreach (BiomeTypes biome in availableBiomes.Where(x => biomes.HasFlag(x)))
                 {
                     //Log.ConsoleInfo("{0} - Checking biome for player", biome.ToString());
-                    // get list of mobs that can be spawned in that biome
+
+                    //Get list of mobs that can be spawned in that biome
                     List<Tuple<string, CustomNPCSpawning>> biomeSpawns;
-                    if (Data.BiomeSpawns.TryGetValue(biome, out biomeSpawns))
+                    if (!Data.BiomeSpawns.TryGetValue(biome, out biomeSpawns)) continue;
+                    
+                    foreach (Tuple<string, CustomNPCSpawning> obj in biomeSpawns)
                     {
-                        foreach (Tuple<string, CustomNPCSpawning> obj in biomeSpawns)
+                        //Log.ConsoleInfo("{0} - Checking mob spawn", obj.Item1);
+                        //Check spawn conditions
+                        if (!CheckSpawnConditions(obj.Item2.spawnConditions))
                         {
-                            //Log.ConsoleInfo("{0} - Checking mob spawn", obj.Item1);
-                            // check spawn conditions
-                            if (!CheckSpawnConditions(obj.Item2.spawnConditions))
-                            {
-                                //Log.ConsoleInfo("False Conditions");
-                                continue;
-                            }
-                            CustomNPCDefinition customnpc = Data.GetNPCbyID(obj.Item1);
-                            // make sure not spawning more then maxSpawns
-                            if (customnpc.maxSpawns != -1 && customnpc.currSpawnsVar >= customnpc.maxSpawns)
-                            {
-                                continue;
-                            }
-                            // get the last spawn attempt
-                            DateTime lastSpawnAttempt;
-                            if (!Data.LastSpawnAttempt.TryGetValue(customnpc.customID, out lastSpawnAttempt))
-                            {
-                                lastSpawnAttempt = default(DateTime);
-                                Data.LastSpawnAttempt[customnpc.customID] = lastSpawnAttempt;
-                            }
+                            //Log.ConsoleInfo("False Conditions");
+                            continue;
+                        }
 
-                            if ((DateTime.Now - lastSpawnAttempt).TotalSeconds >= obj.Item2.spawnRate)
-                            {
-                                // check spawn chance
-                                if (NPCManager.Chance(obj.Item2.spawnChance))
-                                {
-                                    // check spawn method
-                                    if (obj.Item2.useTerrariaSpawn)
-                                    {
-                                        // all checks completed spawn mob
-                                        int npcid = SpawnMobAroundPlayer(player, customnpc);
-                                        if (npcid != -1)
-                                        {
-                                            Main.npc[npcid].target = player.Index;
-                                            Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
-                                            customnpc.currSpawnsVar++;
-                                        }                                            
-                                    }
-                                    else
-                                    {
-                                        // all checks completed spawn mob
-                                        int spawnX;
-                                        int spawnY;
-                                        TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
-                                        int npcid = SpawnNPCAtLocation((spawnX * 16) + 8, spawnY * 16, customnpc);
-                                        if (npcid == -1)
-                                            continue;
+                        CustomNPCDefinition customnpc = Data.GetNPCbyID(obj.Item1);
 
-                                        Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
-                                        Main.npc[npcid].target = player.Index;
-                                        customnpc.currSpawnsVar++;
-                                    }
-                                }
-                            }
+                        //Make sure not spawning more then maxSpawns
+                        if (customnpc.maxSpawns != -1 && customnpc.currSpawnsVar >= customnpc.maxSpawns)
+                        {
+                            continue;
+                        }
+
+                        //Get the last spawn attempt
+                        DateTime lastSpawnAttempt;
+                        if (!Data.LastSpawnAttempt.TryGetValue(customnpc.customID, out lastSpawnAttempt))
+                        {
+                            lastSpawnAttempt = default(DateTime);
+                            Data.LastSpawnAttempt[customnpc.customID] = lastSpawnAttempt;
+                        }
+
+                        //If not enough time has passed, we skip and go to the next NPC.
+                        if ((DateTime.Now - lastSpawnAttempt).TotalSeconds < obj.Item2.spawnRate) continue;
+
+                        //Check spawn chance
+                        if (!NPCManager.Chance(obj.Item2.spawnChance)) continue;
+                            
+                        //Check spawn method
+                        if (obj.Item2.useTerrariaSpawn)
+                        {
+                            //All checks completed --> spawn mob
+                            int npcid = SpawnMobAroundPlayer(player, customnpc);
+                            if (npcid != -1)
+                            {
+                                Main.npc[npcid].target = player.Index;
+                                Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
+                                customnpc.currSpawnsVar++;
+                            }                                            
+                        }
+                        else
+                        {
+                            //All checks completed --> spawn mob
+                            int spawnX;
+                            int spawnY;
+                            TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
+
+                            int npcid = SpawnNPCAtLocation((spawnX * 16) + 8, spawnY * 16, customnpc);
+                            if (npcid == -1) continue;
+
+                            Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
+                            Main.npc[npcid].target = player.Index;
+                            customnpc.currSpawnsVar++;
                         }
                     }
                 }
 
-                // then check regions as well
+                //Then check regions as well
                 Rectangle playerRectangle = new Rectangle(player.TileX, player.TileY, player.TPlayer.width, player.TPlayer.height);
                 foreach (Region obj in Data.RegionSpawns.Keys.Select(name => TShock.Regions.GetRegionByName(name)).Where(region => region != null && region.InArea(playerRectangle)))
                 {
                     List<Tuple<string, CustomNPCSpawning>> regionSpawns;
-                    if (Data.RegionSpawns.TryGetValue(obj.Name, out regionSpawns))
+                    if (!Data.RegionSpawns.TryGetValue(obj.Name, out regionSpawns)) continue;
+                    
+                    foreach (Tuple<string, CustomNPCSpawning> obj2 in regionSpawns)
                     {
-                        foreach (Tuple<string, CustomNPCSpawning> obj2 in regionSpawns)
+                        //Invalid spawn conditions
+                        if (!CheckSpawnConditions(obj2.Item2.spawnConditions)) continue;
+
+                        CustomNPCDefinition customnpc = Data.GetNPCbyID(obj2.Item1);
+
+                        //Make sure not spawning more then maxSpawns
+                        if (customnpc.maxSpawns != -1 && customnpc.currSpawnsVar >= customnpc.maxSpawns)
                         {
-                            if (!CheckSpawnConditions(obj2.Item2.spawnConditions))
-                                continue;
-
-                            CustomNPCDefinition customnpc = Data.GetNPCbyID(obj2.Item1);
-                            // make sure not spawning more then maxSpawns
-                            if (customnpc.maxSpawns != -1 && customnpc.currSpawnsVar >= customnpc.maxSpawns)
-                            {
-                                continue;
-                            }
-                            // get the last spawn attempt
-                            DateTime lastSpawnAttempt;
-                            if (!Data.LastSpawnAttempt.TryGetValue(customnpc.customID, out lastSpawnAttempt))
-                            {
-                                lastSpawnAttempt = default(DateTime);
-                                Data.LastSpawnAttempt[customnpc.customID] = lastSpawnAttempt;
-                            }
-
-                            if ((DateTime.Now - lastSpawnAttempt).TotalSeconds >= obj2.Item2.spawnRate)
-                            {
-                                Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
-
-                                if (NPCManager.Chance(obj2.Item2.spawnChance))
-                                {
-                                    int spawnX;
-                                    int spawnY;
-                                    TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
-                                    int npcid = SpawnNPCAtLocation((spawnX * 16) + 8, spawnY * 16, customnpc);
-                                    if (npcid == -1)
-                                        continue;
-
-                                    Main.npc[npcid].target = player.Index;
-                                    customnpc.currSpawnsVar++;
-                                }
-                            }
+                            continue;
                         }
+
+                        //Get the last spawn attempt
+                        DateTime lastSpawnAttempt;
+                        if (!Data.LastSpawnAttempt.TryGetValue(customnpc.customID, out lastSpawnAttempt))
+                        {
+                            lastSpawnAttempt = default(DateTime);
+                            Data.LastSpawnAttempt[customnpc.customID] = lastSpawnAttempt;
+                        }
+
+                        //If not enough time passed, we skip and go to the next NPC.
+                        if ((DateTime.Now - lastSpawnAttempt).TotalSeconds < obj2.Item2.spawnRate) continue;
+
+                        Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
+
+                        if (!NPCManager.Chance(obj2.Item2.spawnChance)) continue;
+                        
+                        int spawnX;
+                        int spawnY;
+                        TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
+                        int npcid = SpawnNPCAtLocation((spawnX * 16) + 8, spawnY * 16, customnpc);
+                        if (npcid == -1) continue;
+
+                        Main.npc[npcid].target = player.Index;
+                        customnpc.currSpawnsVar++;
                     }
                 }
             }
@@ -206,9 +208,8 @@ namespace CustomNPC
 
         public static CustomNPCVars GetCustomNPCByIndex(int index)
         {
-            // do a short range check here...
-            if (index < 0 || index >= NPCs.Length)
-                return null;
+            //Do a short range check here...
+            if (index < 0 || index >= NPCs.Length) return null;
 
             return NPCs[index];
         }
@@ -221,9 +222,8 @@ namespace CustomNPC
         public static List<CustomNPCVars> GetAllOfType(CustomNPCDefinition customnpc)
         {
             List<CustomNPCVars> tbr = new List<CustomNPCVars>();
-            for (int i = 0; i < NPCs.Length; i++)
+            foreach (CustomNPCVars v in NPCs)
             {
-                CustomNPCVars v = NPCs[i];
                 if (v == null) continue;
 
                 if (v.customNPC == customnpc) tbr.Add(v);
@@ -234,64 +234,18 @@ namespace CustomNPC
 
         public static int SpawnNPCAtLocation(int x, int y, CustomNPCDefinition customnpc)
         {
-            //DEBUG
-            TShock.Log.ConsoleInfo("DEBUG [SpawnAt] Spawning NPC at {0}, {1}", x, y);
-            //DEBUG
-            int npcid = NPC.NewNPC(x, y, customnpc.customBase.type);
-            if (npcid == 200)
-            {
-                //DEBUG
-                TShock.Log.ConsoleInfo("DEBUG [SpawnAt] Spawning FAILED (mobcap) at {0}, {1}", x, y);
-                //DEBUG
-                return -1;
-            }
-
-            //DEBUG
-            TShock.Log.ConsoleInfo("DEBUG [SpawnAt] Spawned NPC id={0}, now converting to custom {1}, {2}", npcid, x, y);
-            //DEBUG
-            Data.ConvertNPCToCustom(npcid, customnpc);
-            DateTime[] dt = null;
-            if (customnpc.customProjectiles != null)
-            {
-                dt = Enumerable.Repeat(DateTime.Now, customnpc.customProjectiles.Count).ToArray();
-            }
-            NPCs[npcid] = new CustomNPCVars(customnpc, dt, Main.npc[npcid]);
-
-            //DEBUG
-            TShock.Log.ConsoleInfo("DEBUG [SpawnAt] Attached CustomNPCVars");
-            //DEBUG
-
-            TSPlayer.All.SendData(PacketTypes.NpcUpdate, "", npcid);
-
-            //DEBUG
-            TShock.Log.ConsoleInfo("DEBUG [SpawnAt] Sent NPCUpdate to players");
-            //DEBUG
-
-            return npcid;
+            return SpawnCustomNPC(x, y, customnpc);
         }
 
         public static int SpawnNPCAroundNPC(int npcindex, ShotTile shottile, CustomNPCDefinition customnpc)
         {
             NPC npc = Main.npc[npcindex];
-            if (npc == null)
-                return -1;
+            if (npc == null) return -1;
+
             int x = (int)(npc.position.X + shottile.X);
             int y = (int)(npc.position.Y + shottile.Y);
-            int npcid = NPC.NewNPC(x, y, customnpc.customBase.type);
-            if (npcid == 200)
-            {
-                return -1;
-            }
-            Data.ConvertNPCToCustom(npcid, customnpc);
-            DateTime[] dt = null;
-            if (customnpc.customProjectiles != null)
-            {
-                dt = Enumerable.Repeat(DateTime.Now, customnpc.customProjectiles.Count).ToArray();
-            }
-            NPCs[npcid] = new CustomNPCVars(customnpc, dt, Main.npc[npcid]);
 
-            TSPlayer.All.SendData(PacketTypes.NpcUpdate, "", npcid);
-            return npcid;
+            return SpawnCustomNPC(x, y, customnpc);
         }
 
         public static int SpawnMobAroundPlayer(TSPlayer player, CustomNPCDefinition definition)
@@ -299,7 +253,7 @@ namespace CustomNPC
             const int SpawnSpaceX = 3;
             const int SpawnSpaceY = 3;
 
-            // search for a location
+            //Search for a location
             int screenTilesX = (int)(NPC.sWidth / 16f);
             int screenTilesY = (int)(NPC.sHeight / 16f);
             int spawnRangeX = (int)(screenTilesX * 0.7);
@@ -416,23 +370,37 @@ namespace CustomNPC
 
             if (found)
             {
-                int npcid = NPC.NewNPC((spawnX * 16) + 8, spawnY * 16, definition.customBase.type);
-                if (npcid == 200)
-                    return -1;
-
-                Data.ConvertNPCToCustom(npcid, definition);
-                DateTime[] dt = null;
-                if (definition.customProjectiles != null)
-                {
-                    dt = Enumerable.Repeat(DateTime.Now, definition.customProjectiles.Count).ToArray();
-                }
-                NPCs[npcid] = new CustomNPCVars(definition, dt, Main.npc[npcid]);
-
-                TSPlayer.All.SendData(PacketTypes.NpcUpdate, "", npcid);
-                return npcid;
+                return SpawnCustomNPC((spawnX * 16) + 8, spawnY * 16, definition);
             }
 
             return -1;
+        }
+
+        private static int SpawnCustomNPC(int x, int y, CustomNPCDefinition definition)
+        {
+            //DEBUG
+            TShock.Log.ConsoleInfo("DEBUG Spawning Custom NPC at {0}, {1} with customID {2}", x, y, definition.customID);
+            //DEBUG
+
+            int npcid = NPC.NewNPC(x, y, definition.customBase.type);
+            if (npcid == 200)
+            {
+                //DEBUG
+                TShock.Log.ConsoleInfo("DEBUG Spawning FAILED (mobcap) at {0}, {1} for customID {2}", x, y, definition.customID);
+                //DEBUG
+                return -1;
+            }
+
+            Data.ConvertNPCToCustom(npcid, definition);
+            DateTime[] dt = null;
+            if (definition.customProjectiles != null)
+            {
+                dt = Enumerable.Repeat(DateTime.Now, definition.customProjectiles.Count).ToArray();
+            }
+            NPCs[npcid] = new CustomNPCVars(definition, dt, Main.npc[npcid]);
+
+            TSPlayer.All.SendData(PacketTypes.NpcUpdate, "", npcid);
+            return npcid;
         }
 
         /// <summary>
@@ -448,12 +416,9 @@ namespace CustomNPC
         public static void DebuffNearbyPlayers(int debuffid, int seconds, int npcindex, int distance)
         {
             NPC npc = Main.npc[npcindex];
-            if (npc == null)
-            {
-                return;
-            }
-            Vector2 position = npc.position;
-            foreach (TSPlayer player in PlayersNearBy(position, distance))
+            if (npc == null) return;
+
+            foreach (TSPlayer player in PlayersNearBy(npc.position, distance))
             {
                 player.SetBuff(debuffid, seconds * 60);
             }
@@ -462,12 +427,9 @@ namespace CustomNPC
         public static void SendPrivateMessageNearbyPlayers(string message, Color color, int npcindex, int distance)
         {
             NPC npc = Main.npc[npcindex];
-            if (npc == null)
-            {
-                return;
-            }
-            Vector2 position = npc.position;
-            foreach (TSPlayer player in PlayersNearBy(position, distance))
+            if (npc == null) return;
+            
+            foreach (TSPlayer player in PlayersNearBy(npc.position, distance))
             {
                 player.SendMessage(message, color);
             }
@@ -475,17 +437,19 @@ namespace CustomNPC
 
         public static List<TSPlayer> PlayersNearBy(Vector2 position, int distance)
         {
+            int squaredist = (distance * 16) * (distance * 16);
+
             List<TSPlayer> playerlist = new List<TSPlayer>();
             foreach (TSPlayer player in TShock.Players)
             {
-                if (player != null && !player.Dead && player.ConnectionAlive)
+                if (player == null || player.Dead || !player.ConnectionAlive) continue;
+
+                if (Vector2.DistanceSquared(player.TPlayer.position, position) <= squaredist)
                 {
-                    if (Math.Abs(Vector2.Distance(player.TPlayer.position, position)) <= distance * 16)
-                    {
-                        playerlist.Add(player);
-                    }
+                    playerlist.Add(player);
                 }
             }
+
             return playerlist;
         }
 
@@ -494,14 +458,12 @@ namespace CustomNPC
         /// </summary>
         /// <param name="Health"></param>
         /// <returns></returns>
-        public static bool HealthAbove(int npcid, int Health)
+        public static bool HealthAbove(int npcid, int health)
         {
             NPC mainNPC = Main.npc[npcid];
-            if (mainNPC == null)
-            {
-                return false;
-            }
-            return mainNPC.life >= Health;
+            if (mainNPC == null) return false;
+            
+            return mainNPC.life >= health;
         }
 
         /// <summary>
@@ -509,14 +471,12 @@ namespace CustomNPC
         /// </summary>
         /// <param name="Health"></param>
         /// <returns></returns>
-        public static bool HealthBelow(int npcid, int Health)
+        public static bool HealthBelow(int npcid, int health)
         {
             NPC mainNPC = Main.npc[npcid];
-            if (mainNPC == null)
-            {
-                return false;
-            }
-            return mainNPC.life <= Health;
+            if (mainNPC == null) return false;
+            
+            return mainNPC.life <= health;
         }
 
         /// <summary>
@@ -527,18 +487,24 @@ namespace CustomNPC
         public static bool HasBuff(int npcid, int buffid)
         {
             NPC mainNPC = Main.npc[npcid];
-            if (mainNPC == null)
-            {
-                return false;
-            }
+            if (mainNPC == null) return false;
+            
             return mainNPC.buffType.Contains(buffid);
+        }
+
+        public static void AddBuff(int npcid, int buffid, int seconds)
+        {
+            NPC mainNPC = Main.npc[npcid];
+            if (mainNPC == null) return;
+
+            mainNPC.AddBuff(buffid, seconds * 60);
         }
 
         public static void AddBuffToPlayer(int playerindex, int buffid, int seconds)
         {
             TSPlayer player = TShock.Players[playerindex];
-            if (player == null)
-                return;
+            if (player == null) return;
+
             player.TPlayer.AddBuff(40, seconds * 60);
             player.SetBuff(buffid, seconds * 60);
         }
@@ -548,9 +514,9 @@ namespace CustomNPC
             int count = 0;
             foreach(CustomNPCVars obj in NPCs)
             {
-                if (obj == null)
-                    continue;
-                if (obj.customNPC.customID.ToLower() == customid.ToLower())
+                if (obj == null) continue;
+
+                if (obj.customNPC.customID.Equals(customid, StringComparison.InvariantCultureIgnoreCase))
                 {
                     count++;
                 }
@@ -566,6 +532,7 @@ namespace CustomNPC
             private static Waves CurrentWave { get; set; }
             private static int CurrentWaveIndex { get; set; }
             private static int waveSize { get; set; }
+            private static bool spawnedBosses = false;
             public static bool invasionStarted = false;
             public static int WaveSize
             {
@@ -582,8 +549,7 @@ namespace CustomNPC
 
             public static void NextWave()
             {
-                if (CurrentInvasion == null)
-                    return;
+                if (CurrentInvasion == null) return;
 
                 if (CurrentInvasion.Waves.Count - 1 == CurrentWaveIndex)
                 {
@@ -591,153 +557,151 @@ namespace CustomNPC
                     StopInvasion();
                     return;
                 }
+
+                //Temporarily stop (pause) the timer while we change the variables.
+                InvasionTimer.Enabled = false;
+
+                //Update variables
                 CurrentWaveIndex++;
                 CurrentWave = CurrentInvasion.Waves[CurrentWaveIndex];
                 WaveSize = CurrentWave.SpawnGroup.KillAmount;
+                spawnedBosses = false;
+
+                //Send Wave message
                 TSPlayer.All.SendInfoMessage("Wave {0}: {1} has begun!", CurrentWaveIndex + 1, CurrentWave.WaveName);
-                SpawnBoss();
+
+                //Reenable timer (unpause).
+                InvasionTimer.Enabled = true;
             }
 
             public static void StartInvasion(WaveSet waveset)
             {
+                //Disallow the starting of more invasions.
+                invasionStarted = true;
+
+                //Initialize the variables
                 CurrentInvasion = waveset;
                 CurrentWave = waveset.Waves[0];
-                WaveSize = CurrentWave.SpawnGroup.KillAmount;
                 if (CurrentWave.SpawnGroup.PlayerMultiplier)
-                {
-                    WaveSize *= TShock.Utils.ActivePlayers();
-                }
+                    WaveSize = CurrentWave.SpawnGroup.KillAmount * TShock.Utils.ActivePlayers();
+                else
+                    WaveSize = CurrentWave.SpawnGroup.KillAmount;
+
                 CurrentWaveIndex = 0;
+                spawnedBosses = false;
+
+                //Send start message
+                TSPlayer.All.SendInfoMessage("Invasion: {0} has started!", waveset.WaveSetName);
+
+                //Start timer
                 InvasionTimer.Elapsed += InvasionTimer_Elapsed;
                 InvasionTimer.Enabled = true;
-                invasionStarted = true;
-                TSPlayer.All.SendInfoMessage("Invasion: {0} has started!", waveset.WaveSetName);
-                SpawnBoss();
             }
             
-            public static void SpawnBoss()
-            {
-                if (TShock.Utils.ActivePlayers() == 0)
-                {
-                    return;
-                }
-                int spawnX = Main.spawnTileX - 150;
-                int spawnY = Main.spawnTileY - 150;
-                Rectangle spawnRegion = new Rectangle(spawnX, spawnY, 300, 300).ToPixels();
-                foreach (SpawnMinion minions in CurrentWave.SpawnGroup.SpawnMinions.Where(p => p.isBoss))
-                {
-                    foreach (TSPlayer player in TShock.Players.Where(x => x != null && !x.Dead && x.Active))
-                    {
-                        if (!NPCManager.Chance(minions.Chance))
-                        {
-                            continue;
-                        }
-                        if (!CurrentWave.SpawnAnywhere)
-                        {
-                            Rectangle playerFrame = new Rectangle((int)player.TPlayer.position.X, (int)player.TPlayer.position.Y, player.TPlayer.width, player.TPlayer.height);
-                            if (!playerFrame.Intersects(spawnRegion))
-                            {
-                                continue;
-                            }
-                        }
-                        var npcdef = NPCManager.Data.GetNPCbyID(minions.MobID);
-                        if (npcdef == null)
-                        {
-                            TShock.Log.ConsoleError("[CustomNPC]: Error! The custom mob id \"{0}\" does not exist!", minions.MobID);
-                            continue;
-                        }
-                        if (minions.SpawnConditions != SpawnConditions.None)
-                        {
-                            if (NPCManager.CheckSpawnConditions(minions.SpawnConditions))
-                            {
-                                continue;
-                            }
-                        }
-                        if (minions.BiomeConditions != BiomeTypes.None)
-                        {
-                            BiomeTypes biomes = player.GetCurrentBiomes();
-
-                            if ((minions.BiomeConditions & biomes) == 0)
-                            {
-                                continue;
-                            }
-                        }
-                        int mobid = -1;
-                        while (mobid == -1)
-                        {
-                            mobid = NPCManager.SpawnMobAroundPlayer(player, npcdef);
-                        }
-                        NPCManager.GetCustomNPCByIndex(mobid).isInvasion = true;
-                    }
-                }
-            }
-           
             public static void StopInvasion()
             {
-                TSPlayer.All.SendInfoMessage("Invasion: {0} has stopped!", CurrentInvasion.WaveSetName);
+                //Disable the timer.
                 InvasionTimer.Elapsed -= InvasionTimer_Elapsed;
                 InvasionTimer.Enabled = false;
+
+                //Send invasion end message.
+                TSPlayer.All.SendInfoMessage("Invasion: {0} has stopped!", CurrentInvasion.WaveSetName);
+
+                //Clear variables
                 CurrentInvasion = null;
                 CurrentWave = null;
                 WaveSize = 0;
                 CurrentWaveIndex = 0;
+                spawnedBosses = false;
+
+                //Allow starting new invasions now we are FULLY done.
                 invasionStarted = false;
             }
 
             private static void InvasionTimer_Elapsed(object sender, ElapsedEventArgs e)
             {
-                if (TShock.Utils.ActivePlayers() == 0)
-                {
-                    return;
-                }
+                if (TShock.Utils.ActivePlayers() == 0) return;
+
+                bool boss = spawnedBosses;
+                spawnedBosses = true;
+
                 int spawnX = Main.spawnTileX - 150;
                 int spawnY = Main.spawnTileY - 150;
                 Rectangle spawnRegion = new Rectangle(spawnX, spawnY, 300, 300).ToPixels();
-                foreach (SpawnMinion minions in CurrentWave.SpawnGroup.SpawnMinions.Where(p => !p.isBoss))
-                {
-                    foreach (TSPlayer player in TShock.Players.Where(x => x != null && !x.Dead && x.Active))
-                    {
-                        if (!NPCManager.Chance(minions.Chance))
-                        {
-                            continue;
-                        }
-                        if (!CurrentWave.SpawnAnywhere)
-                        {
-                            Rectangle playerFrame = new Rectangle((int)player.TPlayer.position.X, (int)player.TPlayer.position.Y, player.TPlayer.width, player.TPlayer.height);
-                            if (!playerFrame.Intersects(spawnRegion))
-                            {
-                                continue;
-                            }
-                        }
-                        var npcdef = NPCManager.Data.GetNPCbyID(minions.MobID);
-                        if (npcdef == null)
-                        {
-                            TShock.Log.ConsoleError("[CustomNPC]: Error! The custom mob id \"{0}\" does not exist!", minions.MobID);
-                            continue;
-                        }
-                        if (minions.SpawnConditions != SpawnConditions.None)
-                        {
-                            if (NPCManager.CheckSpawnConditions(minions.SpawnConditions))
-                            {
-                                continue;
-                            }
-                        }
-                        if (minions.BiomeConditions != BiomeTypes.None)
-                        {
-                            BiomeTypes biomes = player.GetCurrentBiomes();
 
-                            if ((minions.BiomeConditions & biomes) == 0)
-                            {
-                                continue;
-                            }
-                        }
-                        int mobid = -1;
-                        while (mobid == -1)
-                        {
-                            mobid = NPCManager.SpawnMobAroundPlayer(player, npcdef);
-                        }
-                        NPCManager.GetCustomNPCByIndex(mobid).isInvasion = true;
+                int attempts;
+                foreach (SpawnMinion minion in CurrentWave.SpawnGroup.SpawnMinions)
+                {
+                    if (minion.isBoss)
+                    {
+                        //We already spawned bosses this wave.
+                        if (boss) continue;
+
+                        //Boss NPC's get 5 (250) spawn attempts.
+                        attempts = 5;
                     }
+                    else
+                    {
+                        //Normal NPC's get 3 (150) spawn attempts.
+                        attempts = 3;
+                    }
+
+                    //Get NPC definition
+                    var npcdef = NPCManager.Data.GetNPCbyID(minion.MobID);
+                    if (npcdef == null)
+                    {
+                        TShock.Log.ConsoleError("[CustomNPC]: Error! The custom mob id \"{0}\" does not exist!", minion.MobID);
+                        continue;
+                    }
+
+                    //Check spawn conditions
+                    if (minion.SpawnConditions != SpawnConditions.None && NPCManager.CheckSpawnConditions(minion.SpawnConditions)) continue;
+
+                    SpawnMinion(spawnRegion, minion, npcdef, attempts);
+                }
+            }
+
+            /// <summary>
+            /// Attempts to spawn the given minion for every player online, where applicable.
+            /// </summary>
+            /// <param name="spawnRegion"></param>
+            /// <param name="minion"></param>
+            /// <param name="npcdef"></param>
+            /// <param name="attempts"></param>
+            private static void SpawnMinion(Rectangle spawnRegion, SpawnMinion minion, CustomNPCDefinition npcdef, int attempts)
+            {
+                //Loop through players
+                foreach (TSPlayer player in TShock.Players)
+                {
+                    if (player == null || player.Dead || !player.Active || !NPCManager.Chance(minion.Chance)) continue;
+
+                    //Check if the minions can spawn anywhere, or if we need to check if players see them.
+                    if (!CurrentWave.SpawnAnywhere)
+                    {
+                        Rectangle playerFrame = new Rectangle((int)player.TPlayer.position.X, (int)player.TPlayer.position.Y, player.TPlayer.width, player.TPlayer.height);
+                        if (!playerFrame.Intersects(spawnRegion)) continue;
+                    }
+
+                    //Check biomes
+                    if (minion.BiomeConditions != BiomeTypes.None)
+                    {
+                        BiomeTypes biomes = player.GetCurrentBiomes();
+
+                        if ((minion.BiomeConditions & biomes) == 0) continue;
+                    }
+
+                    int mobid = -1;
+
+                    //Try max attempts times. This gives attempts*50 spawn attempts at random positions.
+                    for (int i = 0; mobid == -1 && i < attempts; i++)
+                    {
+                        mobid = NPCManager.SpawnMobAroundPlayer(player, npcdef);
+                    }
+
+                    //Spawning failed :(
+                    if (mobid == -1) continue;
+
+                    NPCManager.GetCustomNPCByIndex(mobid).isInvasion = true;
                 }
             }
 

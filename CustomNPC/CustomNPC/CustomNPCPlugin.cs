@@ -396,70 +396,40 @@ namespace CustomNPC
             }
         }
 
-        /// <summary>
-        /// Old version of the OnNPCSpawn, which goes over ALL NPCs on the server for some reason.
-        /// </summary>
-        /// <param name="args"></param>
-        private void AlternateOnNPCSpawn(NpcSpawnEventArgs args)
-        {
-            //Filter replacements beforehand
-            List<CustomNPCDefinition> replacements = NPCManager.Data.CustomNPCs.Values.Where(cm => cm.isReplacement).ToList();
-            if (replacements.Count == 0) return;
-
-            foreach (NPC obj in Main.npc)
-            {
-                if (obj == null) continue;
-
-                //Skip mobs which are already custom (and the custom is still alive)
-                if (NPCManager.NPCs[obj.whoAmI] != null && !NPCManager.NPCs[obj.whoAmI].isDead) continue;
-
-                foreach (CustomNPCDefinition customnpc in replacements)
-                {
-                    //Wrong type
-                    if (obj.netID != customnpc.customBase.netID) continue;
-
-                    DateTime[] dt = null;
-                    if (customnpc.customProjectiles != null)
-                    {
-                        dt = Enumerable.Repeat(DateTime.Now, customnpc.customProjectiles.Count).ToArray();
-                    }
-                    NPCManager.NPCs[obj.whoAmI] = new CustomNPCVars(customnpc, dt, obj);
-                    NPCManager.Data.ConvertNPCToCustom(obj.whoAmI, customnpc);
-                }
-            }
-        }
-
         private void OnGetData(GetDataEventArgs args)
         {
-            if (args.Handled)
-                return;
+            //Ignore cancelled events
+            if (args.Handled) return;
 
             PacketTypes type = args.MsgID;
-            TSPlayer player = TShock.Players[args.Msg.whoAmI];
-            if (player == null || !player.ConnectionAlive)
-                return;
 
+            //Only handle NPC strike
+            if (type != PacketTypes.NpcStrike) return;
+
+            TSPlayer player = TShock.Players[args.Msg.whoAmI];
+            if (player == null || !player.ConnectionAlive) return;
+
+            int npcIndex;
+            int damage;
+            float knockback;
+            byte direction;
+            bool critical;
             using (var data = new MemoryStream(args.Msg.readBuffer, args.Index, args.Length))
             {
-                switch (type)
-                {
-                    case PacketTypes.NpcStrike:
-                        OnNpcDamaged(new GetDataHandlerArgs(player, data));
-                        break;
-                }
+                npcIndex = data.ReadInt16();
+                damage = data.ReadInt16();
+                knockback = data.ReadSingle();
+                direction = data.ReadInt8();
+                critical = data.ReadBoolean();
             }
+
+            OnNpcDamaged(player, npcIndex, damage, knockback, direction, critical);
         }
 
         #region Event Dispatchers
 
-        private void OnNpcDamaged(GetDataHandlerArgs args)
+        private void OnNpcDamaged(TSPlayer player, int npcIndex, int damage, float knockback, byte direction, bool critical)
         {
-            int npcIndex = args.Data.ReadInt16();
-            int damage = args.Data.ReadInt16();
-            float knockback = args.Data.ReadSingle();
-            byte direction = args.Data.ReadInt8();
-            bool critical = args.Data.ReadBoolean();
-
             //DEBUG
             TShock.Log.ConsoleInfo("DEBUG [NPCDamage] NPCIndex {0}", npcIndex);
             //DEBUG
@@ -471,10 +441,11 @@ namespace CustomNPC
                 damageDone *= 2;
             }
 
+            //Damage event
             var e = new NpcDamageEvent
             {
                 NpcIndex = npcIndex,
-                PlayerIndex = args.Player.Index,
+                PlayerIndex = player.Index,
                 Damage = damage,
                 Knockback = knockback,
                 Direction = direction,
@@ -484,23 +455,20 @@ namespace CustomNPC
 
             eventManager.InvokeHandler(e, EventType.NpcDamage);
 
+            //This damage will kill the NPC.
             if (npc.active && npc.life > 0 && damageDone >= npc.life)
             {
                 CustomNPCVars npcvar = NPCManager.NPCs[npcIndex];
                 if (npcvar != null)
                 {
-                    npcvar.isDead = true;
-                    if (!npcvar.isUncounted)
-                    {
-                        npcvar.isUncounted = true;
-                        if (!npcvar.isClone && !npcvar.isInvasion)
-                            npcvar.customNPC.currSpawnsVar--;
-                    }
+                    npcvar.markDead();
                 }
+
+                //Kill event
                 var killedArgs = new NpcKilledEvent
                 {
                     NpcIndex = npcIndex,
-                    PlayerIndex = args.Player.Index,
+                    PlayerIndex = player.Index,
                     Damage = damage,
                     Knockback = knockback,
                     Direction = direction,
@@ -589,17 +557,9 @@ namespace CustomNPC
                 //Dead
                 if (obj == null) continue;
 
-                //Should be dead
                 if (obj.isDead || obj.mainNPC == null || obj.mainNPC.life <= 0 || obj.mainNPC.type == 0)
                 {
-                    if (updateDead && obj.isUncounted)
-                    {
-                        obj.isDead = true;
-                        obj.isUncounted = true;
-                        if (!obj.isClone && !obj.isInvasion)
-                            obj.customNPC.currSpawnsVar--;
-                    }
-
+                    if (updateDead) obj.markDead();
                     continue;
                 }
 
@@ -626,11 +586,12 @@ namespace CustomNPC
             {
                 if (obj == null || obj.isDead) continue;
 
+                Rectangle npcframe = new Rectangle((int)obj.mainNPC.position.X, (int)obj.mainNPC.position.Y, obj.mainNPC.width, obj.mainNPC.height);
+
                 foreach (TSPlayer player in TShock.Players)
                 {
                     if (player == null || player.Dead) continue;
 
-                    Rectangle npcframe = new Rectangle((int)obj.mainNPC.position.X, (int)obj.mainNPC.position.Y, obj.mainNPC.width, obj.mainNPC.height);
                     Rectangle playerframe = new Rectangle((int)player.TPlayer.position.X, (int)player.TPlayer.position.Y, player.TPlayer.width, player.TPlayer.height);
                     if (npcframe.Intersects(playerframe))
                     {
@@ -651,52 +612,48 @@ namespace CustomNPC
         /// </summary>
         private void ProjectileCheck()
         {
-            // loop through all custom npcs currently spawned
+            //Loop through all custom npcs currently spawned
             foreach (CustomNPCVars obj in NPCManager.NPCs)
             {
-                // Check if they exists and are active
+                //Check if they exists and are active
                 if (obj == null || obj.isDead || !obj.mainNPC.active) continue;
 
-                // We only want the npcs with custom projectiles
+                //We only want the npcs with custom projectiles
                 if (obj.customNPC.customProjectiles == null) continue;
 
-                // Loop through all npc projectiles they can fire
+                //Save the current time
                 DateTime savedNow = DateTime.Now;
 
                 int k = 0;
+                //Loop through all npc projectiles they can fire
                 foreach (CustomNPCProjectiles projectile in obj.customNPC.customProjectiles)
                 {
-                    //custom projectile index
-                    int projIndex = obj.customNPC.customProjectiles.IndexOf(projectile);
-
-                    //DEBUG
-                    TShock.Log.ConsoleInfo("ProjDebug: Equal = {0} K: {1} ProjIndex: {2}", (k == projIndex), k, projIndex);
-                    //DEBUG
-
-                    // check if projectile last fire time is greater then equal to its next allowed fire time
+                    //Check if projectile last fire time is greater then equal to its next allowed fire time
                     if ((savedNow - obj.lastAttemptedProjectile[k]).TotalMilliseconds >= projectile.projectileFireRate)
                     {
-                        // make sure chance is checked too, don't bother checking if its 100
+                        //Make sure chance is checked too, don't bother checking if its 100
                         if (projectile.projectileFireChance == 100 || NPCManager.Chance(projectile.projectileFireChance))
                         {
                             TSPlayer target = null;
                             if (projectile.projectileLookForTarget)
                             {
-                                // find a target for it to shoot that isn't dead or disconnected
+                                //Find a target for it to shoot that isn't dead or disconnected
                                 foreach (TSPlayer player in TShock.Players.Where(x => x != null && !x.Dead && x.ConnectionAlive))
                                 {
-                                    // check if that target can be shot ie/ no obstacles, or if it if projectile goes through walls ignore this check
+                                    //Check if that target can be shot ie/ no obstacles, or if it if projectile goes through walls ignore this check
                                     if (!projectile.projectileCheckCollision || Collision.CanHit(player.TPlayer.position, player.TPlayer.bodyFrame.Width, player.TPlayer.bodyFrame.Height, obj.mainNPC.position, obj.mainNPC.width, obj.mainNPC.height))
                                     {
-                                        // make sure distance isn't further then what tshock allows
-                                        float currDistance = Math.Abs(Vector2.Distance(player.TPlayer.position, obj.mainNPC.center()));
-                                        if (currDistance < 2048)
+                                        //Make sure distance isn't further then what tshock allows
+                                        float currDistance = Vector2.DistanceSquared(player.TPlayer.position, obj.mainNPC.center());
+
+                                        //Distance^2 < 4194304 is the same as Distance < 2048, but faster
+                                        if (currDistance < 4194304)
                                         {
-                                            // set the target player
+                                            //Set the target player
                                             target = player;
-                                            // set npcs target to the player its shooting at
+                                            //Set npcs target to the player its shooting at
                                             obj.mainNPC.target = player.Index;
-                                            // break since no need to find another target
+                                            //Break since no need to find another target
                                             break;
                                         }
                                     }
@@ -707,12 +664,12 @@ namespace CustomNPC
                                 target = TShock.Players[obj.mainNPC.target];
                             }
 
-                            // check if previous for loop was broken out of, or just ended because no valid target
+                            //Check if we found a valid target
                             if (target != null)
                             {
-                                // all checks completed fire projectile
+                                //All checks completed. Fire projectile
                                 FireProjectile(target, obj, projectile);
-                                // set last attempted projectile to now
+                                //Set last attempted projectile to now
                                 obj.lastAttemptedProjectile[k] = savedNow;
                             }
                         }
@@ -722,7 +679,7 @@ namespace CustomNPC
                         }
                     }
 
-                    // Increment Index
+                    //Increment Index
                     k++;
                 }
             }
@@ -736,40 +693,39 @@ namespace CustomNPC
         /// <param name="projectile"></param>
         private void FireProjectile(TSPlayer target, CustomNPCVars origin, CustomNPCProjectiles projectile)
         {
-            // loop through all ShotTiles
+            //Loop through all ShotTiles
             foreach (ShotTile obj in projectile.projectileShotTiles)
             {
-                // Make sure target actually exists - at this point it should always exist
-                if (target != null)
-                {
-                    // calculate starting position
-                    Vector2 start = GetStartPosition(origin, obj);
-                    // calculate speed of projectile
-                    Vector2 speed = CalculateSpeed(start, target);
-                    // get the projectile AI
-                    Tuple<float, float> ai = Tuple.Create(projectile.projectileAIParams1, projectile.projectileAIParams2);
+                //Make sure target actually exists - at this point it should always exist
+                if (target == null) continue;
 
-                    // Create new projectile VIA Terraria's method, with all customizations
-                    int projectileIndex = Projectile.NewProjectile(
-                        start.X,
-                        start.Y,
-                        speed.X,
-                        speed.Y,
-                        projectile.projectileID,
-                        projectile.projectileDamage,
-                        0,
-                        255,
-                        ai.Item1,
-                        ai.Item2);
+                //Calculate starting position
+                Vector2 start = GetStartPosition(origin, obj);
+                //Calculate speed of projectile
+                Vector2 speed = CalculateSpeed(start, target);
+                //Get the projectile AI
+                Tuple<float, float> ai = Tuple.Create(projectile.projectileAIParams1, projectile.projectileAIParams2);
 
-                    // customize AI for projectile again, as it gets overwritten
-                    var proj = Main.projectile[projectileIndex];
-                    proj.ai[0] = ai.Item1;
-                    proj.ai[1] = ai.Item2;
+                // Create new projectile VIA Terraria's method, with all customizations
+                int projectileIndex = Projectile.NewProjectile(
+                    start.X,
+                    start.Y,
+                    speed.X,
+                    speed.Y,
+                    projectile.projectileID,
+                    projectile.projectileDamage,
+                    0,
+                    255,
+                    ai.Item1,
+                    ai.Item2);
 
-                    // send projectile as a packet
-                    NetMessage.SendData(27, -1, -1, string.Empty, projectileIndex);
-                }
+                // customize AI for projectile again, as it gets overwritten
+                var proj = Main.projectile[projectileIndex];
+                proj.ai[0] = ai.Item1;
+                proj.ai[1] = ai.Item2;
+
+                // send projectile as a packet
+                NetMessage.SendData(27, -1, -1, string.Empty, projectileIndex);
             }
         }
 
@@ -803,13 +759,7 @@ namespace CustomNPC
 
                 if ((obj.isDead && !obj.isUncounted) || obj.mainNPC == null || obj.mainNPC.life <= 0 || obj.mainNPC.type == 0)
                 {
-                    obj.isDead = true;
-                    if (!obj.isUncounted)
-                    {
-                        obj.isUncounted = true;
-                        if (!obj.isClone && !obj.isInvasion)
-                            obj.customNPC.currSpawnsVar--;
-                    }
+                    obj.markDead();
                 }
                 else if (!obj.isDead)
                 {
@@ -861,17 +811,17 @@ namespace CustomNPC
         /// <param name="args"></param>
         private void CommandInvade(CommandArgs args)
         {
-            //error if too many or too few params specified
+            //Error if too many or too few params specified
             if (args.Parameters.Count == 0 || args.Parameters.Count > 1)
             {
                 args.Player.SendInfoMessage("Info: /cinvade <invade>");
                 return;
             }
-            //get custom invasion by name
+            //Get custom invasion by name
             WaveSet waveset;
             if (!ConfigObj.WaveSets.TryGetValue(args.Parameters[0], out waveset))
             {
-                args.Player.SendErrorMessage("Error: The custom npc id \"{0}\" does not exist!", args.Parameters[0]);
+                args.Player.SendErrorMessage("Error: The waveset \"{0}\" does not exist!", args.Parameters[0]);
                 return;
             }
             if (!NPCManager.CustomNPCInvasion.invasionStarted)
