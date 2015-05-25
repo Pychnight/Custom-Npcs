@@ -480,12 +480,12 @@ namespace CustomNPC
 
                 if (npcvar != null)
                 {
-                    npcvar.OnDeath();
-
                     if (npcvar.isInvasion)
                     {
                         NPCManager.CustomNPCInvasion.WaveSize--;
                     }
+
+                    npcvar.OnDeath();
                 }
                 
             }
