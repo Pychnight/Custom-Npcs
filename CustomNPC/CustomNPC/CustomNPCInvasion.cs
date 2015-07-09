@@ -74,7 +74,6 @@ namespace CustomNPC
             {
                 return;
             }
-            
             int spawnFails = 0;
             int spawnsThisWave = 0;
 
@@ -134,7 +133,7 @@ namespace CustomNPC
                     //Try max 3 times. Since every try checks 50 positions around the player to spawn the mob,
                     //3 tries means a maximum of 150 spawn attempts.
                     for (int i = 0; mobid == -1 && i < 3; i++)
-                    {
+                    {     
                         mobid = NPCManager.SpawnMobAroundPlayer(player, npcdef);
                     }
                     

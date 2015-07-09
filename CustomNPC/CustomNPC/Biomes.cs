@@ -22,43 +22,85 @@ namespace CustomNPC
         Grass = 1 << 0,
 
         /// <summary>
-        /// Player is in zoneEvil
+        /// Player is in Corruption
         /// </summary>
         Corruption = 1 << 1,
 
         /// <summary>
+        /// Player is in Crimsion
+        /// </summary>
+        Crimsion = 1 << 2,
+
+        /// <summary>
+        /// Player is in Crimsion
+        /// </summary>
+        Desert = 1 << 3,
+
+        /// <summary>
         /// Player is in zoneDungeon
         /// </summary>
-        Dungeon = 1 << 2,
+        Dungeon = 1 << 4,
+
+        /// <summary>
+        /// Player is in Glowshroom
+        /// </summary>
+        Glowshroom = 1 << 5,
 
         /// <summary>
         /// Player is in zoneMeteor
         /// </summary>
-        Meteor = 1 << 3,
+        Meteor = 1 << 6,
 
         /// <summary>
         /// Player is in zoneHoly
         /// </summary>
-        Holy = 1 << 4,
+        Holy = 1 << 7,
 
         /// <summary>
         /// Player is in zoneJungle
         /// </summary>
-        Jungle = 1 << 5,
+        Jungle = 1 << 8,
+
+        /// <summary>
+        /// Player is in Peace Candle
+        /// </summary>
+        PeaceCandle = 1 << 9,
 
         /// <summary>
         /// Player is in zoneSnow
         /// </summary>
-        Snow = 1 << 6,
+        Snow = 1 << 10,
 
         /// <summary>
-        /// Player is in zoneBlood
+        /// Player is in TowerNebula
         /// </summary>
-        Blood = 1 << 7,
+        TowerNebula = 1 << 11,
 
         /// <summary>
-        /// Player is in zoneCandle
+        /// Player is in TowerSolar
         /// </summary>
-        Candle = 1 << 8
+        TowerSolar = 1 << 12,
+
+        /// <summary>
+        /// Player is in TowerStardust
+        /// </summary>
+        TowerStardust = 1 << 13,
+
+        /// <summary>
+        /// Player is in TowerVortex
+        /// </summary>
+        TowerVortex = 1 << 14,
+
+        /// <summary>
+        /// Player is in UndergroundDesert
+        /// </summary>
+        UndergroundDesert = 1 << 15,
+
+        /// <summary>
+        /// Player is in zoneWaterCandle
+        /// </summary>
+        WaterCandle = 1 << 16
+
+
     }
 }

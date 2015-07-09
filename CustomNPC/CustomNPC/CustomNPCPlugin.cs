@@ -17,7 +17,7 @@ using TShockAPI.DB;
 
 namespace CustomNPC
 {
-    [ApiVersion(1, 17)]
+    [ApiVersion(1, 18)]
     public class CustomNPCPlugin : TerrariaPlugin
     {
         internal Random rand = new Random();
@@ -113,6 +113,7 @@ namespace CustomNPC
         private void OnInitialize(EventArgs args)
         {
             Commands.ChatCommands.Add(new Command("customnpc.spawn", CommandSpawnNPC, "csm"));
+            Commands.ChatCommands.Add(new Command("customnpc.invadereload", CommandIReload, "csminvadereload"));
             Commands.ChatCommands.Add(new Command("customnpc.list", CommandListNPCS, "csmlist", "clist"));
             Commands.ChatCommands.Add(new Command("customnpc.invade", CommandInvade, "csminvade", "cinvade"));
             Commands.ChatCommands.Add(new Command("customnpc.info", CommandNPCInfo, "csminfo", "cinfo"));
@@ -648,7 +649,7 @@ namespace CustomNPC
                                     if (!projectile.projectileCheckCollision || Collision.CanHit(player.TPlayer.position, player.TPlayer.bodyFrame.Width, player.TPlayer.bodyFrame.Height, obj.mainNPC.position, obj.mainNPC.width, obj.mainNPC.height))
                                     {
                                         //Make sure distance isn't further then what tshock allows
-                                        float currDistance = Vector2.DistanceSquared(player.TPlayer.position, obj.mainNPC.center());
+                                        float currDistance = Vector2.DistanceSquared(player.TPlayer.position, obj.mainNPC.Center);
 
                                         //Distance^2 < 4194304 is the same as Distance < 2048, but faster
                                         if (currDistance < 4194304)
@@ -737,13 +738,13 @@ namespace CustomNPC
         private Vector2 GetStartPosition(CustomNPCVars origin, ShotTile shottile)
         {
             Vector2 offset = new Vector2(shottile.X, shottile.Y);
-            return origin.mainNPC.center() + offset;
+            return origin.mainNPC.Center + offset;
         }
 
         //calculates the x y speed required angle
         private Vector2 CalculateSpeed(Vector2 start, TSPlayer target)
         {
-            Vector2 targetCenter = target.TPlayer.center();
+            Vector2 targetCenter = target.TPlayer.Center;
 
             float dirX = targetCenter.X - start.X;
             float dirY = targetCenter.Y - start.Y;
@@ -792,6 +793,39 @@ namespace CustomNPC
                 if (File.Exists(filepath))
                 {
                     ConfigObj = new CustomNPCConfig();
+                    ConfigObj = CustomNPCConfig.Read(filepath);
+                    return;
+                }
+                else
+                {
+                    TShock.Log.ConsoleError("Config not found. Creating new one");
+                    ConfigObj.Write(filepath);
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                TShock.Log.ConsoleError(ex.Message);
+                return;
+            }
+        }
+
+        /// <summary>
+        /// Reload Config File <type>
+        /// </summary>
+        /// <param name="args"></param>
+        private void CommandIReload(CommandArgs args)
+        {
+            if (NPCManager.CustomNPCInvasion.invasionStarted)
+            {
+                NPCManager.CustomNPCInvasion.StopInvasion();
+            }
+
+            try
+            {
+                if (File.Exists(filepath))
+                {
+                    ConfigObj = new CustomNPCConfig();                  
                     ConfigObj = CustomNPCConfig.Read(filepath);
                     return;
                 }

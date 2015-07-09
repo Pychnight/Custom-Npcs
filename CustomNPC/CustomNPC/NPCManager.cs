@@ -168,6 +168,11 @@ namespace CustomNPC
                 //Log.ConsoleInfo("Failed on Eclipse");
                 return false;
             }
+            if (conditions.HasFlag(SpawnConditions.SnowMoon) && !Main.snowMoon)
+            {
+                //Log.ConsoleInfo("Failed on SnowMoon");
+                return false;
+            }
             if (conditions.HasFlag(SpawnConditions.DayTime) && !Main.dayTime)
             {
                 //Log.ConsoleInfo("Failed on DayTime");
@@ -201,6 +206,11 @@ namespace CustomNPC
             if (conditions.HasFlag(SpawnConditions.Raining) && !Main.raining)
             {
                 //Log.ConsoleInfo("Failed on Raining");
+                return false;
+            }
+            if (conditions.HasFlag(SpawnConditions.SlimeRaining) && !Main.slimeRain)
+            {
+                //Log.ConsoleInfo("Failed on Slime Raining");
                 return false;
             }
             return true;
@@ -244,6 +254,17 @@ namespace CustomNPC
 
             int x = (int)(npc.position.X + shottile.X);
             int y = (int)(npc.position.Y + shottile.Y);
+
+            return SpawnCustomNPC(x, y, customnpc);
+        }
+
+        public static int SpawnNPCAroundNPColdpos(int npcindex, ShotTile shottile, CustomNPCDefinition customnpc)
+        {
+            NPC npc = Main.npc[npcindex];
+            if (npc == null) return -1;
+
+            int x = (int)(npc.oldPosition.X + shottile.X);
+            int y = (int)(npc.oldPosition.Y + shottile.Y);
 
             return SpawnCustomNPC(x, y, customnpc);
         }
@@ -516,9 +537,9 @@ namespace CustomNPC
             {
                 if (obj == null) continue;
 
-                if (obj.customNPC.customID.Equals(customid, StringComparison.InvariantCultureIgnoreCase))
+                if (obj.customNPC.customID.Equals(customid, StringComparison.InvariantCultureIgnoreCase) && !obj.isDead)
                 {
-                    count++;
+                        count++;
                 }
             }
             return count;
@@ -692,11 +713,18 @@ namespace CustomNPC
 
                     int mobid = -1;
 
-                    //Try max attempts times. This gives attempts*50 spawn attempts at random positions.
-                    for (int i = 0; mobid == -1 && i < attempts; i++)
+                    if (npcdef.maxSpawns != -1 && npcdef.currSpawnsVar >= npcdef.maxSpawns)
                     {
-                        mobid = NPCManager.SpawnMobAroundPlayer(player, npcdef);
+                        npcdef.currSpawnsVar = NPCManager.AliveCount(npcdef.customID);
+                        continue;
                     }
+                        
+                        //Try max attempts times. This gives attempts*50 spawn attempts at random positions.
+                        for (int i = 0; mobid == -1 && i < attempts; i++)
+                        {
+                            mobid = NPCManager.SpawnMobAroundPlayer(player, npcdef);
+                            npcdef.currSpawnsVar++;
+                        }
 
                     //Spawning failed :(
                     if (mobid == -1) continue;

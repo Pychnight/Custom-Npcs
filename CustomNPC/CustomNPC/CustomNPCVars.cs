@@ -40,11 +40,11 @@ namespace CustomNPC
 
         public void markDead()
         {
-            isDead = true;
-            if (isUncounted) return;
+               isDead = true;
+               if (isUncounted) return;
 
-            isUncounted = true;
-            if (!isClone && !isInvasion) customNPC.currSpawnsVar--;
+               isUncounted = true;
+               if (!isClone) customNPC.currSpawnsVar--;
         }
 
         private void updateCustomAI()
@@ -90,7 +90,7 @@ namespace CustomNPC
             mainNPC.lavaImmune = customNPC.lavaImmune;
             mainNPC.noGravity = customNPC.noGravity;
             mainNPC.noTileCollide = customNPC.noTileCollide;
-            //mainNPC.boss = customNPC.isBoss;
+            mainNPC.boss = customNPC.isBoss;
 
             mainNPC.defense = customNPC.customDefense;
             mainNPC.defDefense = customNPC.customDefense;

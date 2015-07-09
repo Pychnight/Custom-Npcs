@@ -34,7 +34,9 @@ namespace CustomNPC
         {
             using (var sr = new StreamReader(stream))
             {
+                var serializerSettings = new JsonSerializerSettings { ObjectCreationHandling = ObjectCreationHandling.Replace };
                 var cf = JsonConvert.DeserializeObject<CustomNPCConfig>(sr.ReadToEnd());
+
                 if (ConfigRead != null)
                     ConfigRead(cf);
                 return cf;
@@ -60,7 +62,8 @@ namespace CustomNPC
         public void Write(Stream stream)
         {
             //minion spawns
-            List<SpawnMinion> SpawnMinions1 = new List<SpawnMinion>();
+            
+            List<SpawnMinion> SpawnMinions1 = new List<SpawnMinion>();        
             SpawnMinion SpawnMinion1 = new SpawnMinion("customnpc id", 100, BiomeTypes.None, SpawnConditions.None, false, true);
             SpawnMinion SpawnMinion2 = new SpawnMinion("customnpc id2", 100, BiomeTypes.None, SpawnConditions.None, false, true);
             SpawnMinions1.Add(SpawnMinion1);
@@ -68,6 +71,7 @@ namespace CustomNPC
 
             //SpawnGroups
             SpawnsGroups SpawnGroup1 = new SpawnsGroups(true, true, SpawnMinions1, 100);
+            
 
             //Waves
             List<Waves> Waves1 = new List<Waves>();
