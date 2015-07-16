@@ -60,6 +60,10 @@ namespace CustomNPC
         {
             get { return customBase.aiStyle; }
         }
+        public virtual string GetChat
+        {
+            get { return null; }
+        }
         public virtual bool isBoss
         {
             get { return customBase.boss; }

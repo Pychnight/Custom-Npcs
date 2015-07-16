@@ -17,7 +17,7 @@ using TShockAPI.DB;
 
 namespace CustomNPC
 {
-    [ApiVersion(1, 18)]
+    [ApiVersion(1, 19)]
     public class CustomNPCPlugin : TerrariaPlugin
     {
         internal Random rand = new Random();
@@ -62,7 +62,7 @@ namespace CustomNPC
 
         public override string Author
         {
-            get { return "IcyGaming"; }
+            get { return "IcyGaming(v1.0), Taeir(v1.1), Pychnight(v1.2)"; }
         }
 
         public override string Description
@@ -77,7 +77,7 @@ namespace CustomNPC
 
         public override Version Version
         {
-            get { return new Version("1.1"); }
+            get { return new Version("1.2"); }
         }
 
         public override void Initialize()
@@ -99,9 +99,12 @@ namespace CustomNPC
             //one OnUpdate is needed for updating mob positioning
             ServerApi.Hooks.GameUpdate.Register(this, OnUpdate);
             ServerApi.Hooks.NpcSpawn.Register(this, OnNPCSpawn);
-            ServerApi.Hooks.NpcLootDrop.Register(this, OnLootDrop);
+           // ServerApi.Hooks.NpcLootDrop.Register(this, OnItemDrop);
+            ServerApi.Hooks.ServerChat.Register(this, OnChat);
             ServerApi.Hooks.NetGetData.Register(this, OnGetData);
         }
+
+
 
 #if USE_APPDOMAIN
         private Assembly PluginDomain_OnAssemblyResolve(object sender, ResolveEventArgs args)
@@ -124,11 +127,47 @@ namespace CustomNPC
             mainLoop.Enabled = true;
         }
 
+        void OnChat(ServerChatEventArgs args)
+        {
+            if (args.Handled)
+            {
+                return;
+            }
+
+            TSPlayer player = TShock.Players[args.Who];
+
+            if (player == null)
+            {
+                args.Handled = true;
+                return;
+            }
+
+            string[] chat = args.Text.Split();
+            string cmd = chat[0].Substring(0);
+
+            var ServerChatEventArgs = new ServerChatEvent();
+
+            int Who = args.Who;
+            String Text = args.Text;
+            MessageBuffer Buffer = args.Buffer;
+
+            Who = player.Index;
+            Text = cmd;
+            Buffer = args.Buffer;
+
+            ServerChatEventArgs.Who = Who;
+            ServerChatEventArgs.Text = Text;
+            ServerChatEventArgs.Buffer = Buffer;        
+
+            eventManager.InvokeHandler(ServerChatEventArgs, EventType.ServerChat);
+        }
+
+        /*
         /// <summary>
         /// For Custom Loot
         /// </summary>
         /// <param name="args"></param>
-        private void OnLootDrop(NpcLootDropEventArgs args)
+        private void OnItemDrop(NpcLootDropEventArgs args)
         {
             CustomNPCVars npcvar = NPCManager.GetCustomNPCByIndex(args.NpcArrayIndex);
             
@@ -157,8 +196,9 @@ namespace CustomNPC
             npcvar.isDead = true;
             npcvar.droppedLoot = true;
 
-            npcvar.OnDeath();
+            //npcvar.OnDeath();
         }
+         */
 
         /// <summary>
         /// Spawn custom npc using /csm &lt;id&gt; [amount] [&lt;x&gt; &lt;y&gt;]
@@ -373,10 +413,6 @@ namespace CustomNPC
 
         private void OnNPCSpawn(NpcSpawnEventArgs args)
         {
-            //DEBUG
-            TShock.Log.ConsoleInfo("DEBUG [NPCSpawn] NPCIndex {0}", args.NpcId);
-            //DEBUG
-
             //If the id falls outside the possible range, we can return.
             if (args.NpcId < 0 || args.NpcId >= 200) return;
 
@@ -384,6 +420,11 @@ namespace CustomNPC
             if (NPCManager.NPCs[args.NpcId] != null && !NPCManager.NPCs[args.NpcId].isDead) return;
 
             NPC spawned = Main.npc[args.NpcId];
+
+            //DEBUG
+            TShock.Log.ConsoleInfo("DEBUG [NPCSpawn] NPCIndex {0}", args.NpcId);
+            //DEBUG
+
             foreach (CustomNPCDefinition customnpc in NPCManager.Data.CustomNPCs.Values)
             {
                 if (!customnpc.isReplacement || spawned.netID != customnpc.customBase.netID) continue;
@@ -427,13 +468,21 @@ namespace CustomNPC
                 critical = data.ReadBoolean();
             }
 
-            OnNpcDamaged(player, npcIndex, damage, knockback, direction, critical);
+            CustomNPCVars npcvar = NPCManager.NPCs[npcIndex];
+            if (npcvar != null)
+
+            if (npcvar.customNPC.customID != null)
+            {
+                OnNpcDamaged(player, npcIndex, damage, knockback, direction, critical);
+            }
         }
 
         #region Event Dispatchers
 
         private void OnNpcDamaged(TSPlayer player, int npcIndex, int damage, float knockback, byte direction, bool critical)
         {
+           CustomNPCVars npcvar = NPCManager.NPCs[npcIndex];
+           if (npcvar != null)
             //DEBUG
             TShock.Log.ConsoleInfo("DEBUG [NPCDamage] NPCIndex {0}", npcIndex);
             //DEBUG
@@ -448,6 +497,7 @@ namespace CustomNPC
             //Damage event
             var e = new NpcDamageEvent
             {
+                customID = npcvar.customNPC.customID,
                 NpcIndex = npcIndex,
                 PlayerIndex = player.Index,
                 Damage = damage,
@@ -462,30 +512,32 @@ namespace CustomNPC
             //This damage will kill the NPC.
             if (npc.active && npc.life > 0 && damageDone >= npc.life)
             {
-                CustomNPCVars npcvar = NPCManager.NPCs[npcIndex];
-                if (npcvar != null)
-                {
-                    npcvar.markDead();
-                }
+                if (npcvar != null && npcvar.customNPC.customID != null)
+                    {
+                        npcvar.markDead();                    
 
-                //Kill event
-                var killedArgs = new NpcKilledEvent
-                {
-                    NpcIndex = npcIndex,
-                    PlayerIndex = player.Index,
-                    Damage = damage,
-                    Knockback = knockback,
-                    Direction = direction,
-                    CriticalHit = critical,
-                    LastPosition = npc.position
-                };
+                        //Kill event
+                        var killedArgs = new NpcKilledEvent
+                        {
+                            customID = npcvar.customNPC.customID,
+                            NpcIndex = npcIndex,
+                            PlayerIndex = player.Index,
+                            Damage = damage,
+                            Knockback = knockback,
+                            Direction = direction,
+                            CriticalHit = critical,
+                            LastPosition = npc.position
+                        };
 
-                eventManager.InvokeHandler(killedArgs, EventType.NpcKill);
+                        eventManager.InvokeHandler(killedArgs, EventType.NpcKill);
+                        npcvar.isDead = true;
+                        npcvar.OnDeath();
 
-                if (npcvar != null && npcvar.isInvasion)
-                {
-                    NPCManager.CustomNPCInvasion.WaveSize--;
-                }
+                        if (npcvar != null && npcvar.isInvasion)
+                        {
+                            NPCManager.CustomNPCInvasion.WaveSize--;
+                        }
+                    } 
             }
         }
 
@@ -502,8 +554,9 @@ namespace CustomNPC
 
                 ServerApi.Hooks.GameUpdate.Deregister(this, OnUpdate);
                 ServerApi.Hooks.GameInitialize.Deregister(this, OnInitialize);
-                ServerApi.Hooks.NpcLootDrop.Deregister(this, OnLootDrop);
+               // ServerApi.Hooks.NpcLootDrop.Deregister(this, OnItemDrop);
                 ServerApi.Hooks.NetGetData.Deregister(this, OnGetData);
+                ServerApi.Hooks.ServerChat.Deregister(this, OnChat);
                 ServerApi.Hooks.NpcSpawn.Deregister(this, OnNPCSpawn);
             }
         }
@@ -562,6 +615,9 @@ namespace CustomNPC
                 //Dead
                 if (obj == null) continue;
 
+                //check custom id first before doing anything to ensure we never get normal monsters
+                if (obj.customNPC.customID == null) continue; 
+
                 if (obj.isDead || obj.mainNPC == null || obj.mainNPC.life <= 0 || obj.mainNPC.type == 0)
                 {
                     if (updateDead) obj.markDead();
@@ -589,7 +645,11 @@ namespace CustomNPC
         {
             foreach (CustomNPCVars obj in NPCManager.NPCs)
             {
+                //check null and if dead
                 if (obj == null || obj.isDead) continue;
+
+                //check custom id first before doing anything to ensure we never get normal monsters
+                if (obj.customNPC.customID == null) continue; 
 
                 Rectangle npcframe = new Rectangle((int)obj.mainNPC.position.X, (int)obj.mainNPC.position.Y, obj.mainNPC.width, obj.mainNPC.height);
 
@@ -622,6 +682,9 @@ namespace CustomNPC
             {
                 //Check if they exists and are active
                 if (obj == null || obj.isDead || !obj.mainNPC.active) continue;
+
+                //check custom id first before doing anything to ensure we never get normal monsters
+                if (obj.customNPC.customID == null) continue; 
 
                 //We only want the npcs with custom projectiles
                 if (obj.customNPC.customProjectiles == null) continue;
@@ -658,6 +721,7 @@ namespace CustomNPC
                                             target = player;
                                             //Set npcs target to the player its shooting at
                                             obj.mainNPC.target = player.Index;
+                                            obj.mainNPC.friendly = false;
                                             //Break since no need to find another target
                                             break;
                                         }
@@ -764,7 +828,8 @@ namespace CustomNPC
 
                 if ((obj.isDead && !obj.isUncounted) || obj.mainNPC == null || obj.mainNPC.life <= 0 || obj.mainNPC.type == 0)
                 {
-                    obj.markDead();
+                    obj.markDead();                 
+                    obj.Customloot();
                 }
                 else if (!obj.isDead)
                 {

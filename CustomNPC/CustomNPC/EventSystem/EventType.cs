@@ -12,6 +12,7 @@
 
         NpcCollision,
         NpcDamage,
-        NpcKill
+        NpcKill,
+        ServerChat
     }
 }

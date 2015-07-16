@@ -59,6 +59,7 @@
   <ItemGroup>
     <Compile Include="CustomNPCConfig.cs" />
     <Compile Include="CustomNPCInvasion.cs" />
+    <Compile Include="EventSystem\Events\ServerChatEvent.cs" />
     <Compile Include="SpawnConditions.cs" />
     <Compile Include="Biomes.cs" />
     <Compile Include="CustomNPCDefinition.cs" />

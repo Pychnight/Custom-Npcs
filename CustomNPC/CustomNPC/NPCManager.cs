@@ -258,17 +258,6 @@ namespace CustomNPC
             return SpawnCustomNPC(x, y, customnpc);
         }
 
-        public static int SpawnNPCAroundNPColdpos(int npcindex, ShotTile shottile, CustomNPCDefinition customnpc)
-        {
-            NPC npc = Main.npc[npcindex];
-            if (npc == null) return -1;
-
-            int x = (int)(npc.oldPosition.X + shottile.X);
-            int y = (int)(npc.oldPosition.Y + shottile.Y);
-
-            return SpawnCustomNPC(x, y, customnpc);
-        }
-
         public static int SpawnMobAroundPlayer(TSPlayer player, CustomNPCDefinition definition)
         {
             const int SpawnSpaceX = 3;
@@ -746,5 +735,6 @@ namespace CustomNPC
                 }
             }
         }
+
     }
 }

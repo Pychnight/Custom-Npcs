@@ -4,6 +4,8 @@
     {
         public int NpcIndex { get; set; }
 
+        public string customID { get; set; }
+
         public int PlayerIndex { get; set; }
 
         public int Damage { get; set; }

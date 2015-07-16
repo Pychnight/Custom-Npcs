@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 using TShockAPI.DB;
 using TShockAPI;
 using Terraria;
@@ -40,11 +39,11 @@ namespace CustomNPC
 
         public void markDead()
         {
-               isDead = true;
-               if (isUncounted) return;
+            isDead = true;
+            if (isUncounted) return;
 
-               isUncounted = true;
-               if (!isClone) customNPC.currSpawnsVar--;
+            isUncounted = true;
+            if (!isClone) customNPC.currSpawnsVar--;
         }
 
         private void updateCustomAI()
@@ -181,6 +180,18 @@ namespace CustomNPC
             }
 
             postTransform();
+
+            //Temp Fix for projectiles not attaching to transformations, some one else should redo this in a better way..
+            DateTime[] dt = null;
+            if (npcdef.customProjectiles != null)
+            {
+                dt = Enumerable.Repeat(DateTime.Now, npcdef.customProjectiles.Count).ToArray();
+            }
+
+            NPC spawned = Main.npc[mainNPC.whoAmI];
+            NPCManager.NPCs[mainNPC.whoAmI] = new CustomNPCVars(npcdef, dt, spawned);
+            NPCManager.Data.ConvertNPCToCustom(mainNPC.whoAmI, npcdef);
+
         }
 
         /// <summary>
@@ -277,7 +288,7 @@ namespace CustomNPC
                 if (spawned == null) continue;
 
                 if (sethealth) spawned.mainNPC.life = health;
-                
+
                 spawned.isClone = true;
             }
         }
@@ -394,7 +405,7 @@ namespace CustomNPC
             foreach (TSPlayer obj in TShock.Players)
             {
                 if (obj == null || !obj.ConnectionAlive) continue;
-                
+
                 if (Vector2.DistanceSquared(temp, obj.LastNetPosition) <= squaredist)
                 {
                     obj.SendMessage(message, color);
@@ -418,10 +429,89 @@ namespace CustomNPC
 
         public void OnDeath()
         {
-            if (customNPC != null)
+            if (customNPC != null && customNPC.customID != null)
             {
                 customNPC.OnDeath(this);
             }
+        }
+
+        internal void Customloot()
+        {
+            //everything below here is hacky code to make custom loot working again.
+
+            CustomNPCVars npcvar = NPCManager.GetCustomNPCByIndex(mainNPC.whoAmI);
+            if (npcvar == null || npcvar.droppedLoot) return;
+
+            if (npcvar.customNPC.overrideBaseNPCLoot == false)
+            {
+                //Check if monster has been customized
+                if (npcvar.customNPC.customNPCLoots != null && npcvar.customNPC.customNPCLoots.Count != 0 && npcvar.customNPC.customID != null && npcvar.customNPC.customID != "")
+                {
+
+                    // remove this code when the value for loot over ride is fixed
+                    for (int i = 0; i < Main.maxItems; i++)
+                    {
+                        float dX = Main.item[i].position.X - npcvar.mainNPC.Center.X;
+                        float dY = Main.item[i].position.Y - npcvar.mainNPC.Center.Y;
+
+                        if (Main.item[i].active && dX * dX + dY * dY <= 9 * 9 * 256f)
+                        {
+                            Main.item[i].active = false;
+                            TSPlayer.All.SendData(PacketTypes.ItemDrop, "", i);
+                        }
+                    }
+
+                    foreach (CustomNPCLoot obj in npcvar.customNPC.customNPCLoots)
+                    {
+                        if (obj.itemDropChance >= 100 || NPCManager.Chance(obj.itemDropChance))
+                        {
+                            int pre = 0;
+                            if (obj.itemPrefix != null)
+                            {
+                                pre = obj.itemPrefix[rand.Next(obj.itemPrefix.Count)];
+                            }
+
+                            Item.NewItem((int)npcvar.mainNPC.position.X, (int)npcvar.mainNPC.position.Y, npcvar.mainNPC.width, npcvar.mainNPC.height, obj.itemID, obj.itemStack, false, pre, false);
+                        }
+                    }
+                }
+            }
+
+            if (npcvar.customNPC.overrideBaseNPCLoot == true)
+            {
+                //Check if monster has been customized
+                if (npcvar.customNPC.customNPCLoots != null && npcvar.customNPC.customNPCLoots.Count != 0 && npcvar.customNPC.customID != null && npcvar.customNPC.customID != "")
+                {
+
+                    for (int i = 0; i < Main.maxItems; i++)
+                    {
+                        float dX = Main.item[i].position.X - npcvar.mainNPC.Center.X;
+                        float dY = Main.item[i].position.Y - npcvar.mainNPC.Center.Y;
+
+                        if (Main.item[i].active && dX * dX + dY * dY <= 9 * 9 * 256f)
+                        {
+                            Main.item[i].active = false;
+                            TSPlayer.All.SendData(PacketTypes.ItemDrop, "", i);
+                        }
+                    }
+
+                    foreach (CustomNPCLoot obj in npcvar.customNPC.customNPCLoots)
+                    {
+                        if (obj.itemDropChance >= 100 || NPCManager.Chance(obj.itemDropChance))
+                        {
+                            int pre = 0;
+                            if (obj.itemPrefix != null)
+                            {
+                                pre = obj.itemPrefix[rand.Next(obj.itemPrefix.Count)];
+                            }
+
+                            Item.NewItem((int)npcvar.mainNPC.position.X, (int)npcvar.mainNPC.position.Y, npcvar.mainNPC.width, npcvar.mainNPC.height, obj.itemID, obj.itemStack, false, pre, false);
+                        }
+                    }
+                }
+            }
+
+            npcvar.droppedLoot = true;
         }
     }
 }
