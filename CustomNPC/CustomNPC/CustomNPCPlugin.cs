@@ -12,6 +12,8 @@ using CustomNPC.EventSystem.Events;
 using CustomNPC.Plugins;
 using Terraria;
 using TerrariaApi.Server;
+using Wolfje.Plugins.SEconomy;
+using Wolfje.Plugins.SEconomy.Journal;
 using TShockAPI;
 using TShockAPI.DB;
 
@@ -24,6 +26,7 @@ namespace CustomNPC
         public CustomNPCConfig ConfigObj { get; set; }
         private String SavePath = TShock.SavePath;
         internal static string filepath { get { return Path.Combine(TShock.SavePath, "customnpcinvasion.json"); } }
+        public static bool UsingSEConomy { get; set; }
 
         //16.66 milliseconds for 1/60th of a second.
         private Timer mainLoop = new Timer(1000 / 60.0);
@@ -37,6 +40,7 @@ namespace CustomNPC
         public CustomNPCPlugin(Main game)
             : base(game)
         {
+            UsingSEConomy = File.Exists(Path.Combine("ServerPlugins", "Wolfje.Plugins.SEconomy.dll"));
             eventManager = new EventManager();
             definitionManager = new DefinitionManager();
 
@@ -142,6 +146,9 @@ namespace CustomNPC
                 return;
             }
 
+            //Needs improvement and clean up //
+            //Works as intended just looks messy
+
             string[] chat = args.Text.Split();
             string cmd = chat[0].Substring(0);
 
@@ -161,6 +168,9 @@ namespace CustomNPC
 
             eventManager.InvokeHandler(ServerChatEventArgs, EventType.ServerChat);
         }
+
+        //Reenable when custom loot hook works again //
+        //Come on Tshock! fix this!
 
         /*
         /// <summary>
@@ -469,9 +479,7 @@ namespace CustomNPC
             }
 
             CustomNPCVars npcvar = NPCManager.NPCs[npcIndex];
-            if (npcvar != null)
-
-            if (npcvar.customNPC.customID != null)
+            if (npcvar != null && npcvar.customNPC.customID != null)
             {
                 OnNpcDamaged(player, npcIndex, damage, knockback, direction, critical);
             }
@@ -481,8 +489,9 @@ namespace CustomNPC
 
         private void OnNpcDamaged(TSPlayer player, int npcIndex, int damage, float knockback, byte direction, bool critical)
         {
-           CustomNPCVars npcvar = NPCManager.NPCs[npcIndex];
-           if (npcvar != null)
+        CustomNPCVars npcvar = NPCManager.NPCs[npcIndex];
+        if (npcvar != null && npcvar.customNPC.customID != null)
+        {
             //DEBUG
             TShock.Log.ConsoleInfo("DEBUG [NPCDamage] NPCIndex {0}", npcIndex);
             //DEBUG
@@ -513,33 +522,51 @@ namespace CustomNPC
             if (npc.active && npc.life > 0 && damageDone >= npc.life)
             {
                 if (npcvar != null && npcvar.customNPC.customID != null)
+                {
+                    npcvar.markDead();
+
+                    //Kill event
+                    var killedArgs = new NpcKilledEvent
                     {
-                        npcvar.markDead();                    
+                        customID = npcvar.customNPC.customID,
+                        NpcIndex = npcIndex,
+                        PlayerIndex = player.Index,
+                        Damage = damage,
+                        Knockback = knockback,
+                        Direction = direction,
+                        CriticalHit = critical,
+                        LastPosition = npc.position
+                    };
 
-                        //Kill event
-                        var killedArgs = new NpcKilledEvent
+                    eventManager.InvokeHandler(killedArgs, EventType.NpcKill);
+                    npcvar.isDead = true;
+                    npcvar.OnDeath();
+
+                    var economyPlayer = Wolfje.Plugins.SEconomy.SEconomyPlugin.Instance.GetBankAccount(player.Index);
+                    var SEconReward = new Wolfje.Plugins.SEconomy.Money(npcvar.customNPC.SEconReward);
+
+                    if (UsingSEConomy && economyPlayer.IsAccountEnabled)
+                    {
+
+                        if (npcvar.customNPC.SEconReward > 0)
                         {
-                            customID = npcvar.customNPC.customID,
-                            NpcIndex = npcIndex,
-                            PlayerIndex = player.Index,
-                            Damage = damage,
-                            Knockback = knockback,
-                            Direction = direction,
-                            CriticalHit = critical,
-                            LastPosition = npc.position
-                        };
-
-                        eventManager.InvokeHandler(killedArgs, EventType.NpcKill);
-                        npcvar.isDead = true;
-                        npcvar.OnDeath();
-
-                        if (npcvar != null && npcvar.isInvasion)
-                        {
-                            NPCManager.CustomNPCInvasion.WaveSize--;
+                            IBankAccount Player = SEconomyPlugin.Instance.GetBankAccount(player.Index);
+                            SEconomyPlugin.Instance.WorldAccount.TransferToAsync(Player, SEconReward, BankAccountTransferOptions.AnnounceToReceiver, npcvar.customNPC.customName + " Bountie", "Custom Npc Kill");
                         }
-                    } 
+                    }
+                    else if (!economyPlayer.IsAccountEnabled)
+                    {
+                        player.SendErrorMessage("You cannot gain any bounty because your account is disabled.");
+                    }
+
+                    if (npcvar != null && npcvar.isInvasion)
+                    {
+                        NPCManager.CustomNPCInvasion.WaveSize--;
+                    }
+                }
             }
-        }
+         }
+     }
 
         #endregion
 

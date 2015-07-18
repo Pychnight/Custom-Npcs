@@ -55,6 +55,9 @@
     <Reference Include="TShockAPI">
       <HintPath>..\Libraries\TShockAPI.dll</HintPath>
     </Reference>
+    <Reference Include="Wolfje.Plugins.SEconomy">
+      <HintPath>..\..\..\..\Open Source Plugins\Terraria\1.3.0.4\SEconomy\References\Wolfje.Plugins.SEconomy.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CustomNPCConfig.cs" />

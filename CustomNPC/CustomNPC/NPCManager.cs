@@ -258,6 +258,33 @@ namespace CustomNPC
             return SpawnCustomNPC(x, y, customnpc);
         }
 
+        public static int SpawnNPCAroundNPC(int npcindex, ShotTile shottile, int npcid)
+        {
+            NPC npc = Main.npc[npcindex];
+            if (npc == null) return -1;
+
+            int x = (int)(npc.position.X + shottile.X);
+            int y = (int)(npc.position.Y + shottile.Y);
+
+            return SpawnNPC(x, y, npcid);
+        }
+
+        private static int SpawnNPC(int x, int y, int npcid)
+        { 
+            if (npcid == 200)
+            {
+                //DEBUG
+                TShock.Log.ConsoleInfo("DEBUG Spawning FAILED (mobcap) at {0}, {1} for customID {2}", x, y, npcid);
+                //DEBUG
+                return -1;
+            }
+
+            NPC.NewNPC(x, y, npcid);
+            TSPlayer.All.SendData(PacketTypes.NpcUpdate, "", npcid);
+
+            return npcid;
+        }
+
         public static int SpawnMobAroundPlayer(TSPlayer player, CustomNPCDefinition definition)
         {
             const int SpawnSpaceX = 3;
