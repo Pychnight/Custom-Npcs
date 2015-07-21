@@ -57,6 +57,14 @@ namespace TestNPC
             get { return "testnpc"; }
         }
 
+        public override string customSpawnMessage
+        {
+            get
+            {
+                return base.customSpawnMessage;
+            }
+        }
+
         //Name of NPC - will display for namable NPCs
         public override string customName
         {
@@ -83,7 +91,7 @@ namespace TestNPC
         {
             get
             {
-                return 1000;
+                return 120;
             }
         }
 

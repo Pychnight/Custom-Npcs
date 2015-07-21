@@ -86,6 +86,15 @@ namespace CustomNPC
         }
         public int currSpawnsVar { get; set; }
 
+
+        /// <summary>
+        /// Seconomy Reward
+        /// </summary>
+        public virtual long SEconReward
+        {
+            get { return 0L; }
+        }
+
         // NPC Projectile Variables
 
         /// <summary>
@@ -147,14 +156,6 @@ namespace CustomNPC
 
         public virtual void OnDeath(CustomNPCVars vars)
         {
-        }
-
-        /// <summary>
-        /// Seconomy Reward Controller
-        /// </summary>
-        public virtual long SEconReward 
-        {
-            get { return 0L; }
         }
     }
 }
