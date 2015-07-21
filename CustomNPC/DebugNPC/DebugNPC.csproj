@@ -48,9 +48,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DebugDefence.cs" />
     <Compile Include="DebugLootNPC.cs" />
     <Compile Include="DebugEventsNPC.cs" />
     <Compile Include="DebugNPCPlugin.cs" />
+    <Compile Include="DebugTransform.cs" />
+    <Compile Include="DebugTransformed.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

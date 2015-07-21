@@ -43,6 +43,9 @@ namespace DebugNPC
 
             Definitions.Add(new DebugEventsNPCDefinition());
             Definitions.Add(new DebugLootNPCDefinition());
+            Definitions.Add(new DebugDefence());
+            Definitions.Add(new DebugTransform());
+            Definitions.Add(new DebugTransformed());
         }
 
     private void OnNpcDamage(NpcDamageEvent args)
@@ -55,11 +58,27 @@ namespace DebugNPC
             switch (npc.customNPC.customID.ToUpper())
             {
 
+                    //Used for Testing to see if damage is working properly
                     case "debugevents":
                     {
                      Console.WriteLine("Damaged Custom Monster debugevents");
                     }
-                    break;           
+                    break;
+
+
+                    //Used for testing transformation
+                    //also used for testing to see if the transformation fires the projectiles
+                    // look for "Transformation function in the CustomNPCS
+                    // line: 184 in the Custom NPC Vars
+
+                    // This fix is temp Please Improve!
+                    case "DEBUGTRANSFORM":
+
+                    if (NPCManager.HealthBelow(args.NpcIndex, 40))
+                    {
+                        npc.Transform("DEBUGTRANSFORMED", false, 0);
+                    }
+                    break;
             }
         }        
 
