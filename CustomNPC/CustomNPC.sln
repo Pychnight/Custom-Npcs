@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+# Visual Studio Express 2013 for Windows Desktop
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomNPC", "CustomNPC\CustomNPC.csproj", "{FDA69D84-FD53-4DDA-BB00-0F9CCAC7A3D4}"
 EndProject
@@ -20,6 +20,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{221E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestNPC", "TestNPC\TestNPC.csproj", "{BE76FBAE-B44D-4303-97C1-EC806470B726}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DebugNPC", "DebugNPC\DebugNPC.csproj", "{18C71EEB-518C-4F6B-A121-E809226067DD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,11 +36,16 @@ Global
 		{BE76FBAE-B44D-4303-97C1-EC806470B726}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BE76FBAE-B44D-4303-97C1-EC806470B726}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BE76FBAE-B44D-4303-97C1-EC806470B726}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18C71EEB-518C-4F6B-A121-E809226067DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18C71EEB-518C-4F6B-A121-E809226067DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18C71EEB-518C-4F6B-A121-E809226067DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18C71EEB-518C-4F6B-A121-E809226067DD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{BE76FBAE-B44D-4303-97C1-EC806470B726} = {221E879D-8D36-4A04-98EA-940620B6A383}
+		{18C71EEB-518C-4F6B-A121-E809226067DD} = {221E879D-8D36-4A04-98EA-940620B6A383}
 	EndGlobalSection
 EndGlobal
