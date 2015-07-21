@@ -472,57 +472,29 @@ namespace CustomNPC
                 critical = data.ReadBoolean();
             }
 
-            CustomNPCVars npcvar = NPCManager.NPCs[npcIndex];         
-            if (npcvar != null)
-            {
-                OnNpcDamaged(player, npcIndex, damage, knockback, direction, critical);
-            }
+            OnNpcDamaged(player, npcIndex, damage, knockback, direction, critical);
         }
 
         #region Event Dispatchers
 
         private void OnNpcDamaged(TSPlayer player, int npcIndex, int damage, float knockback, byte direction, bool critical)
         {
-            //DEBUG
-            TShock.Log.ConsoleInfo("DEBUG [NPCDamage] NPCIndex {0}", npcIndex);
-            //DEBUG
-
             CustomNPCVars npcvar = NPCManager.NPCs[npcIndex];
-            NPC npc = Main.npc[npcIndex];
-            double damageDone = Main.CalculateDamage(damage, npc.ichor ? npc.defense - 20 : npc.defense);
-            if (critical)
+            if (npcvar != null)
             {
-                damageDone *= 2;
-            }
+                //DEBUG
+                TShock.Log.ConsoleInfo("DEBUG [NPCDamage] NPCIndex {0}", npcIndex);
+                //DEBUG
 
-            //Damage event
-            var e = new NpcDamageEvent
-            {
-                NpcIndex = npcIndex,
-                PlayerIndex = player.Index,
-                Damage = damage,
-                Knockback = knockback,
-                Direction = direction,
-                CriticalHit = critical,
-                NpcHealth = Math.Max(0, npc.life - (int)damageDone)
-            };
-
-            eventManager.InvokeHandler(e, EventType.NpcDamage);
-
-            Console.WriteLine(player.Name + " Has Damaged " + npcvar.customNPC.customID + " in " + npcIndex);
-
-            var SEconReward = new Wolfje.Plugins.SEconomy.Money(npcvar.customNPC.SEconReward);
-
-            //This damage will kill the NPC.
-            if (npc.active && npc.life > 0 && damageDone >= npc.life)
-            {
-                if (npcvar != null)
+                NPC npc = Main.npc[npcIndex];
+                double damageDone = Main.CalculateDamage(damage, npc.ichor ? npc.defense - 20 : npc.defense);
+                if (critical)
                 {
-                    npcvar.markDead();
+                    damageDone *= 2;
                 }
 
-                //Kill event
-                var killedArgs = new NpcKilledEvent
+                //Damage event
+                var e = new NpcDamageEvent
                 {
                     NpcIndex = npcIndex,
                     PlayerIndex = player.Index,
@@ -530,45 +502,72 @@ namespace CustomNPC
                     Knockback = knockback,
                     Direction = direction,
                     CriticalHit = critical,
-                    LastPosition = npc.position
+                    NpcHealth = Math.Max(0, npc.life - (int)damageDone)
                 };
 
-                eventManager.InvokeHandler(killedArgs, EventType.NpcKill);
+                eventManager.InvokeHandler(e, EventType.NpcDamage);
 
-                var economyPlayer = Wolfje.Plugins.SEconomy.SEconomyPlugin.Instance.GetBankAccount(TSPlayer.Server.User.ID);
+                Console.WriteLine(player.Name + " Has Damaged " + npcvar.customNPC.customID + " in " + npcIndex);
 
-                if (UsingSEConomy && economyPlayer.IsAccountEnabled)
+                var SEconReward = new Wolfje.Plugins.SEconomy.Money(npcvar.customNPC.SEconReward);
+
+                //This damage will kill the NPC.
+                if (npc.active && npc.life > 0 && damageDone >= npc.life)
                 {
-                    if (npcvar.customNPC.SEconReward > 0)
+                    if (npcvar != null)
                     {
-                       IBankAccount Player = SEconomyPlugin.Instance.GetBankAccount(TSPlayer.Server.User.ID);
-                       SEconomyPlugin.Instance.WorldAccount.TransferToAsync(Player, SEconReward, BankAccountTransferOptions.AnnounceToReceiver, npcvar.customNPC.customName + " Bountie", "Custom Npc Kill");
-                       SEconReward = 0;
+                        npcvar.markDead();
                     }
+
+                    //Kill event
+                    var killedArgs = new NpcKilledEvent
+                    {
+                        NpcIndex = npcIndex,
+                        PlayerIndex = player.Index,
+                        Damage = damage,
+                        Knockback = knockback,
+                        Direction = direction,
+                        CriticalHit = critical,
+                        LastPosition = npc.position
+                    };
+
+                    eventManager.InvokeHandler(killedArgs, EventType.NpcKill);
+
+                    Console.WriteLine(player.Name + " Has Killed " + npcvar.customNPC.customID + " in " + npcIndex);
+
+                    npcvar.OnDeath();
+                    npcvar.Customloot();
+
+
+                    var economyPlayer = Wolfje.Plugins.SEconomy.SEconomyPlugin.Instance.GetBankAccount(TSPlayer.Server.User.ID);
+
+                    if (UsingSEConomy && economyPlayer.IsAccountEnabled)
+                    {
+                        if (npcvar.customNPC.SEconReward > 0)
+                        {
+                            IBankAccount Player = SEconomyPlugin.Instance.GetBankAccount(TSPlayer.Server.User.ID);
+                            SEconomyPlugin.Instance.WorldAccount.TransferToAsync(Player, SEconReward, BankAccountTransferOptions.AnnounceToReceiver, npcvar.customNPC.customName + " Bountie", "Custom Npc Kill");
+                            SEconReward = 0;
+                        }
+                    }
+                    else if (!economyPlayer.IsAccountEnabled)
+                    {
+                        TShock.Log.Error("You cannot gain any bounty because your account is disabled.");
+                    }
+
+
+                    if (npcvar != null && npcvar.isInvasion)
+                    {
+                        NPCManager.CustomNPCInvasion.WaveSize--;
+                    }
+
+                    NPCManager.NPCs[npcIndex] = null;
+                    //npcvar = null;
+
+                    Console.WriteLine(npcvar.customNPC.customID + " is dead " + npcIndex);
                 }
-                else if (!economyPlayer.IsAccountEnabled)
-                {
-                    TShock.Log.Error("You cannot gain any bounty because your account is disabled.");
-                }
-
-                Console.WriteLine(player.Name + " Has Killed " + npcvar.customNPC.customID + " in " + npcIndex);
-
-                npcvar.Customloot();
-                npcvar.OnDeath();
-
-                if (npcvar != null && npcvar.isInvasion)
-                {
-                    NPCManager.CustomNPCInvasion.WaveSize--;
-                }
-
-                NPCManager.NPCs[npcIndex] = null;
-                //npcvar = null;
-                npcvar.customNPC.customID.Insert(0, "DEAD_");
-
-                Console.WriteLine(npcvar.customNPC.customID + " is dead " + npcIndex);
-
-             }
-     }
+            }
+        }
 
         #endregion
 

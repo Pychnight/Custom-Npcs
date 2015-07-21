@@ -22,7 +22,6 @@ namespace CustomNPC
         public bool usingCustomAI { get; set; }
         private Random rand = new Random();
         private IDictionary<string, object> variables = new Dictionary<string, object>();
-        private int npcIndex;
 
         public CustomNPCVars(CustomNPCDefinition customnpc, DateTime[] lastattemptedprojectile, NPC mainnpc, bool isclone = false)
         {
