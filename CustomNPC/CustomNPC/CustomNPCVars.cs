@@ -138,8 +138,8 @@ namespace CustomNPC
                 TShock.Log.ConsoleInfo("DEBUG [PostTransform] NetMode=2, updating");
                 //DEBUG
                 mainNPC.netUpdate = true;
-                NetMessage.SendData(23, -1, -1, "", mainNPC.whoAmI, 0f, 0f, 0f, 0);
-                NetMessage.SendData(54, -1, -1, "", mainNPC.whoAmI, 0f, 0f, 0f, 0);
+                NetMessage.SendData(23, -1, -1, "", mainNPC.whoAmI, 0f, 0f, 0f, 0, 0, 0);
+                NetMessage.SendData(54, -1, -1, "", mainNPC.whoAmI, 0f, 0f, 0f, 0, 0, 0);
             }
             else
             {
