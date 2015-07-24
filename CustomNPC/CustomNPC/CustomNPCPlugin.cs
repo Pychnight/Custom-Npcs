@@ -19,7 +19,7 @@ using TShockAPI.DB;
 
 namespace CustomNPC
 {
-    [ApiVersion(1, 19)]
+    [ApiVersion(1, 20)]
     public class CustomNPCPlugin : TerrariaPlugin
     {
         internal Random rand = new Random();
@@ -169,17 +169,17 @@ namespace CustomNPC
             eventManager.InvokeHandler(ServerChatEventArgs, EventType.ServerChat);
         }
 
-        // Currently Broken.
         /// <summary>
         /// For Custom Loot
         /// </summary>
         /// <param name="args"></param>
         private void OnItemDrop(NpcLootDropEventArgs args)
         {
-            CustomNPCVars npcvar = NPCManager.GetCustomNPCByIndex(args.NpcArrayIndex);
-            
+            CustomNPCVars npcvar = NPCManager.GetCustomNPCByIndex(args.NpcArrayIndex);         
             if (npcvar == null || npcvar.droppedLoot) return;
 
+            npcvar.isDead = true;
+            npcvar.droppedLoot = true;
             args.Handled = npcvar.customNPC.overrideBaseNPCLoot;
 
             //Check if monster has been customized
@@ -199,9 +199,6 @@ namespace CustomNPC
                     }
                 }
             }
-
-            npcvar.isDead = true;
-            npcvar.droppedLoot = true;
         }
 
         /// <summary>
@@ -472,7 +469,11 @@ namespace CustomNPC
                 critical = data.ReadBoolean();
             }
 
-            OnNpcDamaged(player, npcIndex, damage, knockback, direction, critical);
+            CustomNPCVars npcvar = NPCManager.NPCs[npcIndex];
+            if (npcvar != null)
+            {
+                OnNpcDamaged(player, npcIndex, damage, knockback, direction, critical);
+            }
         }
 
         #region Event Dispatchers
@@ -535,10 +536,6 @@ namespace CustomNPC
 
                     Console.WriteLine(player.Name + " Has Killed " + npcvar.customNPC.customID + " in " + npcIndex);
 
-                    npcvar.OnDeath();
-                    npcvar.Customloot();
-
-
                     var economyPlayer = Wolfje.Plugins.SEconomy.SEconomyPlugin.Instance.GetBankAccount(TSPlayer.Server.User.ID);
 
                     if (UsingSEConomy && economyPlayer.IsAccountEnabled)
@@ -555,6 +552,7 @@ namespace CustomNPC
                         TShock.Log.Error("You cannot gain any bounty because your account is disabled.");
                     }
 
+                    npcvar.OnDeath();
 
                     if (npcvar != null && npcvar.isInvasion)
                     {
@@ -562,7 +560,8 @@ namespace CustomNPC
                     }
 
                     NPCManager.NPCs[npcIndex] = null;
-                    //npcvar = null;
+                    npcvar = null;
+                    npcvar.customNPC = null;
 
                     Console.WriteLine(npcvar.customNPC.customID + " is dead " + npcIndex);
                 }
@@ -743,7 +742,6 @@ namespace CustomNPC
                                             target = player;
                                             //Set npcs target to the player its shooting at
                                             obj.mainNPC.target = player.Index;
-                                            obj.mainNPC.friendly = false;
                                             //Break since no need to find another target
                                             break;
                                         }
@@ -814,6 +812,13 @@ namespace CustomNPC
                 var proj = Main.projectile[projectileIndex];
                 proj.ai[0] = ai.Item1;
                 proj.ai[1] = ai.Item2;
+
+                proj.friendly = false;
+                proj.hostile = true;
+                proj.npcProj = true;
+                proj.StatusNPC(255);
+                proj.StatusPvP(1);
+                proj.StatusPlayer(0);
 
                 // send projectile as a packet
                 NetMessage.SendData(27, -1, -1, string.Empty, projectileIndex, 0f, 0f, 0f, 0, 0, 0);

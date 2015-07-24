@@ -274,7 +274,7 @@ namespace CustomNPC
             if (npcid == 200)
             {
                 //DEBUG
-                TShock.Log.ConsoleInfo("DEBUG Spawning FAILED (mobcap) at {0}, {1} for customID {2}", x, y, npcid);
+                TShock.Log.ConsoleInfo("DEBUG Spawning FAILED (mobcap) at {0}, {1} for npcID {2}", x, y, npcid);
                 //DEBUG
                 return -1;
             }
@@ -435,7 +435,6 @@ namespace CustomNPC
                 dt = Enumerable.Repeat(DateTime.Now, definition.customProjectiles.Count).ToArray();
             }
             NPCs[npcid] = new CustomNPCVars(definition, dt, Main.npc[npcid]);
-
             TSPlayer.All.SendData(PacketTypes.NpcUpdate, "", npcid);
             return npcid;
         }
@@ -734,6 +733,14 @@ namespace CustomNPC
                         npcdef.currSpawnsVar = NPCManager.AliveCount(npcdef.customID);
                         continue;
                     }
+                    else if (npcdef.maxSpawns == -1)
+                    {
+                        for (int i = 0; mobid == -1 && i < attempts; i++)
+                        {
+                            mobid = NPCManager.SpawnMobAroundPlayer(player, npcdef);
+                            npcdef.currSpawnsVar++;
+                        }
+                    }
                         
                         //Try max attempts times. This gives attempts*50 spawn attempts at random positions.
                         for (int i = 0; mobid == -1 && i < attempts; i++)
@@ -747,6 +754,7 @@ namespace CustomNPC
 
                     NPCManager.GetCustomNPCByIndex(mobid).isInvasion = true;
                 }
+
             }
 
             public static WaveSet ReturnWaveSetByName(string name)

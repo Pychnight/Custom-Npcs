@@ -13,6 +13,8 @@ namespace CustomNPC
     {
         public CustomNPCDefinition customNPC { get; set; }
         public DateTime[] lastAttemptedProjectile { get; set; }
+        public string customID { get { return customNPC.customID;  } }
+        public bool overrideBaseNPCLoot { get { return customNPC.overrideBaseNPCLoot; } } // used for debuging default loot droping regardless if this is true or false.
         public bool isDead { get; set; }
         public bool isUncounted { get; set; }
         public NPC mainNPC { get; set; }
@@ -43,7 +45,10 @@ namespace CustomNPC
             if (isUncounted) return;
 
             isUncounted = true;
-            if (!isClone) customNPC.currSpawnsVar--;
+            if (customNPC.currSpawnsVar >= 1 && isDead == true && !isClone)
+            {
+                customNPC.currSpawnsVar--;
+            }
         }
 
         private void updateCustomAI()
@@ -435,83 +440,5 @@ namespace CustomNPC
             }
         }
 
-        internal void Customloot()
-        {
-            //everything below here is hacky code to make custom loot working again.
-
-            CustomNPCVars npcvar = NPCManager.GetCustomNPCByIndex(mainNPC.whoAmI);
-            if (npcvar == null || npcvar.droppedLoot) return;
-
-            if (npcvar.customNPC.overrideBaseNPCLoot == false)
-            {
-                //Check if monster has been customized
-                if (npcvar.customNPC.customNPCLoots != null && npcvar.customNPC.customNPCLoots.Count != 0 && npcvar.customNPC.customID != null && npcvar.customNPC.customID != "")
-                {
-
-                    // remove this code when the value for loot over ride is fixed
-                    for (int i = 0; i < Main.maxItems; i++)
-                    {
-                        float dX = Main.item[i].position.X - npcvar.mainNPC.Center.X;
-                        float dY = Main.item[i].position.Y - npcvar.mainNPC.Center.Y;
-
-                        if (Main.item[i].active && dX * dX + dY * dY <= 9 * 9 * 256f)
-                        {
-                            Main.item[i].active = false;
-                            TSPlayer.All.SendData(PacketTypes.ItemDrop, "", i);
-                        }
-                    }
-
-                    foreach (CustomNPCLoot obj in npcvar.customNPC.customNPCLoots)
-                    {
-                        if (obj.itemDropChance >= 100 || NPCManager.Chance(obj.itemDropChance))
-                        {
-                            int pre = 0;
-                            if (obj.itemPrefix != null)
-                            {
-                                pre = obj.itemPrefix[rand.Next(obj.itemPrefix.Count)];
-                            }
-
-                            Item.NewItem((int)npcvar.mainNPC.position.X, (int)npcvar.mainNPC.position.Y, npcvar.mainNPC.width, npcvar.mainNPC.height, obj.itemID, obj.itemStack, false, pre, false);
-                        }
-                    }
-                }
-            }
-       
-            if (npcvar.customNPC.overrideBaseNPCLoot == true)
-            {
-                //Check if monster has been customized
-                if (npcvar.customNPC.customNPCLoots != null && npcvar.customNPC.customNPCLoots.Count != 0 && npcvar.customNPC.customID != null && npcvar.customNPC.customID != "")
-                {
-
-                    for (int i = 0; i < Main.maxItems; i++)
-                    {
-                        float dX = Main.item[i].position.X - npcvar.mainNPC.Center.X;
-                        float dY = Main.item[i].position.Y - npcvar.mainNPC.Center.Y;
-
-                        if (Main.item[i].active && dX * dX + dY * dY <= 9 * 9 * 256f)
-                        {
-                            Main.item[i].active = false;
-                            TSPlayer.All.SendData(PacketTypes.ItemDrop, "", i);
-                        }
-                    }
-
-                    foreach (CustomNPCLoot obj in npcvar.customNPC.customNPCLoots)
-                    {
-                        if (obj.itemDropChance >= 100 || NPCManager.Chance(obj.itemDropChance))
-                        {
-                            int pre = 0;
-                            if (obj.itemPrefix != null)
-                            {
-                                pre = obj.itemPrefix[rand.Next(obj.itemPrefix.Count)];
-                            }
-
-                            Item.NewItem((int)npcvar.mainNPC.position.X, (int)npcvar.mainNPC.position.Y, npcvar.mainNPC.width, npcvar.mainNPC.height, obj.itemID, obj.itemStack, false, pre, false);
-                        }
-                    }
-                }
-            }
-
-            npcvar.droppedLoot = true;
-        }
     }
 }
