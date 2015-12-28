@@ -90,7 +90,7 @@ namespace CustomNPC
             mainNPC.lavaImmune = customNPC.lavaImmune;
             mainNPC.noGravity = customNPC.noGravity;
             mainNPC.noTileCollide = customNPC.noTileCollide;
-            //mainNPC.boss = customNPC.isBoss;
+            mainNPC.boss = customNPC.isBoss;
 
             mainNPC.defense = customNPC.customDefense;
             mainNPC.defDefense = customNPC.customDefense;
