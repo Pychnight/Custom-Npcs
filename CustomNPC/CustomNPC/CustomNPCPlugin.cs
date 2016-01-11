@@ -19,7 +19,7 @@ using TShockAPI.DB;
 
 namespace CustomNPC
 {
-    [ApiVersion(1, 20)]
+    [ApiVersion(1, 22)]
     public class CustomNPCPlugin : TerrariaPlugin
     {
         internal Random rand = new Random();
@@ -66,7 +66,7 @@ namespace CustomNPC
 
         public override string Author
         {
-            get { return "IcyGaming(v1.0), Taeir(v1.1), Pychnight(v1.2)"; }
+            get { return "IcyGaming(v1.0), Taeir(v1.1), Pychnight(v1.2 & v1.3)"; }
         }
 
         public override string Description
@@ -81,7 +81,7 @@ namespace CustomNPC
 
         public override Version Version
         {
-            get { return new Version("1.2"); }
+            get { return new Version("1.3"); }
         }
 
         public override void Initialize()
@@ -508,17 +508,12 @@ namespace CustomNPC
 
                 eventManager.InvokeHandler(e, EventType.NpcDamage);
 
+                //Disable to prevent flooding (Debug)
                 Console.WriteLine(player.Name + " Has Damaged " + npcvar.customNPC.customID + " in " + npcIndex);
-
-                var SEconReward = new Wolfje.Plugins.SEconomy.Money(npcvar.customNPC.SEconReward);
 
                 //This damage will kill the NPC.
                 if (npc.active && npc.life > 0 && damageDone >= npc.life)
                 {
-                    if (npcvar != null)
-                    {
-                        npcvar.markDead();
-                    }
 
                     //Kill event
                     var killedArgs = new NpcKilledEvent
@@ -536,20 +531,30 @@ namespace CustomNPC
 
                     Console.WriteLine(player.Name + " Has Killed " + npcvar.customNPC.customID + " in " + npcIndex);
 
-                    var economyPlayer = Wolfje.Plugins.SEconomy.SEconomyPlugin.Instance.GetBankAccount(TSPlayer.Server.User.ID);
-
-                    if (UsingSEConomy && economyPlayer.IsAccountEnabled)
+                    if (UsingSEConomy == true)
                     {
-                        if (npcvar.customNPC.SEconReward > 0)
+                        var economyPlayer = Wolfje.Plugins.SEconomy.SEconomyPlugin.Instance.GetBankAccount(TSPlayer.Server.User.ID);
+
+                        if (economyPlayer.IsAccountEnabled)
                         {
-                            IBankAccount Player = SEconomyPlugin.Instance.GetBankAccount(TSPlayer.Server.User.ID);
-                            SEconomyPlugin.Instance.WorldAccount.TransferToAsync(Player, SEconReward, BankAccountTransferOptions.AnnounceToReceiver, npcvar.customNPC.customName + " Bountie", "Custom Npc Kill");
-                            SEconReward = 0;
+                            var SEconReward = new Wolfje.Plugins.SEconomy.Money(npcvar.customNPC.SEconReward);
+
+                            if (npcvar.customNPC.SEconReward > 0)
+                            {
+                                IBankAccount Player = SEconomyPlugin.Instance.GetBankAccount(TSPlayer.Server.User.ID);
+                                SEconomyPlugin.Instance.WorldAccount.TransferToAsync(Player, SEconReward, BankAccountTransferOptions.AnnounceToReceiver, npcvar.customNPC.customName + " Bountie", "Custom Npc Kill");
+                                SEconReward = 0;
+                            }
+                        }
+                        else if (!economyPlayer.IsAccountEnabled)
+                        {
+                            TShock.Log.Error("You cannot gain any bounty because your account is disabled.");
                         }
                     }
-                    else if (!economyPlayer.IsAccountEnabled)
+
+                    if (npcvar != null)
                     {
-                        TShock.Log.Error("You cannot gain any bounty because your account is disabled.");
+                        npcvar.markDead();
                     }
 
                     npcvar.OnDeath();
@@ -558,10 +563,6 @@ namespace CustomNPC
                     {
                         NPCManager.CustomNPCInvasion.WaveSize--;
                     }
-
-                    NPCManager.NPCs[npcIndex] = null;
-                    npcvar = null;
-                    npcvar.customNPC = null;
 
                     Console.WriteLine(npcvar.customNPC.customID + " is dead " + npcIndex);
                 }
