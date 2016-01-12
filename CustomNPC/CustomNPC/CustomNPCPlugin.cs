@@ -10,6 +10,8 @@ using CustomNPC.EventSystem;
 using CustomNPC.EventSystem.Events;
 using CustomNPC.Plugins;
 using Terraria;
+using OTA.Commands;
+using OTA.Command;
 
 #if TShock
 using TerrariaApi.Server;
@@ -17,6 +19,7 @@ using Wolfje.Plugins.SEconomy;
 using Wolfje.Plugins.SEconomy.Journal;
 using TShockAPI;
 using TShockAPI.DB;
+
 
 
 #elif OTAPI
@@ -33,6 +36,7 @@ namespace CustomNPC
     public class CustomNPCPlugin : TerrariaPlugin
 
 
+
 #elif OTAPI
 	[OTAVersion (1, 0)]
 	public class CustomNPCPlugin : BasePlugin
@@ -44,6 +48,7 @@ namespace CustomNPC
 		#if TShock
 		private String SavePath = TShock.SavePath;
 		internal static string filepath { get { return Path.Combine(TShock.SavePath, "customnpcinvasion.json"); } }
+
 
 
 #elif OTAPI
@@ -68,6 +73,7 @@ namespace CustomNPC
 		{
 			Init();
 		}
+
 
 
 #elif OTAPI
@@ -137,6 +143,7 @@ namespace CustomNPC
 		{
 
 
+
 #elif OTAPI
 		protected override void Initialized (object state)
 		{
@@ -184,12 +191,16 @@ namespace CustomNPC
 			Commands.ChatCommands.Add (new Command ("customnpc.invade", CommandInvade, "csminvade", "cinvade"));
 			Commands.ChatCommands.Add (new Command ("customnpc.info", CommandNPCInfo, "csminfo", "cinfo"));
 			#elif OTAPI
+			this.AddCommand ("csm")
+				.ByPermissionNode ("customnpc.spawn")
+				.Calls (CommandSpawnNPC);
 			#endif
 		}
 
 		#if TShock
 		private void OnInitialize (EventArgs args)
 		
+
 
 #elif OTAPI
 		private void OnInit ()
@@ -273,104 +284,203 @@ namespace CustomNPC
 		//			}
 		//		}
 		//
-		//		/// <summary>
-		//		/// Spawn custom npc using /csm &lt;id&gt; [amount] [&lt;x&gt; &lt;y&gt;]
-		//		/// </summary>
-		//		/// <param name="args"></param>
-		//		private void CommandSpawnNPC (CommandArgs args)
-		//		{
-		//			//Error if too many or too few params specified
-		//			if (args.Parameters.Count == 0 || args.Parameters.Count > 4)
-		//			{
-		//				args.Player.SendInfoMessage ("Usage: /csm <id> [<amount>] [<x> <y>]");
-		//				return;
-		//			}
-		//
-		//			//Get custom npc by id
-		//			var cdef = NPCManager.Data.GetNPCbyID (args.Parameters [0]);
-		//			if (cdef == null)
-		//			{
-		//				args.Player.SendErrorMessage ("Error: The custom npc with id \"{0}\" does not exist!", args.Parameters [0]);
-		//				return;
-		//			}
-		//
-		//			//Default to 1 if amount is not defined
-		//			int amount = 1;
-		//
-		//			//Check if amount is defined
-		//			if (args.Parameters.Count == 2 || args.Parameters.Count == 4)
-		//			{
-		//				int.TryParse (args.Parameters [1], out amount);
-		//
-		//				//Check for too many mobs
-		//				if (amount > 200)
-		//				{
-		//					args.Player.SendErrorMessage ("Error: Amount needs to be lower than 200!");
-		//					return;
-		//				}
-		//			}
-		//
-		//			//Check for X and Y
-		//			int x;
-		//			int y;
-		//
-		//			//Not specified, use player's coordinates. (/csm <id> [amount])
-		//			if (args.Parameters.Count <= 2)
-		//			{
-		//				x = (int)args.Player.X + rand.Next (-8, 9);
-		//				y = (int)args.Player.Y + rand.Next (-8, 9);
-		//			}
-		//
-		//            //Specified, no amount (/csm <id> <x> <y>)
-		//            else if (args.Parameters.Count == 3)
-		//			{
-		//				if (!int.TryParse (args.Parameters [1], out x))
-		//				{
-		//					args.Player.SendErrorMessage ("Error: Invalid x position defined!");
-		//					return;
-		//				}
-		//				if (!int.TryParse (args.Parameters [2], out y))
-		//				{
-		//					args.Player.SendErrorMessage ("Error: Invalid y position defined!");
-		//					return;
-		//				}
-		//			}
-		//
-		//            //All arguments specified (/csm <id> <amount> <x> <y>)
-		//            else
-		//			{
-		//				if (!int.TryParse (args.Parameters [2], out x))
-		//				{
-		//					args.Player.SendErrorMessage ("Error: Invalid x position defined!");
-		//					return;
-		//				}
-		//				if (!int.TryParse (args.Parameters [3], out y))
-		//				{
-		//					args.Player.SendErrorMessage ("Error: Invalid y position defined!");
-		//					return;
-		//				}
-		//			}
-		//
-		//			//Keep track of spawns that fail.
-		//			int failed = 0;
-		//
-		//			//Spawn mobs
-		//			for (int i = 0; i < amount; i++)
-		//			{
-		//				int j = NPCManager.SpawnNPCAtLocation (x, y, cdef);
-		//
-		//				if (j == -1)
-		//					failed++;
-		//				else
-		//					cdef.currSpawnsVar++;
-		//			}
-		//
-		//			//Inform player
-		//			if (failed > 0)
-		//				args.Player.SendWarningMessage ("Failed to spawn {0} of {1} \"{2}\"'s at ({3}, {4})", failed, amount, args.Parameters [0], x, y);
-		//			else
-		//				args.Player.SendSuccessMessage ("Spawned {0} \"{1}\"'s at ({2}, {3})", amount, args.Parameters [0], x, y);
-		//		}
+		#if TShock
+				/// <summary>
+				/// Spawn custom npc using /csm &lt;id&gt; [amount] [&lt;x&gt; &lt;y&gt;]
+				/// </summary>
+				/// <param name="args"></param>
+				private void CommandSpawnNPC (CommandArgs args)
+				{
+					//Error if too many or too few params specified
+					if (args.Parameters.Count == 0 || args.Parameters.Count > 4)
+					{
+						args.Player.SendInfoMessage ("Usage: /csm <id> [<amount>] [<x> <y>]");
+						return;
+					}
+		
+					//Get custom npc by id
+					var cdef = NPCManager.Data.GetNPCbyID (args.Parameters [0]);
+					if (cdef == null)
+					{
+						args.Player.SendErrorMessage ("Error: The custom npc with id \"{0}\" does not exist!", args.Parameters [0]);
+						return;
+					}
+
+					//Default to 1 if amount is not defined
+					int amount = 1;
+		
+					//Check if amount is defined
+					if (args.Parameters.Count == 2 || args.Parameters.Count == 4)
+					{
+						int.TryParse (args.Parameters [1], out amount);
+		
+						//Check for too many mobs
+						if (amount > 200)
+						{
+							args.Player.SendErrorMessage ("Error: Amount needs to be lower than 200!");
+							return;
+						}
+					}
+		
+					//Check for X and Y
+					int x;
+					int y;
+		
+					//Not specified, use player's coordinates. (/csm <id> [amount])
+					if (args.Parameters.Count <= 2)
+					{
+						x = (int)args.Player.X + rand.Next (-8, 9);
+						y = (int)args.Player.Y + rand.Next (-8, 9);
+					}
+		
+		            //Specified, no amount (/csm <id> <x> <y>)
+		            else if (args.Parameters.Count == 3)
+					{
+						if (!int.TryParse (args.Parameters [1], out x))
+						{
+							args.Player.SendErrorMessage ("Error: Invalid x position defined!");
+							return;
+						}
+						if (!int.TryParse (args.Parameters [2], out y))
+						{
+							args.Player.SendErrorMessage ("Error: Invalid y position defined!");
+							return;
+						}
+					}
+		
+		            //All arguments specified (/csm <id> <amount> <x> <y>)
+		            else
+					{
+						if (!int.TryParse (args.Parameters [2], out x))
+						{
+							args.Player.SendErrorMessage ("Error: Invalid x position defined!");
+							return;
+						}
+						if (!int.TryParse (args.Parameters [3], out y))
+						{
+							args.Player.SendErrorMessage ("Error: Invalid y position defined!");
+							return;
+						}
+					}
+		
+					//Keep track of spawns that fail.
+					int failed = 0;
+		
+					//Spawn mobs
+					for (int i = 0; i < amount; i++)
+					{
+						int j = NPCManager.SpawnNPCAtLocation (x, y, cdef);
+		
+						if (j == -1)
+							failed++;
+						else
+							cdef.currSpawnsVar++;
+					}
+		
+					//Inform player
+					if (failed > 0)
+						args.Player.SendWarningMessage ("Failed to spawn {0} of {1} \"{2}\"'s at ({3}, {4})", failed, amount, args.Parameters [0], x, y);
+					else
+						args.Player.SendSuccessMessage ("Spawned {0} \"{1}\"'s at ({2}, {3})", amount, args.Parameters [0], x, y);
+				}
+		
+#elif OTAPI
+		/// <summary>
+		/// Spawn custom npc using /csm &lt;id&gt; [amount] [&lt;x&gt; &lt;y&gt;]
+		/// </summary>
+		/// <param name="args"></param>
+		private void CommandSpawnNPC (ISender sender, ArgumentList args)
+		{
+			//Error if too many or too few params specified
+			if (args.Count == 0 || args.Count > 4)
+			{
+				throw new CommandError ("Invalid usage");
+				return;
+			}
+
+			//Get custom npc by id
+			var id = args.GetString (0);
+			var cdef = NPCManager.Data.GetNPCbyID (id);
+			if (cdef == null)
+			{
+				throw new CommandError ("Error: The custom npc with id \"{0}\" does not exist!", id);
+				return;
+			}
+
+			//Default to 1 if amount is not defined
+			int amount = 1;
+
+			//Check if amount is defined
+			if (args.Count == 2 || args.Count == 4)
+			{
+				//Check for too many mobs
+				if (!args.TryGetInt (1, out amount) || amount > 200)
+				{
+					throw new CommandError ("Error: Amount needs to be lower than 200!");
+					return;
+				}
+			}
+
+			//Check for X and Y
+			int x;
+			int y;
+
+			//Not specified, use player's coordinates. (/csm <id> [amount])
+			if (args.Count <= 2 && sender is Player)
+			{
+				x = (int)(sender as Player).position.X + rand.Next (-8, 9);
+				y = (int)(sender as Player).position.Y + rand.Next (-8, 9);
+			}
+
+			//Specified, no amount (/csm <id> <x> <y>)
+			else if (args.Count == 3)
+			{
+				if (!args.TryGetInt (1, out x))
+				{
+					throw new CommandError ("Error: Invalid x position defined!");
+					return;
+				}
+				if (!args.TryGetInt (1, out y))
+				{
+					throw new CommandError ("Error: Invalid y position defined!");
+					return;
+				}
+			}
+
+			//All arguments specified (/csm <id> <amount> <x> <y>)
+			else
+			{
+				if (!args.TryGetInt (2, out x))
+				{
+					throw new CommandError ("Error: Invalid x position defined!");
+				}
+				if (!args.TryGetInt (3, out y))
+				{
+					throw new CommandError ("Error: Invalid y position defined!");
+				}
+			}
+
+			//Keep track of spawns that fail.
+			int failed = 0;
+
+			//Spawn mobs
+			for (int i = 0; i < amount; i++)
+			{
+				int j = NPCManager.SpawnNPCAtLocation (x, y, cdef);
+
+				if (j == -1)
+					failed++;
+				else
+					cdef.currSpawnsVar++;
+			}
+
+			//Inform player
+			if (failed > 0)
+				sender.SendMessage (String.Format ("Failed to spawn {0} of {1} \"{2}\"'s at ({3}, {4})", failed, amount, args.GetInt (0), x, y), 255, 200, 200, 0);
+			else
+				sender.SendMessage (String.Format ("Spawned {0} \"{1}\"'s at ({2}, {3})", amount, args.GetInt (0), x, y), R: 0, B: 0);
+		}
+		#endif
 		//
 		//		/// <summary>
 		//		/// List custom npcs using /csmlist &lt;page&gt; [onlyalive]
@@ -524,11 +634,14 @@ namespace CustomNPC
 			bool critical;
 			using (var data = new MemoryStream (readBuffer, index, length))
 			{
-				npcIndex = data.ReadInt16 ();
-				damage = data.ReadInt16 ();
-				knockback = data.ReadSingle ();
-				direction = data.ReadInt8 ();
-				critical = data.ReadBoolean ();
+				using (var br = new BinaryReader (data))
+				{
+					npcIndex = br.ReadInt16 ();
+					damage = br.ReadInt16 ();
+					knockback = br.ReadSingle ();
+					direction = (byte)(br.ReadByte () - 1);
+					critical = br.ReadBoolean ();
+				}
 			}
 			
 			CustomNPCVars npcvar = NPCManager.NPCs [npcIndex];
@@ -547,9 +660,10 @@ namespace CustomNPC
 		[Hook]
 		void OnGetData (ref HookContext ctx, ref HookArgs.ReceiveNetMessage args)
 		{
-			if (args.PacketId != (int)Packet.STRIKE_NPC) return;
+			if (args.PacketId != (int)Packet.DAMAGE_NPC) return;
 
-			ReadNpcStrike (Terraria.NetMessage.buffer [args.BufferId].readBuffer, args.Start, args.Length);
+			ReadNpcStrike (args.BufferId, Terraria.NetMessage.buffer [args.BufferId].readBuffer, args.Start, args.Length);
+			ctx.SetResult (HookResult.IGNORE);
 		}
 		#elif TShock
 		private void OnGetData (GetDataEventArgs args)
@@ -565,7 +679,7 @@ namespace CustomNPC
 			TSPlayer player = TShock.Players [args.Msg.whoAmI];
 			if (player == null || !player.ConnectionAlive) return;
 
-			ReadNpcStrike(args.Msg.readBuffer, args.Index, args.Length);
+		ReadNpcStrike(args.Msg.whoAmI, args.Msg.readBuffer, args.Index, args.Length);
 		}
 		#endif
 
@@ -574,10 +688,11 @@ namespace CustomNPC
 		#if TShock
 				private void OnNpcDamaged (TSPlayer player, int npcIndex, int damage, float knockback, byte direction, bool critical)
 		
+
 #elif OTAPI
 		private void OnNpcDamaged (Player player, int npcIndex, int damage, float knockback, byte direction, bool critical)
 		#endif
-				{
+		{
 			CustomNPCVars npcvar = NPCManager.NPCs [npcIndex];
 			if (npcvar != null)
 			{
@@ -595,7 +710,7 @@ namespace CustomNPC
 				//Damage event
 				var e = new NpcDamageEvent {
 					NpcIndex = npcIndex,
-					PlayerIndex = player.Index,
+					PlayerIndex = player.whoAmI,
 					Damage = damage,
 					Knockback = knockback,
 					Direction = direction,
@@ -606,7 +721,7 @@ namespace CustomNPC
 				eventManager.InvokeHandler (e, EventType.NpcDamage);
 		
 				//Disable to prevent flooding (Debug)
-				Console.WriteLine (player.Name + " Has Damaged " + npcvar.customNPC.customID + " in " + npcIndex);
+				Console.WriteLine (player.name + " Has Damaged " + npcvar.customNPC.customID + " in " + npcIndex);
 		
 				//This damage will kill the NPC.
 				if (npc.active && npc.life > 0 && damageDone >= npc.life)
@@ -615,7 +730,7 @@ namespace CustomNPC
 					//Kill event
 					var killedArgs = new NpcKilledEvent {
 						NpcIndex = npcIndex,
-						PlayerIndex = player.Index,
+						PlayerIndex = player.whoAmI,
 						Damage = damage,
 						Knockback = knockback,
 						Direction = direction,
@@ -625,28 +740,28 @@ namespace CustomNPC
 		
 					eventManager.InvokeHandler (killedArgs, EventType.NpcKill);
 		
-					Console.WriteLine (player.Name + " Has Killed " + npcvar.customNPC.customID + " in " + npcIndex);
+					Console.WriteLine (player.name + " Has Killed " + npcvar.customNPC.customID + " in " + npcIndex);
 		
-					if (UsingSEConomy == true)
-					{
-						var economyPlayer = Wolfje.Plugins.SEconomy.SEconomyPlugin.Instance.GetBankAccount (TSPlayer.Server.User.ID);
-		
-						if (economyPlayer.IsAccountEnabled)
-						{
-							var SEconReward = new Wolfje.Plugins.SEconomy.Money (npcvar.customNPC.SEconReward);
-		
-							if (npcvar.customNPC.SEconReward > 0)
-							{
-								IBankAccount Player = SEconomyPlugin.Instance.GetBankAccount (TSPlayer.Server.User.ID);
-								SEconomyPlugin.Instance.WorldAccount.TransferToAsync (Player, SEconReward, BankAccountTransferOptions.AnnounceToReceiver, npcvar.customNPC.customName + " Bountie", "Custom Npc Kill");
-								SEconReward = 0;
-							}
-						}
-						else if (!economyPlayer.IsAccountEnabled)
-						{
-							TShock.Log.Error ("You cannot gain any bounty because your account is disabled.");
-						}
-					}
+//					if (UsingSEConomy == true)
+//					{
+//						var economyPlayer = Wolfje.Plugins.SEconomy.SEconomyPlugin.Instance.GetBankAccount (TSPlayer.Server.User.ID);
+//		
+//						if (economyPlayer.IsAccountEnabled)
+//						{
+//							var SEconReward = new Wolfje.Plugins.SEconomy.Money (npcvar.customNPC.SEconReward);
+//		
+//							if (npcvar.customNPC.SEconReward > 0)
+//							{
+//								IBankAccount Player = SEconomyPlugin.Instance.GetBankAccount (TSPlayer.Server.User.ID);
+//								SEconomyPlugin.Instance.WorldAccount.TransferToAsync (Player, SEconReward, BankAccountTransferOptions.AnnounceToReceiver, npcvar.customNPC.customName + " Bountie", "Custom Npc Kill");
+//								SEconReward = 0;
+//							}
+//						}
+//						else if (!economyPlayer.IsAccountEnabled)
+//						{
+//							TShock.Log.Error ("You cannot gain any bounty because your account is disabled.");
+//						}
+//					}
 		
 					if (npcvar != null)
 					{
@@ -872,7 +987,7 @@ namespace CustomNPC
 								foreach (Player player in Terraria.Main.player.Where(x => x != null && !x.dead && x.active))
 								{
 									//Check if that target can be shot ie/ no obstacles, or if it if projectile goes through walls ignore this check
-									if (!projectile.projectileCheckCollision || Terraria.Collision.CanHit (player.position, player.bodyFrame.Width, player.bodyFrame.Height, obj.mainNPC.position, obj.mainNPC.frame.Width, obj.mainNPC.frame.Height))
+									if (!projectile.projectileCheckCollision || Collision.CanHit (player.position, (int)player.bodyFrame.Width, (int)player.bodyFrame.Height, obj.mainNPC.position, (int)obj.mainNPC.frame.Width, (int)obj.mainNPC.frame.Height))
 									{
 										//Make sure distance isn't further then what tshock allows
 										float currDistance = Vector2.DistanceSquared (player.position, obj.mainNPC.Center);
@@ -987,6 +1102,7 @@ namespace CustomNPC
 		#if TShock
 		private Vector2 CalculateSpeed (Vector2 start, TSPlayer target)
 		
+
 
 #elif OTAPI
 		private Vector2 CalculateSpeed (Vector2 start, Player target)

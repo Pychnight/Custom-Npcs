@@ -32,6 +32,9 @@ namespace CustomNPC
 			#endif
 		}
 
+		/// <summary>
+		/// TShock.Log.Error
+
 		public static void LogConsole(string fmt, params object[] args)
 		{
 			#if TShock
