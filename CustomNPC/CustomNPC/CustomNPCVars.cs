@@ -230,7 +230,11 @@ namespace CustomNPC
 			NpcUtils.LogConsole("DEBUG [TransformToNormal] addHealth={0} additionalHealth={1}", addhealth, additionalhealth);
             //DEBUG
 
+			#if TShock
             NPC obj = TShock.Utils.GetNPCById(id);
+			#elif OTAPI
+			NPC obj = Terraria.Main.npc[id];
+			#endif
 
             //mainNPC.type = obj.netID;
             NormalTransform(obj);
@@ -344,6 +348,7 @@ namespace CustomNPC
         /// <param name="y"></param>
         public void TeleportNPC(CustomNPCVars npcvar, string region, bool randompos = true, int x = 0, int y = 0)
         {
+			#if TShock
             Region obj = null;
             try
             {
@@ -364,6 +369,7 @@ namespace CustomNPC
                 x += obj.Area.Left;
                 y += obj.Area.Top;
             }
+			#endif
 
             TeleportNPC(npcvar, x, y);
         }
