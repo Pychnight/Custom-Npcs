@@ -5,8 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Terraria;
+
+#if TShock
 using TShockAPI;
 using TShockAPI.DB;
+#endif
 
 namespace CustomNPC
 {
@@ -83,7 +86,7 @@ namespace CustomNPC
 
             if (!string.IsNullOrEmpty(obj.customSpawnMessage))
             {
-                TSPlayer.All.SendMessage(obj.customSpawnMessage, obj.customSpawnMessageColor);
+				NpcUtils.MessageAllPlayers(obj.customSpawnMessage, obj.customSpawnMessageColor);
             }
         }
 

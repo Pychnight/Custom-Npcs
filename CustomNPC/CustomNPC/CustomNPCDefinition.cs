@@ -4,8 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Terraria;
+#if TShock
 using TShockAPI;
 using TShockAPI.DB;
+#elif OTAPI
+using Microsoft.Xna.Framework;
+#endif
 
 namespace CustomNPC
 {
@@ -20,7 +24,11 @@ namespace CustomNPC
 
         protected CustomNPCDefinition(int id)
         {
+			#if TShock
             baseNPC = TShock.Utils.GetNPCById(id);
+			#elif OTAPI
+			baseNPC = Terraria.Main.npc[id];
+			#endif
 
             // check to make sure this npc is valid
             if (baseNPC == null || baseNPC.netID == 0)

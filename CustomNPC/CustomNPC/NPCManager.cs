@@ -5,8 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 using Terraria;
+#if TShock
 using TShockAPI;
 using TShockAPI.DB;
+#elif OTAPI
+using Microsoft.Xna.Framework;
+#endif
 
 namespace CustomNPC
 {
@@ -285,7 +289,11 @@ namespace CustomNPC
             return npcid;
         }
 
-        public static int SpawnMobAroundPlayer(TSPlayer player, CustomNPCDefinition definition)
+		#if TShock
+		public static int SpawnMobAroundPlayer(TSPlayer player, CustomNPCDefinition definition)
+		#elif OTAPI
+        public static int SpawnMobAroundPlayer(Terraria.Player player, CustomNPCDefinition definition)
+		#endif
         {
             const int SpawnSpaceX = 3;
             const int SpawnSpaceY = 3;
@@ -298,7 +306,11 @@ namespace CustomNPC
             int safeRangeX = (int)(screenTilesX * 0.52);
             int safeRangeY = (int)(screenTilesY * 0.52);
 
-            Vector2 position = player.TPlayer.position;
+			#if TShock
+			Vector2 position = player.TPlayer.position;
+			#elif OTAPI
+			Vector2 position = player.position;
+			#endif
             int playerTileX = (int)(position.X / 16f);
             int playerTileY = (int)(position.Y / 16f);
 
@@ -416,14 +428,14 @@ namespace CustomNPC
         private static int SpawnCustomNPC(int x, int y, CustomNPCDefinition definition)
         {
             //DEBUG
-            TShock.Log.ConsoleInfo("DEBUG Spawning Custom NPC at {0}, {1} with customID {2}", x, y, definition.customID);
+			NpcUtils.LogConsole("DEBUG Spawning Custom NPC at {0}, {1} with customID {2}", x, y, definition.customID);
             //DEBUG
 
             int npcid = NPC.NewNPC(x, y, definition.customBase.type);
             if (npcid == 200)
             {
                 //DEBUG
-                TShock.Log.ConsoleInfo("DEBUG Spawning FAILED (mobcap) at {0}, {1} for customID {2}", x, y, definition.customID);
+				NpcUtils.LogConsole("DEBUG Spawning FAILED (mobcap) at {0}, {1} for customID {2}", x, y, definition.customID);
                 //DEBUG
                 return -1;
             }
@@ -435,7 +447,11 @@ namespace CustomNPC
                 dt = Enumerable.Repeat(DateTime.Now, definition.customProjectiles.Count).ToArray();
             }
             NPCs[npcid] = new CustomNPCVars(definition, dt, Main.npc[npcid]);
+			#if TShock
             TSPlayer.All.SendData(PacketTypes.NpcUpdate, "", npcid);
+			#elif OTAPI
+			NetMessage.SendData(Packet.NPC_INFO, -1, -1, "", npcid);
+			#endif
             return npcid;
         }
 
@@ -471,6 +487,7 @@ namespace CustomNPC
             }
         }
 
+		#if TShock
         public static List<TSPlayer> PlayersNearBy(Vector2 position, int distance)
         {
             int squaredist = (distance * 16) * (distance * 16);
@@ -488,6 +505,25 @@ namespace CustomNPC
 
             return playerlist;
         }
+		#elif OTAPI
+		public static List<Player> PlayersNearBy(Vector2 position, int distance)
+		{
+			int squaredist = (distance * 16) * (distance * 16);
+
+			List<Player> playerlist = new List<Player>();
+			foreach (Player player in Terraria.Main.player)
+			{
+				if (player == null || player.Dead || !player.active) continue;
+
+				if (Vector2.DistanceSquared(player.position, position) <= squaredist)
+				{
+					playerlist.Add(player);
+				}
+			}
+
+			return playerlist;
+		}
+		#endif
 
         /// <summary>
         /// Checks if the NPC's current health is above the passed amount

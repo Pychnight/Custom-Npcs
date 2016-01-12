@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TShockAPI.DB;
-using TShockAPI;
 using Terraria;
+
+#if OTAPI
+using Microsoft.Xna.Framework;
+#endif
 
 namespace CustomNPC
 {
@@ -62,7 +64,7 @@ namespace CustomNPC
         private void CustomTransform()
         {
             //DEBUG
-            TShock.Log.ConsoleInfo("DEBUG [CustomTransform] entry. NPC Pos={0}, {1} OldNet={2} OldType={3}", mainNPC.position.X, mainNPC.position.Y, mainNPC.netID, mainNPC.type);
+			NpcUtils.LogConsole("DEBUG [CustomTransform] entry. NPC Pos={0}, {1} OldNet={2} OldType={3}", mainNPC.position.X, mainNPC.position.Y, mainNPC.netID, mainNPC.type);
             //DEBUG
 
             int oldLife = mainNPC.life;
@@ -79,7 +81,7 @@ namespace CustomNPC
 
             mainNPC.netDefaults(customNPC.customBase.netID);
             //DEBUG
-            TShock.Log.ConsoleInfo("DEBUG [CustomTransform] Post netDefaults. NPC Pos={0}, {1} NewNet={2} NewType={3}", mainNPC.position.X, mainNPC.position.Y, mainNPC.netID, mainNPC.type);
+			NpcUtils.LogConsole("DEBUG [CustomTransform] Post netDefaults. NPC Pos={0}, {1} NewNet={2} NewType={3}", mainNPC.position.X, mainNPC.position.Y, mainNPC.netID, mainNPC.type);
             //DEBUG
 
             mainNPC.spriteDirection = spriteDir;
@@ -110,14 +112,14 @@ namespace CustomNPC
             mainNPC.netAlways = true;
 
             //DEBUG
-            TShock.Log.ConsoleInfo("DEBUG [CustomTransform] exit. NPC Pos={0}, {1} NewNet={2} NewType={3}", mainNPC.position.X, mainNPC.position.Y, mainNPC.netID, mainNPC.type);
+			NpcUtils.LogConsole("DEBUG [CustomTransform] exit. NPC Pos={0}, {1} NewNet={2} NewType={3}", mainNPC.position.X, mainNPC.position.Y, mainNPC.netID, mainNPC.type);
             //DEBUG
         }
 
         private void NormalTransform(NPC baseType)
         {
             //DEBUG
-            TShock.Log.ConsoleInfo("DEBUG [NormalTransform] entry. NPC Pos={0}, {1} OldNet={2} OldType={3}", mainNPC.position.X, mainNPC.position.Y, mainNPC.netID, mainNPC.type);
+			NpcUtils.LogConsole("DEBUG [NormalTransform] entry. NPC Pos={0}, {1} OldNet={2} OldType={3}", mainNPC.position.X, mainNPC.position.Y, mainNPC.netID, mainNPC.type);
             //DEBUG
 
             int oldLife = mainNPC.life;
@@ -131,7 +133,7 @@ namespace CustomNPC
             mainNPC.life = oldLife;
 
             //DEBUG
-            TShock.Log.ConsoleInfo("DEBUG [NormalTransform] exit. NPC Pos={0}, {1} NewNet={2} NewType={3}", mainNPC.position.X, mainNPC.position.Y, mainNPC.netID, mainNPC.type);
+			NpcUtils.LogConsole("DEBUG [NormalTransform] exit. NPC Pos={0}, {1} NewNet={2} NewType={3}", mainNPC.position.X, mainNPC.position.Y, mainNPC.netID, mainNPC.type);
             //DEBUG
         }
 
@@ -140,7 +142,7 @@ namespace CustomNPC
             if (Main.netMode == 2)
             {
                 //DEBUG
-                TShock.Log.ConsoleInfo("DEBUG [PostTransform] NetMode=2, updating");
+				NpcUtils.LogConsole("DEBUG [PostTransform] NetMode=2, updating");
                 //DEBUG
                 mainNPC.netUpdate = true;
                 NetMessage.SendData(23, -1, -1, "", mainNPC.whoAmI, 0f, 0f, 0f, 0, 0, 0);
@@ -149,7 +151,7 @@ namespace CustomNPC
             else
             {
                 //DEBUG
-                TShock.Log.ConsoleInfo("DEBUG [PostTransform] Wrong Netmode, no update. NetMode={0}", Main.netMode);
+				NpcUtils.LogConsole("DEBUG [PostTransform] Wrong Netmode, no update. NetMode={0}", Main.netMode);
                 //DEBUG
             }
         }
@@ -163,7 +165,7 @@ namespace CustomNPC
         public void Transform(CustomNPCDefinition npcdef, bool addhealth = false, int additionalhealth = 0)
         {
             //DEBUG
-            TShock.Log.ConsoleInfo("DEBUG [TransformToCustom] addHealth={0} additionalHealth={1}", addhealth, additionalhealth);
+			NpcUtils.LogConsole("DEBUG [TransformToCustom] addHealth={0} additionalHealth={1}", addhealth, additionalhealth);
             //DEBUG
 
             customNPC = npcdef;
@@ -225,7 +227,7 @@ namespace CustomNPC
         public void Transform(int id, bool addhealth = false, int additionalhealth = 0)
         {
             //DEBUG
-            TShock.Log.ConsoleInfo("DEBUG [TransformToNormal] addHealth={0} additionalHealth={1}", addhealth, additionalhealth);
+			NpcUtils.LogConsole("DEBUG [TransformToNormal] addHealth={0} additionalHealth={1}", addhealth, additionalhealth);
             //DEBUG
 
             NPC obj = TShock.Utils.GetNPCById(id);
@@ -267,7 +269,7 @@ namespace CustomNPC
         public void Multiply(CustomNPCDefinition type, int amount, bool sethealth = false, int health = 0)
         {
             //DEBUG
-            TShock.Log.ConsoleInfo("DEBUG [Multiply] entry. amount={0}, sethealth={1}, health={2}", amount, sethealth, health);
+			NpcUtils.LogConsole("DEBUG [Multiply] entry. amount={0}, sethealth={1}, health={2}", amount, sethealth, health);
             //DEBUG
 
             // MainNPC is gone.
@@ -284,7 +286,7 @@ namespace CustomNPC
                 if (npc == -1)
                 {
                     //DEBUG
-                    TShock.Log.ConsoleInfo("DEBUG [Multiply] spawn failed. location={0}, {1}", x, y);
+					NpcUtils.LogConsole("DEBUG [Multiply] spawn failed. location={0}, {1}", x, y);
                     //DEBUG
                     continue;
                 }
@@ -349,7 +351,7 @@ namespace CustomNPC
             }
             catch
             {
-                TShock.Log.ConsoleError("Error: a defined region does not exist on this map \"{0}\"", region);
+				NpcUtils.LogError("Error: a defined region does not exist on this map \"{0}\"", region);
                 return;
             }
 
@@ -407,6 +409,7 @@ namespace CustomNPC
             Vector2 temp = ReturnPos(npcvar);
             int squaredist = distance * distance;
 
+			#if TShock
             foreach (TSPlayer obj in TShock.Players)
             {
                 if (obj == null || !obj.ConnectionAlive) continue;
@@ -416,6 +419,17 @@ namespace CustomNPC
                     obj.SendMessage(message, color);
                 }
             }
+			#elif OTAPI
+			foreach (var obj in Terraria.Main.player)
+			{
+				if (obj == null || !obj.active) continue;
+
+				if (Vector2.DistanceSquared(temp, obj.position) <= squaredist)
+				{
+					obj.SendMessage(message, color);
+				}
+			}
+			#endif
         }
 
         public void SetVariable<T>(string name, T value)

@@ -6,8 +6,13 @@ using System.IO;
 using System.Reflection;
 using System.Security.Permissions;
 using CustomNPC.EventSystem;
+
+#if TShock
 using TerrariaApi.Server;
 using TShockAPI;
+#elif OTAPI
+using OTA;
+#endif
 
 namespace CustomNPC.Plugins
 {
@@ -31,7 +36,11 @@ namespace CustomNPC.Plugins
 
         public static string PluginPath
         {
+			#if TShock
             get { return Path.Combine(ServerApi.ServerPluginsDirectoryPath, "CustomNPCs"); }
+			#elif OTAPI
+			get { return Path.Combine(Globals.PluginPath, "CustomNPCs"); }
+			#endif
         }
 
         public IEventRegister EventRegister
