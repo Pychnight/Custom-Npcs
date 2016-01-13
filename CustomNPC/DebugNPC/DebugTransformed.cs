@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 using CustomNPC;
 using Terraria;
 
+#if OTAPI
+using Microsoft.Xna.Framework;
+#endif
+
 namespace DebugNPC
 {
     public sealed class DebugTransformed : CustomNPCDefinition

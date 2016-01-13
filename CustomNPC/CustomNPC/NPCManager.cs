@@ -101,12 +101,9 @@ namespace CustomNPC
                         else
                         {
                             //All checks completed --> spawn mob
-                            int spawnX;
-                            int spawnY;
-							OTA.Tools.
-							TShock.Utils.GetRandomClearTileWithInRange((int)(player.position.X / 16f), (int)(player.position.Y / 16f), 50, 50, out spawnX, out spawnY);
+							var spawn = GetRandomClearTile((int)(player.position.X / 16f), (int)(player.position.Y / 16f));
 
-                            int npcid = SpawnNPCAtLocation((spawnX * 16) + 8, spawnY * 16, customnpc);
+							int npcid = SpawnNPCAtLocation((int)(spawn.X * 16f) + 8, (int)(spawn.Y * 16f), customnpc);
                             if (npcid == -1) continue;
 
                             Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
@@ -115,6 +112,7 @@ namespace CustomNPC
                         }
                     }
                 }
+
 
 //                //Then check regions as well
 //                Rectangle playerRectangle = new Rectangle(player.TileX, player.TileY, player.TPlayer.width, player.TPlayer.height);
@@ -163,6 +161,62 @@ namespace CustomNPC
 //                }
             }
         }
+
+
+		public static bool IsTileValid(int x, int y)
+		{
+			return (x >= 0 && x <= Main.maxTilesX && y >= 0 && y <= Main.maxTilesY);
+		}
+
+		public static bool IsTileClear(int x, int y)
+		{
+			#if MemTile
+			return Main.tile[x, y] == OTA.Memory.MemTile.Empty || !Main.tile[x, y].active() || Main.tile[x, y].inActive();
+			#else
+			return Main.tile[x, y] == null || !Main.tile[x, y].active() || Main.tile[x, y].inActive();
+			#endif
+		}
+
+		public static Vector2 GetRandomClearTile(float x, float y, int attempts = 1, int rangeY = 50, int rangeX = 50)
+		{
+			return GetRandomClearTile((int)x, (int)y, attempts, rangeY, rangeX);
+		}
+
+		public static Vector2 GetRandomClearTile(int x, int y, int attempts = 1, int rangeX = 50, int rangeY = 50)
+		{
+			Vector2 tileLocation = new Vector2(0, 0);
+			try
+			{
+				if (Main.rand == null)
+					Main.rand = new Random();
+
+				//                if (!forceRange)
+				//                {
+				//                    rangeX = (Main.tile.GetLength(0)) - x;
+				//                    rangeY = (Main.tile.GetLength(1)) - y;
+				//                }
+
+				for (int i = 0; i < attempts; i++)
+				{
+					tileLocation.X = x + ((Main.rand.Next(rangeX * -1, rangeX)) / 2);
+					tileLocation.Y = y + ((Main.rand.Next(rangeY * -1, rangeY)) / 2);
+					if ((IsTileValid((int)tileLocation.X, (int)tileLocation.Y) &&
+						IsTileClear((int)tileLocation.X, (int)tileLocation.Y)))
+					{
+						break;
+					}
+				}
+			}
+			catch (Exception)
+			{
+			}
+
+			if (tileLocation.X == 0 && tileLocation.Y == 0)
+				return new Vector2(x, y);
+
+			return tileLocation;
+		}
+
 
         internal static bool CheckSpawnConditions(SpawnConditions conditions)
         {

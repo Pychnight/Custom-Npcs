@@ -5,6 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using CustomNPC;
 
+#if OTAPI
+using Microsoft.Xna.Framework;
+#endif
+
 namespace TestNPC
 {
     public sealed class TestNPCDefinition : CustomNPCDefinition

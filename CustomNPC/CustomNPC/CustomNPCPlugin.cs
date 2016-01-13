@@ -987,7 +987,7 @@ namespace CustomNPC
 								foreach (Player player in Terraria.Main.player.Where(x => x != null && !x.dead && x.active))
 								{
 									//Check if that target can be shot ie/ no obstacles, or if it if projectile goes through walls ignore this check
-									if (!projectile.projectileCheckCollision || Collision.CanHit (player.position, (int)player.bodyFrame.Width, (int)player.bodyFrame.Height, obj.mainNPC.position, (int)obj.mainNPC.frame.Width, (int)obj.mainNPC.frame.Height))
+									if (!projectile.projectileCheckCollision || CanHit (player.position, (int)player.bodyFrame.Width, (int)player.bodyFrame.Height, obj.mainNPC.position, (int)obj.mainNPC.frame.Width, (int)obj.mainNPC.frame.Height))
 									{
 										//Make sure distance isn't further then what tshock allows
 										float currDistance = Vector2.DistanceSquared (player.position, obj.mainNPC.Center);
@@ -1035,6 +1035,115 @@ namespace CustomNPC
 				}
 			}
 		}
+
+
+		public static bool CanHit (Vector2 Position1, int Width1, int Height1, Vector2 Position2, int Width2, int Height2)
+		{
+			int num = (int)((Position1.X + (float)(Width1 / 2)) / 16);
+			int num2 = (int)((Position1.Y + (float)(Height1 / 2)) / 16);
+			int num3 = (int)((Position2.X + (float)(Width2 / 2)) / 16);
+			int num4 = (int)((Position2.Y + (float)(Height2 / 2)) / 16);
+			if (num <= 1)
+			{
+				num = 1;
+			}
+			if (num >= Main.maxTilesX)
+			{
+				num = Main.maxTilesX - 1;
+			}
+			if (num3 <= 1)
+			{
+				num3 = 1;
+			}
+			if (num3 >= Main.maxTilesX)
+			{
+				num3 = Main.maxTilesX - 1;
+			}
+			if (num2 <= 1)
+			{
+				num2 = 1;
+			}
+			if (num2 >= Main.maxTilesY)
+			{
+				num2 = Main.maxTilesY - 1;
+			}
+			if (num4 <= 1)
+			{
+				num4 = 1;
+			}
+			if (!(num4 < Main.maxTilesY))
+			{
+				num4 = Main.maxTilesY - 1;
+			}
+			bool flag;
+			try
+			{
+				while (true)
+				{
+					int num5 = Math.Abs (num - num3);
+					int num6 = Math.Abs (num2 - num4);
+					if (num == num3 && num2 == num4)
+					{
+						flag = true;
+						return flag;
+					}
+					if (num5 <= num6)
+					{
+						num2 = ((num2 < num4) ? (num2 + 1) : (num2 - 1));
+						if (Main.tile [num - 1, num2] == null)
+						{
+							break;
+						}
+						if (Main.tile [num + 1, num2] == null)
+						{
+							flag = false;
+							return flag;
+						}
+						if (!Main.tile [num - 1, num2].inActive () && Main.tile [num - 1, num2].active () && Main.tileSolid [(int)Main.tile [num - 1, num2].type] && !Main.tileSolidTop [(int)Main.tile [num - 1, num2].type] && Main.tile [num - 1, num2].slope () == 0 && !Main.tile [num - 1, num2].halfBrick () && !Main.tile [num + 1, num2].inActive () && Main.tile [num + 1, num2].active () && Main.tileSolid [(int)Main.tile [num + 1, num2].type] && !Main.tileSolidTop [(int)Main.tile [num + 1, num2].type] && Main.tile [num + 1, num2].slope () == 0 && !Main.tile [num + 1, num2].halfBrick ())
+						{
+							flag = false;
+							return flag;
+						}
+					}
+					else
+					{
+						num = ((num < num3) ? (num + 1) : (num - 1));
+						if (Main.tile [num, num2 - 1] == null)
+						{
+							flag = false;
+							return flag;
+						}
+						if (Main.tile [num, num2 + 1] == null)
+						{
+							flag = false;
+							return flag;
+						}
+						if (!Main.tile [num, num2 - 1].inActive () && Main.tile [num, num2 - 1].active () && Main.tileSolid [(int)Main.tile [num, num2 - 1].type] && !Main.tileSolidTop [(int)Main.tile [num, num2 - 1].type] && Main.tile [num, num2 - 1].slope () == 0 && !Main.tile [num, num2 - 1].halfBrick () && !Main.tile [num, num2 + 1].inActive () && Main.tile [num, num2 + 1].active () && Main.tileSolid [(int)Main.tile [num, num2 + 1].type] && !Main.tileSolidTop [(int)Main.tile [num, num2 + 1].type] && Main.tile [num, num2 + 1].slope () == 0 && !Main.tile [num, num2 + 1].halfBrick ())
+						{
+							flag = false;
+							return flag;
+						}
+					}
+					if (Main.tile [num, num2] == null)
+					{
+						flag = false;
+						return flag;
+					}
+					if (!Main.tile [num, num2].inActive () && Main.tile [num, num2].active () && Main.tileSolid [(int)Main.tile [num, num2].type] && !Main.tileSolidTop [(int)Main.tile [num, num2].type])
+					{
+						flag = false;
+					}
+				}
+				flag = false;
+				return flag;
+			}
+			catch
+			{
+				flag = false;
+			}
+			return flag;
+		}
+
 		//
 		/// <summary>
 		/// Fires a projectile given the target starting position and projectile class
