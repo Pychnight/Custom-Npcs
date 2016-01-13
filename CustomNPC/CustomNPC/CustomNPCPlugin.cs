@@ -29,6 +29,9 @@ using OTA.Logging;
 using Microsoft.Xna.Framework;
 #endif
 
+
+[assembly: PluginDependency ("OTA.Commands")]
+
 namespace CustomNPC
 {
 	#if TShock
