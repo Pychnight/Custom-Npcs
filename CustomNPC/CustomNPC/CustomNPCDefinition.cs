@@ -23,12 +23,8 @@ namespace CustomNPC
         private IList<CustomNPCSpawning> spawns;
 
         protected CustomNPCDefinition(int id)
-        {
-			#if TShock
-            baseNPC = TShock.Utils.GetNPCById(id);
-			#elif OTAPI
-			baseNPC = Terraria.Main.npc[id];
-			#endif
+		{
+			baseNPC = NpcUtils.GetNPCById(id);
 
             // check to make sure this npc is valid
             if (baseNPC == null || baseNPC.netID == 0)

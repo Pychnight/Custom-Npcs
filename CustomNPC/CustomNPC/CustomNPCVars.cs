@@ -230,11 +230,7 @@ namespace CustomNPC
 			NpcUtils.LogConsole("DEBUG [TransformToNormal] addHealth={0} additionalHealth={1}", addhealth, additionalhealth);
             //DEBUG
 
-			#if TShock
-            NPC obj = TShock.Utils.GetNPCById(id);
-			#elif OTAPI
-			NPC obj = Terraria.Main.npc[id];
-			#endif
+			var obj = NpcUtils.GetNPCById(id);
 
             //mainNPC.type = obj.netID;
             NormalTransform(obj);

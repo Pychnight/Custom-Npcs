@@ -61,6 +61,13 @@ namespace CustomNPC
 			Tools.NotifyAllPlayers(String.Format(message, args), Color.Orange/*TODO*/);
 			#endif
 		}
+
+		public static Terraria.NPC GetNPCById(int id)
+		{
+			Terraria.NPC npc = new Terraria.NPC();
+			npc.netDefaults(id);
+			return npc;
+		}
 	}
 }
 
