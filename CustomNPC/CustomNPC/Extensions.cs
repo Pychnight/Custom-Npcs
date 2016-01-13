@@ -24,102 +24,58 @@ namespace CustomNPC
             BiomeTypes biome = BiomeTypes.None;
 
 			#if TShock
-			if (player.TPlayer.ZoneCorrupt)
-			biome |= BiomeTypes.Corruption;
-
-			if (player.TPlayer.ZoneCrimson)
-			biome |= BiomeTypes.Crimsion;
-
-			if (player.TPlayer.ZoneDesert)
-			biome |= BiomeTypes.Desert;
-
-			if (player.TPlayer.ZoneDungeon)
-			biome |= BiomeTypes.Dungeon;
-
-			if (player.TPlayer.ZoneGlowshroom)
-			biome |= BiomeTypes.Glowshroom;
-
-			if (player.TPlayer.ZoneHoly)
-			biome |= BiomeTypes.Holy;
-
-			if (player.TPlayer.ZoneJungle)
-			biome |= BiomeTypes.Jungle;
-
-			if (player.TPlayer.ZoneMeteor)
-			biome |= BiomeTypes.Meteor;
-
-			if (player.TPlayer.ZonePeaceCandle)
-			biome |= BiomeTypes.PeaceCandle;
-
-			if (player.TPlayer.ZoneSnow)
-			biome |= BiomeTypes.Snow;
-
-			if (player.TPlayer.ZoneTowerNebula)
-			biome |= BiomeTypes.TowerNebula;
-
-			if (player.TPlayer.ZoneTowerSolar)
-			biome |= BiomeTypes.TowerSolar;
-
-			if (player.TPlayer.ZoneTowerStardust)
-			biome |= BiomeTypes.TowerStardust;
-
-			if (player.TPlayer.ZoneTowerVortex)
-			biome |= BiomeTypes.TowerVortex;
-
-			if (player.TPlayer.ZoneUndergroundDesert)
-			biome |= BiomeTypes.UndergroundDesert;
-
-			if (player.TPlayer.ZoneWaterCandle)
-			biome |= BiomeTypes.WaterCandle;
+			var _player = player.TPlayer;
 			#elif OTAPI
-			if (player.ZoneCorrupt)
+			var _player = player;
+			#endif
+
+			if (_player.ZoneCorrupt)
 				biome |= BiomeTypes.Corruption;
 
-			if (player.ZoneCrimson)
+			if (_player.ZoneCrimson)
 				biome |= BiomeTypes.Crimsion;
 
-			if (player.ZoneDesert)
+			if (_player.ZoneDesert)
 				biome |= BiomeTypes.Desert;
 
-			if (player.ZoneDungeon)
+			if (_player.ZoneDungeon)
 				biome |= BiomeTypes.Dungeon;
 
-			if (player.ZoneGlowshroom)
+			if (_player.ZoneGlowshroom)
 				biome |= BiomeTypes.Glowshroom;
 
-			if (player.ZoneHoly)
+			if (_player.ZoneHoly)
 				biome |= BiomeTypes.Holy;
 
-			if (player.ZoneJungle)
+			if (_player.ZoneJungle)
 				biome |= BiomeTypes.Jungle;
 
-			if (player.ZoneMeteor)
+			if (_player.ZoneMeteor)
 				biome |= BiomeTypes.Meteor;
 
-			if (player.ZonePeaceCandle)
+			if (_player.ZonePeaceCandle)
 				biome |= BiomeTypes.PeaceCandle;
 
-			if (player.ZoneSnow)
+			if (_player.ZoneSnow)
 				biome |= BiomeTypes.Snow;
 
-			if (player.ZoneTowerNebula)
+			if (_player.ZoneTowerNebula)
 				biome |= BiomeTypes.TowerNebula;
 
-			if (player.ZoneTowerSolar)
+			if (_player.ZoneTowerSolar)
 				biome |= BiomeTypes.TowerSolar;
 
-			if (player.ZoneTowerStardust)
+			if (_player.ZoneTowerStardust)
 				biome |= BiomeTypes.TowerStardust;
 
-			if (player.ZoneTowerVortex)
+			if (_player.ZoneTowerVortex)
 				biome |= BiomeTypes.TowerVortex;
 
-			if (player.ZoneUndergroundDesert)
+			if (_player.ZoneUndergroundDesert)
 				biome |= BiomeTypes.UndergroundDesert;
 
-			if (player.ZoneWaterCandle)
+			if (_player.ZoneWaterCandle)
 				biome |= BiomeTypes.WaterCandle;
-			#endif
 
             if (biome == BiomeTypes.None)
             {
