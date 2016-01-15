@@ -646,49 +646,9 @@ namespace CustomNPC
 #elif OTAPI
 			var player = Main.player [playerId];
 #endif
-			if (npcIndex > 0 && npcIndex < 200 && !OnNpcDamaged (player, npcIndex, damage, knockback, direction, critical))
+			if (npcIndex > 0 && npcIndex < 200)
 			{
-				if (Main.netMode == 2)
-				{
-					if (damage < 0)
-					{
-						damage = 0;
-					}
-					Main.npc [npcIndex].PlayerInteraction (playerId);
-				}
-				if (damage >= 0)
-				{
-					Main.npc [npcIndex].StrikeNPC (damage, knockback, direction, critical, false, true);
-				}
-				else
-				{
-					Main.npc [npcIndex].life = 0;
-					Main.npc [npcIndex].HitEffect (0, 10);
-					Main.npc [npcIndex].active = false;
-				}
-				if (Main.netMode != 2)
-				{
-					return;
-				}
-				NetMessage.SendData (28, -1, playerId, "", npcIndex, (float)damage, knockback, (float)direction, critical ? 1 : 0, 0, 0);
-				if (Main.npc [npcIndex].life <= 0)
-				{
-					NetMessage.SendData (23, -1, -1, "", npcIndex, 0, 0, 0, 0, 0, 0);
-				}
-				else
-				{
-					Main.npc [npcIndex].netUpdate = true;
-				}
-				if (Main.npc [npcIndex].realLife < 0)
-				{
-					return;
-				}
-				if (Main.npc [Main.npc [npcIndex].realLife].life <= 0)
-				{
-					NetMessage.SendData (23, -1, -1, "", Main.npc [npcIndex].realLife, 0, 0, 0, 0, 0, 0);
-					return;
-				}
-				Main.npc [Main.npc [npcIndex].realLife].netUpdate = true;
+				OnNpcDamaged (player, npcIndex, damage, knockback, direction, critical);
 			}
 		}
 
@@ -699,7 +659,7 @@ namespace CustomNPC
 			if (args.PacketId != (int)Packet.DAMAGE_NPC) return;
 
 			ReadNpcStrike (args.BufferId, Terraria.NetMessage.buffer [args.BufferId].readBuffer, args.Start, args.Length);
-			ctx.SetResult (HookResult.IGNORE);
+//			ctx.SetResult (HookResult.IGNORE);
 		}
 		#elif TShock
 		private void OnGetData (GetDataEventArgs args)
@@ -723,11 +683,11 @@ namespace CustomNPC
 
 		#if TShock
 				private void OnNpcDamaged (TSPlayer player, int npcIndex, int damage, float knockback, byte direction, bool critical)
-		
+
 
 
 #elif OTAPI
-		private bool OnNpcDamaged (Player player, int npcIndex, int damage, float knockback, byte direction, bool critical)
+		private void OnNpcDamaged (Player player, int npcIndex, int damage, float knockback, byte direction, bool critical)
 #endif
         {
 			CustomNPCVars npcvar = NPCManager.NPCs [npcIndex];
@@ -816,10 +776,7 @@ namespace CustomNPC
 
 					NPCManager.DeallocateNpc(npcIndex);
 				}
-				return true;
 			}
-
-			return false; //Not consumed
 		}
 
 		#endregion
