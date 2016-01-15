@@ -11,8 +11,10 @@ using Microsoft.Xna.Framework;
 
 namespace CustomNPC
 {
-	public class CustomNPCVars
+	public class CustomNPCVars : IDisposable
 	{
+		private bool _disposed;
+
 		public CustomNPCDefinition customNPC { get; set; }
 
 		public DateTime[] lastAttemptedProjectile { get; set; }
@@ -21,7 +23,16 @@ namespace CustomNPC
 
 		public bool overrideBaseNPCLoot { get { return customNPC.overrideBaseNPCLoot; } }
 		// used for debuging default loot droping regardless if this is true or false.
+
+		#if IS_DEAD
 		public bool isDead { get; set; }
+		#else
+		public bool isDead
+		{
+			get { return !mainNPC.active; }
+			set { mainNPC.active = !value; }
+		}
+		#endif
 
 		public bool isUncounted { get; set; }
 
@@ -41,7 +52,9 @@ namespace CustomNPC
 		public CustomNPCVars (CustomNPCDefinition customnpc, DateTime[] lastattemptedprojectile, NPC mainnpc, bool isclone = false)
 		{
 			lastAttemptedProjectile = lastattemptedprojectile;
+			#if IS_DEAD
 			isDead = false;
+			#endif
 			isUncounted = false;
 			isClone = isclone;
 			customNPC = customnpc;
@@ -54,7 +67,9 @@ namespace CustomNPC
 
 		public void markDead ()
 		{
+			#if IS_DEAD
 			isDead = true;
+			#endif
 			if (isUncounted) return;
 
 			isUncounted = true;
@@ -467,5 +482,25 @@ namespace CustomNPC
 			}
 		}
 
+		public void Dispose ()
+		{ 
+			Dispose (true);
+			GC.SuppressFinalize (this);           
+		}
+
+		protected virtual void Dispose (bool disposing)
+		{
+			if (_disposed)
+				return; 
+
+			if (disposing)
+			{
+				if (null != customNPC) customNPC = null;
+				if (null != lastAttemptedProjectile) lastAttemptedProjectile = null;
+				if (null != mainNPC) mainNPC = null;
+			}
+
+			_disposed = true;
+		}
 	}
 }

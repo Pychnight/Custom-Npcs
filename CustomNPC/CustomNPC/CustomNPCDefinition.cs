@@ -9,6 +9,7 @@ using Terraria;
 using TShockAPI;
 using TShockAPI.DB;
 
+
 #elif OTAPI
 using Microsoft.Xna.Framework;
 #endif
@@ -161,7 +162,8 @@ namespace CustomNPC
 			{
 				foreach (var loot in loots)
 				{
-					Terraria.Item.NewItem ((int)this.baseNPC.position.X, (int)this.baseNPC.position.Y, this.baseNPC.width, this.baseNPC.height, loot.itemID, loot.itemStack);
+					foreach (var pfx in loot.itemPrefix)
+						Terraria.Item.NewItem ((int)this.baseNPC.position.X, (int)this.baseNPC.position.Y, this.baseNPC.width, this.baseNPC.height, loot.itemID, loot.itemStack, false, pfx);
 				}
 			}
 		}

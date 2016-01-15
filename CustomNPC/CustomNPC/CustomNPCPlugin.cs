@@ -813,6 +813,8 @@ namespace CustomNPC
 					}
 
 					Console.WriteLine (npcvar.customNPC.customID + " is dead " + npcIndex);
+
+					NPCManager.DeallocateNpc(npcIndex);
 				}
 				return true;
 			}
