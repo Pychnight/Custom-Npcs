@@ -31,6 +31,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="OTA">
+      <HintPath>..\Libraries\OTA.dll</HintPath>
+    </Reference>
+    <Reference Include="OTA.Commands">
+      <HintPath>..\Libraries\OTA.Commands.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -38,14 +44,9 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="TerrariaServer">
-      <HintPath>..\..\..\open-terraria-api\Binaries\Server\TerrariaServer.exe</HintPath>
-    </Reference>
-    <Reference Include="OTA.Commands">
-      <HintPath>..\..\..\open-terraria-api\Binaries\Server\OTA.Commands.dll</HintPath>
-    </Reference>
-    <Reference Include="OTA">
-      <HintPath>..\..\..\open-terraria-api\Binaries\Server\OTA.dll</HintPath>
+    <Reference Include="TerrariaServer, Version=1.3.0.6, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Libraries\TerrariaServer.exe</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
