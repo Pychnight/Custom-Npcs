@@ -10,8 +10,6 @@ using CustomNPC.EventSystem;
 using CustomNPC.EventSystem.Events;
 using CustomNPC.Plugins;
 using Terraria;
-using OTA.Commands;
-using OTA.Command;
 
 #if TShock
 using TerrariaApi.Server;
@@ -20,13 +18,12 @@ using Wolfje.Plugins.SEconomy.Journal;
 using TShockAPI;
 using TShockAPI.DB;
 
-
-
-
 #elif OTAPI
 using OTA;
 using OTA.Plugin;
 using OTA.Logging;
+using OTA.Commands;
+using OTA.Command;
 using Microsoft.Xna.Framework;
 #endif
 
@@ -219,83 +216,86 @@ namespace CustomNPC
 			mainLoop.Elapsed += mainLoop_Elapsed;
 			mainLoop.Enabled = true;
 		}
+#if TShock
+        void OnChat (ServerChatEventArgs args)
+				{
+					if (args.Handled)
+					{
+						return;
+					}
+		
+					TSPlayer player = TShock.Players [args.Who];
+		
+					if (player == null)
+					{
+						args.Handled = true;
+						return;
+					}
+		
+					//Needs improvement and clean up //
+					//Works as intended just looks messy
+		
+					string[] chat = args.Text.Split ();
+					string cmd = chat [0].Substring (0);
+		
+					var ServerChatEventArgs = new ServerChatEvent ();
+		
+					int Who = args.Who;
+					String Text = args.Text;
+					MessageBuffer Buffer = args.Buffer;
+		
+					Who = player.Index;
+					Text = cmd;
+					Buffer = args.Buffer;
+		
+		    		ServerChatEventArgs.Who = Who;
+					ServerChatEventArgs.Text = Text;
+					ServerChatEventArgs.Buffer = Buffer;
+		
+					eventManager.InvokeHandler (ServerChatEventArgs, EventType.ServerChat);
+				}
+#endif
 
-		//		void OnChat (ServerChatEventArgs args)
-		//		{
-		//			if (args.Handled)
-		//			{
-		//				return;
-		//			}
-		//
-		//			TSPlayer player = TShock.Players [args.Who];
-		//
-		//			if (player == null)
-		//			{
-		//				args.Handled = true;
-		//				return;
-		//			}
-		//
-		//			//Needs improvement and clean up //
-		//			//Works as intended just looks messy
-		//
-		//			string[] chat = args.Text.Split ();
-		//			string cmd = chat [0].Substring (0);
-		//
-		//			var ServerChatEventArgs = new ServerChatEvent ();
-		//
-		//			int Who = args.Who;
-		//			String Text = args.Text;
-		//			MessageBuffer Buffer = args.Buffer;
-		//
-		//			Who = player.Index;
-		//			Text = cmd;
-		//			Buffer = args.Buffer;
-		//
-		//			ServerChatEventArgs.Who = Who;
-		//			ServerChatEventArgs.Text = Text;
-		//			ServerChatEventArgs.Buffer = Buffer;
-		//
-		//			eventManager.InvokeHandler (ServerChatEventArgs, EventType.ServerChat);
-		//		}
-		//
-		//		/// <summary>
-		//		/// For Custom Loot
-		//		/// </summary>
-		//		/// <param name="args"></param>
-		//		private void OnItemDrop (NpcLootDropEventArgs args)
-		//		{
-		//			CustomNPCVars npcvar = NPCManager.GetCustomNPCByIndex (args.NpcArrayIndex);
-		//			if (npcvar == null || npcvar.droppedLoot) return;
-		//
-		//			npcvar.isDead = true;
-		//			npcvar.droppedLoot = true;
-		//			args.Handled = npcvar.customNPC.overrideBaseNPCLoot;
-		//
-		//			//Check if monster has been customized
-		//			if (npcvar.customNPC.customNPCLoots != null)
-		//			{
-		//				foreach (CustomNPCLoot obj in npcvar.customNPC.customNPCLoots)
-		//				{
-		//					if (obj.itemDropChance >= 100 || NPCManager.Chance (obj.itemDropChance))
-		//					{
-		//						int pre = 0;
-		//						if (obj.itemPrefix != null)
-		//						{
-		//							pre = obj.itemPrefix [rand.Next (obj.itemPrefix.Count)];
-		//						}
-		//
-		//						Item.NewItem ((int)npcvar.mainNPC.position.X, (int)npcvar.mainNPC.position.Y, npcvar.mainNPC.width, npcvar.mainNPC.height, obj.itemID, obj.itemStack, false, pre, false);
-		//					}
-		//				}
-		//			}
-		//		}
-		//
-		#if TShock
-				/// <summary>
-				/// Spawn custom npc using /csm &lt;id&gt; [amount] [&lt;x&gt; &lt;y&gt;]
-				/// </summary>
-				/// <param name="args"></param>
-				private void CommandSpawnNPC (CommandArgs args)
+#if TShock
+        /// <summary>
+        /// For Custom Loot
+        /// </summary>
+        /// <param name="args"></param>
+        private void OnItemDrop (NpcLootDropEventArgs args)
+				{
+					CustomNPCVars npcvar = NPCManager.GetCustomNPCByIndex (args.NpcArrayIndex);
+					if (npcvar == null || npcvar.droppedLoot) return;
+		
+					npcvar.isDead = true;
+					npcvar.droppedLoot = true;
+					args.Handled = npcvar.customNPC.overrideBaseNPCLoot;
+		
+					//Check if monster has been customized
+					if (npcvar.customNPC.customNPCLoots != null)
+					{
+						foreach (CustomNPCLoot obj in npcvar.customNPC.customNPCLoots)
+						{
+							if (obj.itemDropChance >= 100 || NPCManager.Chance (obj.itemDropChance))
+							{
+								int pre = 0;
+								if (obj.itemPrefix != null)
+								{
+									pre = obj.itemPrefix [rand.Next (obj.itemPrefix.Count)];
+								}
+		
+								Item.NewItem ((int)npcvar.mainNPC.position.X, (int)npcvar.mainNPC.position.Y, npcvar.mainNPC.width, npcvar.mainNPC.height, obj.itemID, obj.itemStack, false, pre, false);
+							}
+						}
+					}
+				}
+#endif
+
+#if TShock
+        /// <summary>
+        /// Spawn custom npc using /csm &lt;id&gt; [amount] [&lt;x&gt; &lt;y&gt;]
+        /// </summary>
+        /// <param name="args"></param>
+        private void CommandSpawnNPC (CommandArgs args)
 				{
 					//Error if too many or too few params specified
 					if (args.Parameters.Count == 0 || args.Parameters.Count > 4)
@@ -488,7 +488,8 @@ namespace CustomNPC
 				sender.SendMessage (String.Format ("Spawned {0} \"{1}\"'s at ({2}, {3})", amount, args.GetInt (0), x, y), R: 0, B: 0);
 		}
 #endif
-#if tshock
+
+#if TShock
         /// <summary>
         /// List custom npcs using /csmlist &lt;page&gt; [onlyalive]
         /// </summary>
@@ -619,7 +620,7 @@ namespace CustomNPC
         }
 #endif
 
-#if tshock
+#if TShock
         /// <summary>
         /// List custom npcs using /csminfo &lt;id&gt;
         /// </summary>
@@ -720,38 +721,40 @@ namespace CustomNPC
 			CustomNPCUpdate (true, false);
 		}
 
-		//				private void OnNPCSpawn (NpcSpawnEventArgs args)
-		//				{
-		//					//If the id falls outside the possible range, we can return.
-		//					if (args.NpcId < 0 || args.NpcId >= 200) return;
-		//
-		//					//This NPC is custom and not dead.
-		//					if (NPCManager.NPCs [args.NpcId] != null && !NPCManager.NPCs [args.NpcId].isDead) return;
-		//
-		//					NPC spawned = Main.npc [args.NpcId];
-		//
-		//					//DEBUG
-		//					TShock.Log.ConsoleInfo ("DEBUG [NPCSpawn] NPCIndex {0}", args.NpcId);
-		//					//DEBUG
-		//
-		//					foreach (CustomNPCDefinition customnpc in NPCManager.Data.CustomNPCs.Values)
-		//					{
-		//						if (!customnpc.isReplacement || spawned.netID != customnpc.customBase.netID) continue;
-		//
-		//						DateTime[] dt = null;
-		//						if (customnpc.customProjectiles != null)
-		//						{
-		//							dt = Enumerable.Repeat (DateTime.Now, customnpc.customProjectiles.Count).ToArray ();
-		//						}
-		//						NPCManager.NPCs [spawned.whoAmI] = new CustomNPCVars (customnpc, dt, spawned);
-		//						NPCManager.Data.ConvertNPCToCustom (spawned.whoAmI, customnpc);
-		//
-		//						break;
-		//					}
-		//				}
+#if TShock
+        private void OnNPCSpawn (NpcSpawnEventArgs args)
+						{
+							//If the id falls outside the possible range, we can return.
+							if (args.NpcId < 0 || args.NpcId >= 200) return;
+		
+							//This NPC is custom and not dead.
+							if (NPCManager.NPCs [args.NpcId] != null && !NPCManager.NPCs [args.NpcId].isDead) return;
+		
+							NPC spawned = Main.npc [args.NpcId];
+		
+							//DEBUG
+							TShock.Log.ConsoleInfo ("DEBUG [NPCSpawn] NPCIndex {0}", args.NpcId);
+							//DEBUG
+		
+							foreach (CustomNPCDefinition customnpc in NPCManager.Data.CustomNPCs.Values)
+							{
+								if (!customnpc.isReplacement || spawned.netID != customnpc.customBase.netID) continue;
+		
+								DateTime[] dt = null;
+								if (customnpc.customProjectiles != null)
+								{
+									dt = Enumerable.Repeat (DateTime.Now, customnpc.customProjectiles.Count).ToArray ();
+								}
+								NPCManager.NPCs [spawned.whoAmI] = new CustomNPCVars (customnpc, dt, spawned);
+								NPCManager.Data.ConvertNPCToCustom (spawned.whoAmI, customnpc);
+		
+								break;
+							}
+						}
+#endif
 
 
-		private void ReadNpcStrike (int playerId, byte[] readBuffer, int index, int length)
+        private void ReadNpcStrike (int playerId, byte[] readBuffer, int index, int length)
 		{
 			int npcIndex;
 			int damage;
@@ -835,7 +838,11 @@ namespace CustomNPC
 				//Damage event
 				var e = new NpcDamageEvent {
 					NpcIndex = npcIndex,
-					PlayerIndex = player.whoAmI,
+#if TShock
+                    PlayerIndex = player.Index,
+#elif OTAPI
+                    PlayerIndex = player.whoAmI,
+#endif
 					Damage = damage,
 					Knockback = knockback,
 					Direction = direction,
@@ -846,7 +853,7 @@ namespace CustomNPC
 				eventManager.InvokeHandler (e, EventType.NpcDamage);
 
 				//Disable to prevent flooding (Debug)
-				Console.WriteLine (player.name + " Has Damaged " + npcvar.customNPC.customID + " in " + npcIndex);
+				//Console.WriteLine (player.name + " Has Damaged " + npcvar.customNPC.customID + " in " + npcIndex);
 
 				//This damage will kill the NPC.
 				if (npc.active && npc.life > 0 && damageDone >= npc.life)
@@ -855,8 +862,12 @@ namespace CustomNPC
 					//Kill event
 					var killedArgs = new NpcKilledEvent {
 						NpcIndex = npcIndex,
-						PlayerIndex = player.whoAmI,
-						Damage = damage,
+#if TShock
+                        PlayerIndex = player.Index,
+#elif OTAPI
+                        PlayerIndex = player.whoAmI,
+#endif
+                        Damage = damage,
 						Knockback = knockback,
 						Direction = direction,
 						CriticalHit = critical,
@@ -865,30 +876,32 @@ namespace CustomNPC
 
 					eventManager.InvokeHandler (killedArgs, EventType.NpcKill);
 
-					Console.WriteLine (player.name + " Has Killed " + npcvar.customNPC.customID + " in " + npcIndex);
+                    //FIXME: Disabled Debug Use Debug Events NPC
+                    //Console.WriteLine (player.name + " Has Killed " + npcvar.customNPC.customID + " in " + npcIndex);
+#if TShock
+                    if (UsingSEConomy == true)
+										{
+											var economyPlayer = Wolfje.Plugins.SEconomy.SEconomyPlugin.Instance.GetBankAccount (TSPlayer.Server.User.ID);
+							
+											if (economyPlayer.IsAccountEnabled)
+											{
+												var SEconReward = new Wolfje.Plugins.SEconomy.Money (npcvar.customNPC.SEconReward);
+							
+												if (npcvar.customNPC.SEconReward > 0)
+												{
+													IBankAccount Player = SEconomyPlugin.Instance.GetBankAccount (TSPlayer.Server.User.ID);
+													SEconomyPlugin.Instance.WorldAccount.TransferToAsync (Player, SEconReward, BankAccountTransferOptions.AnnounceToReceiver, npcvar.customNPC.customName + " Bountie", "Custom Npc Kill");
+													SEconReward = 0;
+												}
+											}
+											else if (!economyPlayer.IsAccountEnabled)
+											{
+												TShock.Log.Error ("You cannot gain any bounty because your account is disabled.");
+											}
+										}
+#endif
 
-					//					if (UsingSEConomy == true)
-					//					{
-					//						var economyPlayer = Wolfje.Plugins.SEconomy.SEconomyPlugin.Instance.GetBankAccount (TSPlayer.Server.User.ID);
-					//		
-					//						if (economyPlayer.IsAccountEnabled)
-					//						{
-					//							var SEconReward = new Wolfje.Plugins.SEconomy.Money (npcvar.customNPC.SEconReward);
-					//		
-					//							if (npcvar.customNPC.SEconReward > 0)
-					//							{
-					//								IBankAccount Player = SEconomyPlugin.Instance.GetBankAccount (TSPlayer.Server.User.ID);
-					//								SEconomyPlugin.Instance.WorldAccount.TransferToAsync (Player, SEconReward, BankAccountTransferOptions.AnnounceToReceiver, npcvar.customNPC.customName + " Bountie", "Custom Npc Kill");
-					//								SEconReward = 0;
-					//							}
-					//						}
-					//						else if (!economyPlayer.IsAccountEnabled)
-					//						{
-					//							TShock.Log.Error ("You cannot gain any bounty because your account is disabled.");
-					//						}
-					//					}
-
-					if (npcvar != null)
+                    if (npcvar != null)
 					{
 						npcvar.markDead ();
 					}
@@ -907,49 +920,50 @@ namespace CustomNPC
 			}
 		}
 
-		#endregion
+        #endregion
 
-		//
-		//		protected override void Dispose (bool disposing)
-		//		{
-		//			if (disposing)
-		//			{
-		//				pluginManager.Unload ();
-		//#if USE_APPDOMAIN
-		//                AppDomain.Unload(pluginDomain);
-		//#endif
-		//
-		//				ServerApi.Hooks.GameUpdate.Deregister (this, OnUpdate);
-		//				ServerApi.Hooks.GameInitialize.Deregister (this, OnInitialize);
-		//				ServerApi.Hooks.NpcLootDrop.Deregister (this, OnItemDrop);
-		//				ServerApi.Hooks.NetGetData.Deregister (this, OnGetData);
-		//				ServerApi.Hooks.ServerChat.Deregister (this, OnChat);
-		//				ServerApi.Hooks.NpcSpawn.Deregister (this, OnNPCSpawn);
-		//			}
-		//		}
-		//
-		//		#if USE_APPDOMAIN
-		//        private AppDomain CreateNewPluginDomain()
-		//        {
-		//            AppDomainSetup info = new AppDomainSetup
-		//            {
-		//                // this allows the replacement of plugin files in the file system
-		//                ShadowCopyFiles = bool.TrueString,
-		//
-		//                ApplicationBase = Environment.CurrentDirectory,
-		//                PrivateBinPath = @".\ServerPlugins"
-		//            };
-		//
-		//            return AppDomain.CreateDomain("Plugin Domain", AppDomain.CurrentDomain.Evidence, info);
-		//        }
-		//#endif
-		//
-		/// <summary>
-		/// Do Everything here
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
-		void mainLoop_Elapsed (object sender, ElapsedEventArgs e)
+#if TShock
+        protected override void Dispose (bool disposing)
+				{
+					if (disposing)
+					{
+						pluginManager.Unload ();
+		#if USE_APPDOMAIN
+		                AppDomain.Unload(pluginDomain);
+		#endif
+		
+						ServerApi.Hooks.GameUpdate.Deregister (this, OnUpdate);
+						ServerApi.Hooks.GameInitialize.Deregister (this, OnInitialize);
+						ServerApi.Hooks.NpcLootDrop.Deregister (this, OnItemDrop);
+						ServerApi.Hooks.NetGetData.Deregister (this, OnGetData);
+						ServerApi.Hooks.ServerChat.Deregister (this, OnChat);
+						ServerApi.Hooks.NpcSpawn.Deregister (this, OnNPCSpawn);
+					}
+				}
+
+#if USE_APPDOMAIN
+		        private AppDomain CreateNewPluginDomain()
+		        {
+		            AppDomainSetup info = new AppDomainSetup
+		            {
+		                // this allows the replacement of plugin files in the file system
+		                ShadowCopyFiles = bool.TrueString,
+		
+		                ApplicationBase = Environment.CurrentDirectory,
+		                PrivateBinPath = @".\ServerPlugins"
+		            };
+		
+		            return AppDomain.CreateDomain("Plugin Domain", AppDomain.CurrentDomain.Evidence, info);
+		        }
+#endif
+#endif
+
+        /// <summary>
+        /// Do Everything here
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void mainLoop_Elapsed (object sender, ElapsedEventArgs e)
 		{
 			//Don't run this when there is no players
 			if (NpcUtils.ActivePlayerCount == 0)
@@ -1278,7 +1292,7 @@ namespace CustomNPC
 		/// <param name="target"></param>
 		/// <param name="origin"></param>
 		/// <param name="projectile"></param>
-		#if TShock
+#if TShock
 		private void FireProjectile (TSPlayer target, CustomNPCVars origin, CustomNPCProjectiles projectile)
 #elif OTAPI
         private void FireProjectile (Player target, CustomNPCVars origin, CustomNPCProjectiles projectile)
@@ -1335,7 +1349,7 @@ namespace CustomNPC
 		}
 
 		//calculates the x y speed required angle
-		#if TShock
+#if TShock
 		private Vector2 CalculateSpeed (Vector2 start, TSPlayer target)
 		
 
@@ -1417,7 +1431,7 @@ namespace CustomNPC
         // TODO: Improve Reload commands, Maybe create 1 generic reloading command that reloads the json file first then subplugins?
         // Enabled features for tshock, Needs Conversion for OTA
 
-#if tshock
+#if TShock
         /// <summary>
         /// Reload Config File <type>
         /// </summary>
@@ -1452,7 +1466,7 @@ namespace CustomNPC
         }
 #endif
 
-#if tshock
+#if TShock
         /// <summary>
         /// Start custom npc invasion using /cinvade <type>
         /// </summary>

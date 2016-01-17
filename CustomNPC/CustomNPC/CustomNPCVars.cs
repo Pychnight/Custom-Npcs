@@ -5,7 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Terraria;
 
-#if OTAPI
+#if TShock
+using TShockAPI;
+using TShockAPI.DB;
+
+#elif OTAPI
 using Microsoft.Xna.Framework;
 #endif
 

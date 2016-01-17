@@ -106,7 +106,11 @@ namespace CustomNPC.Plugins
                 }
                 catch (Exception e)
                 {
+#if TShock
+                    TShock.Log.ConsoleError(e.Message);
+#elif OTAPI
                     OTA.Logging.ProgramLog.Log(e, "Failed to load plugin " + file);
+#endif
                 }
                 //#endif
                 //                }

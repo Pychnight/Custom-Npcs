@@ -10,7 +10,6 @@ using Terraria;
 using TShockAPI;
 using TShockAPI.DB;
 
-
 #elif OTAPI
 using Microsoft.Xna.Framework;
 #endif
@@ -96,22 +95,34 @@ namespace CustomNPC
 							int npcid = SpawnMobAroundPlayer (player, customnpc);
 							if (npcid != -1)
 							{
-								Main.npc [npcid].target = player.whoAmI;
-								Data.LastSpawnAttempt [customnpc.customID] = DateTime.Now;
+#if TShock
+                                Main.npc [npcid].target = player.Index;
+#elif OTAPI
+                                Main.npc[npcid].target = player.whoAmI;
+#endif
+                                Data.LastSpawnAttempt [customnpc.customID] = DateTime.Now;
 								customnpc.currSpawnsVar++;
 							}                                            
 						}
 						else
 						{
-							//All checks completed --> spawn mob
-							var spawn = GetRandomClearTile ((int)(player.position.X / 16f), (int)(player.position.Y / 16f));
+                            //All checks completed --> spawn mob
+#if TShock
+                            var spawn = GetRandomClearTile((int)(player.TileX / 16f), (int)(player.TileY / 16f));
+#elif OTAPI
+                            var spawn = GetRandomClearTile ((int)(player.position.X / 16f), (int)(player.position.Y / 16f));
+#endif
 
-							int npcid = SpawnNPCAtLocation ((int)(spawn.X * 16f) + 8, (int)(spawn.Y * 16f), customnpc);
+                            int npcid = SpawnNPCAtLocation ((int)(spawn.X * 16f) + 8, (int)(spawn.Y * 16f), customnpc);
 							if (npcid == -1) continue;
 
 							Data.LastSpawnAttempt [customnpc.customID] = DateTime.Now;
-							Main.npc [npcid].target = player.whoAmI;
-							customnpc.currSpawnsVar++;
+#if TShock
+                            Main.npc [npcid].target = player.Index;
+#elif OTAPI
+                            Main.npc [npcid].target = player.whoAmI;
+#endif
+                            customnpc.currSpawnsVar++;
 						}
 					}
 				}
@@ -173,11 +184,11 @@ namespace CustomNPC
 
 		public static bool IsTileClear (int x, int y)
 		{
-			#if MemTile
+#if MemTile
 			return Main.tile[x, y] == OTA.Memory.MemTile.Empty || !Main.tile[x, y].active() || Main.tile[x, y].inActive();
-			#else
+#else
 			return Main.tile [x, y] == null || !Main.tile [x, y].active () || Main.tile [x, y].inActive ();
-			#endif
+#endif
 		}
 
 		public static Vector2 GetRandomClearTile (float x, float y, int attempts = 1, int rangeY = 50, int rangeX = 50)
@@ -350,18 +361,22 @@ namespace CustomNPC
 			}
 
 			NPC.NewNPC (x, y, npcid);
-			NetMessage.SendData ((int)OTA.Packet.NPC_INFO, -1, -1, "", npcid);
+#if TShock
+            TSPlayer.All.SendData(PacketTypes.NpcUpdate, "", npcid);
+#elif OTAPI
+            NetMessage.SendData ((int)OTA.Packet.NPC_INFO, -1, -1, "", npcid);
+#endif
 
-			return npcid;
+            return npcid;
 		}
 
-		#if TShock
+#if TShock
 		public static int SpawnMobAroundPlayer(TSPlayer player, CustomNPCDefinition definition)
 		
 
 #elif OTAPI
 		public static int SpawnMobAroundPlayer (Terraria.Player player, CustomNPCDefinition definition)
-		#endif
+#endif
         {
 			const int SpawnSpaceX = 3;
 			const int SpawnSpaceY = 3;
@@ -374,11 +389,11 @@ namespace CustomNPC
 			int safeRangeX = (int)(screenTilesX * 0.52);
 			int safeRangeY = (int)(screenTilesY * 0.52);
 
-			#if TShock
+#if TShock
 			Vector2 position = player.TPlayer.position;
-			#elif OTAPI
+#elif OTAPI
 			Vector2 position = player.position;
-			#endif
+#endif
 			int playerTileX = (int)(position.X / 16f);
 			int playerTileY = (int)(position.Y / 16f);
 
@@ -515,11 +530,11 @@ namespace CustomNPC
 				dt = Enumerable.Repeat (DateTime.Now, definition.customProjectiles.Count).ToArray ();
 			}
 			NPCs [npcid] = new CustomNPCVars (definition, dt, Main.npc [npcid]);
-			#if TShock
+#if TShock
             TSPlayer.All.SendData(PacketTypes.NpcUpdate, "", npcid);
-			#elif OTAPI
+#elif OTAPI
 			NetMessage.SendData ((int)OTA.Packet.NPC_INFO, -1, -1, "", npcid);
-			#endif
+#endif
 			return npcid;
 		}
 
@@ -535,7 +550,7 @@ namespace CustomNPC
 
 		public static void DebuffNearbyPlayers (int debuffid, int seconds, int npcindex, int distance)
 		{
-			#if TShock
+#if TShock
             NPC npc = Main.npc[npcindex];
             if (npc == null) return;
 
@@ -543,12 +558,12 @@ namespace CustomNPC
             {
                 player.SetBuff(debuffid, seconds * 60);
 			}
-			#endif
+#endif
 		}
 
 		public static void SendPrivateMessageNearbyPlayers (string message, Color color, int npcindex, int distance)
 		{
-			#if TShock
+#if TShock
             NPC npc = Main.npc[npcindex];
             if (npc == null) return;
             
@@ -556,10 +571,10 @@ namespace CustomNPC
             {
                 player.SendMessage(message, color);
 			}
-			#endif
+#endif
 		}
 
-		#if TShock
+#if TShock
         public static List<TSPlayer> PlayersNearBy(Vector2 position, int distance)
         {
             int squaredist = (distance * 16) * (distance * 16);
@@ -597,7 +612,7 @@ namespace CustomNPC
 
 			return playerlist;
 		}
-		#endif
+#endif
 
 		/// <summary>
 		/// Checks if the NPC's current health is above the passed amount
@@ -648,13 +663,13 @@ namespace CustomNPC
 
 		public static void AddBuffToPlayer (int playerindex, int buffid, int seconds)
 		{
-			#if TShock
+#if TShock
             TSPlayer player = TShock.Players[playerindex];
             if (player == null) return;
 
             player.TPlayer.AddBuff(40, seconds * 60);
             player.SetBuff(buffid, seconds * 60);
-			#endif
+#endif
 		}
 
 		public static int AliveCount (string customid)
@@ -824,24 +839,24 @@ namespace CustomNPC
 			private static void SpawnMinion (Rectangle spawnRegion, SpawnMinion minion, CustomNPCDefinition npcdef, int attempts)
 			{
 				//Loop through players
-				#if TShock
+#if TShock
 				foreach (TSPlayer player in TShock.Players)
 				{
 				if (player == null || player.Dead || !player.Active || !NPCManager.Chance(minion.Chance)) continue;
-				#elif OTAPI
+#elif OTAPI
 				foreach (var player in Terraria.Main.player)
 				{
 					if (player == null || player.dead || !player.active || !NPCManager.Chance (minion.Chance)) continue;
-					#endif
+#endif
 
 					//Check if the minions can spawn anywhere, or if we need to check if players see them.
 					if (!CurrentWave.SpawnAnywhere)
 					{
-						#if TShock
+#if TShock
 						Rectangle playerFrame = new Rectangle((int)player.TPlayer.position.X, (int)player.TPlayer.position.Y, player.TPlayer.width, player.TPlayer.height);
-						#elif OTAPI
+#elif OTAPI
 						Rectangle playerFrame = new Rectangle ((int)player.position.X, (int)player.position.Y, player.width, player.height);
-						#endif
+#endif
 						if (!playerFrame.Intersects (spawnRegion)) continue;
 					}
 
