@@ -1,5 +1,8 @@
 ﻿using System;
 #if TShock
+using TShockAPI;
+using TShockAPI.DB;
+
 #elif OTAPI
 using OTA;
 using OTA.Logging;
@@ -15,8 +18,8 @@ namespace CustomNPC
 		{
 			get
 			{
-				#if TShock
-				return TShock.Utils.ActivePlayers()
+#if TShock
+                return TShock.Utils.ActivePlayers();
 				#elif OTAPI
 				return Terraria.Main.player.Count(x => x != null && x.active);
 				#endif
