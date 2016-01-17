@@ -2,7 +2,7 @@
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Configuration Condition=" '$(Configuration)' == '' ">TShock</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{FDA69D84-FD53-4DDA-BB00-0F9CCAC7A3D4}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -12,7 +12,17 @@
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'TShock|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;TShock</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'OTAPI|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -20,7 +30,7 @@
     <DefineConstants>TRACE;DEBUG;OTAPI</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,15 +41,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Mono.Data.Sqlite">
-      <HintPath>..\Libraries\Mono.Data.Sqlite.dll</HintPath>
-    </Reference>
-    <Reference Include="OTA">
-      <HintPath>..\Libraries\OTA.dll</HintPath>
-    </Reference>
-    <Reference Include="OTA.Commands">
-      <HintPath>..\Libraries\OTA.Commands.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -47,13 +48,6 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\..\open-terraria-api\Binaries\Libraries\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="TerrariaServer, Version=1.3.0.6, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Libraries\TerrariaServer.exe</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CustomNPCConfig.cs" />
@@ -100,4 +94,40 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Choose>
+    <When Condition=" '$(Configuration)' == 'TShock' ">
+      <ItemGroup>
+        <Reference Include="OTA">
+          <HintPath>..\Libraries\TShock\TShockAPI.dll</HintPath>
+        </Reference>
+        <Reference Include="TerrariaServer, Version=1.3.0.7">
+          <SpecificVersion>False</SpecificVersion>
+          <HintPath>..\Libraries\TShock\TerrariaServer.exe</HintPath>
+        </Reference>
+        <Reference Include="Newtonsoft.Json">
+          <HintPath>..\Libraries\TShock\Newtonsoft.Json.dll</HintPath>
+        </Reference>
+        <Reference Include="Wolfje.Plugins.SEconomy">
+          <HintPath>..\Libraries\TShock\Wolfje.Plugins.SEconomy.dll</HintPath>
+        </Reference>
+      </ItemGroup>
+    </When>
+    <When Condition=" '$(Configuration)' == 'OTAPI' ">
+      <ItemGroup>
+        <Reference Include="OTA">
+          <HintPath>..\Libraries\OTAPI\OTA.dll</HintPath>
+        </Reference>
+        <Reference Include="OTA.Commands">
+          <HintPath>..\Libraries\OTAPI\OTA.Commands.dll</HintPath>
+        </Reference>
+        <Reference Include="TerrariaServer, Version=1.3.0.7">
+          <SpecificVersion>False</SpecificVersion>
+          <HintPath>..\Libraries\OTAPI\TerrariaServer.exe</HintPath>
+        </Reference>
+        <Reference Include="Newtonsoft.Json">
+          <HintPath>..\Libraries\OTAPI\Newtonsoft.Json.dll</HintPath>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
 </Project>

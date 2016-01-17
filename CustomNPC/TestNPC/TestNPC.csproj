@@ -2,7 +2,7 @@
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Configuration Condition=" '$(Configuration)' == '' ">TShock</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{BE76FBAE-B44D-4303-97C1-EC806470B726}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -12,7 +12,17 @@
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'TShock|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;TShock</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'OTAPI|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -20,7 +30,7 @@
     <DefineConstants>DEBUG;TRACE;OTAPI</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -33,9 +43,7 @@
   <ItemGroup>
     <Reference Include="OTA">
       <HintPath>..\Libraries\OTA.dll</HintPath>
-    </Reference>
-    <Reference Include="OTA.Commands">
-      <HintPath>..\Libraries\OTA.Commands.dll</HintPath>
+      <Package>/Users/lukesmallmon/Downloads/OTA.dll</Package>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -44,7 +52,7 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="TerrariaServer, Version=1.3.0.6, Culture=neutral, processorArchitecture=x86">
+    <Reference Include="TerrariaServer, Version=1.3.0">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Libraries\TerrariaServer.exe</HintPath>
     </Reference>
@@ -68,4 +76,28 @@
       <Name>CustomNPC</Name>
     </ProjectReference>
   </ItemGroup>
+  <Choose>
+    <When Condition=" '$(Configuration)' == 'TShock' ">
+      <ItemGroup>
+        <Reference Include="OTA">
+          <HintPath>..\Libraries\TShock\TShockAPI.dll</HintPath>
+        </Reference>
+        <Reference Include="TerrariaServer, Version=1.3.0.7">
+          <SpecificVersion>False</SpecificVersion>
+          <HintPath>..\Libraries\TShock\TerrariaServer.exe</HintPath>
+        </Reference>
+      </ItemGroup>
+    </When>
+    <When Condition=" '$(Configuration)' == 'OTAPI' ">
+      <ItemGroup>
+        <Reference Include="OTA">
+          <HintPath>..\Libraries\OTAPI\OTA.dll</HintPath>
+        </Reference>
+        <Reference Include="TerrariaServer, Version=1.3.0.7">
+          <SpecificVersion>False</SpecificVersion>
+          <HintPath>..\Libraries\OTAPI\TerrariaServer.exe</HintPath>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
 </Project>

@@ -1,21 +1,31 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
+# Visual Studio 2012
 VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomNPC", "CustomNPC\CustomNPC.csproj", "{FDA69D84-FD53-4DDA-BB00-0F9CCAC7A3D4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{93E7A4CA-D6B6-4BC4-807B-41EFAA1B15B3}"
 	ProjectSection(SolutionItems) = preProject
-		Libraries\HttpServer.dll = Libraries\HttpServer.dll
-		Libraries\Mono.Data.Sqlite.dll = Libraries\Mono.Data.Sqlite.dll
-		Libraries\MySql.Data.dll = Libraries\MySql.Data.dll
-		Libraries\MySql.Web.dll = Libraries\MySql.Web.dll
 		Libraries\Newtonsoft.Json.dll = Libraries\Newtonsoft.Json.dll
-		Libraries\OTA.Commands.dll = Libraries\OTA.Commands.dll
-		Libraries\OTA.dll = Libraries\OTA.dll
-		Libraries\TerrariaServer.exe = Libraries\TerrariaServer.exe
-		Libraries\TShockAPI.dll = Libraries\TShockAPI.dll
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TShock", "TShock", "{66DFB182-0E4E-4CB3-8FCE-D18D2F2D7346}"
+	ProjectSection(SolutionItems) = preProject
+		Libraries\TShock\HttpServer.dll = Libraries\TShock\HttpServer.dll
+		Libraries\TShock\Mono.Data.Sqlite.dll = Libraries\TShock\Mono.Data.Sqlite.dll
+		Libraries\TShock\MySql.Data.dll = Libraries\TShock\MySql.Data.dll
+		Libraries\TShock\TShockAPI.dll = Libraries\TShock\TShockAPI.dll
+		Libraries\TShock\TerrariaServer.exe = Libraries\TShock\TerrariaServer.exe
+		Libraries\TShock\Newtonsoft.Json.dll = Libraries\TShock\Newtonsoft.Json.dll
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OTAPI", "OTAPI", "{841040EF-038A-4950-9766-528A0F35D6A8}"
+	ProjectSection(SolutionItems) = preProject
+		Libraries\OTAPI\OTA.Commands.dll = Libraries\OTAPI\OTA.Commands.dll
+		Libraries\OTAPI\OTA.dll = Libraries\OTAPI\OTA.dll
+		Libraries\OTAPI\TerrariaServer.exe = Libraries\OTAPI\TerrariaServer.exe
+		Libraries\OTAPI\Newtonsoft.Json.dll = Libraries\OTAPI\Newtonsoft.Json.dll
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{221E879D-8D36-4A04-98EA-940620B6A383}"
@@ -26,28 +36,37 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DebugNPC", "DebugNPC\DebugN
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+		TShock|Any CPU = TShock|Any CPU
+		OTAPI|Any CPU = OTAPI|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{FDA69D84-FD53-4DDA-BB00-0F9CCAC7A3D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FDA69D84-FD53-4DDA-BB00-0F9CCAC7A3D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FDA69D84-FD53-4DDA-BB00-0F9CCAC7A3D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FDA69D84-FD53-4DDA-BB00-0F9CCAC7A3D4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BE76FBAE-B44D-4303-97C1-EC806470B726}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BE76FBAE-B44D-4303-97C1-EC806470B726}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BE76FBAE-B44D-4303-97C1-EC806470B726}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BE76FBAE-B44D-4303-97C1-EC806470B726}.Release|Any CPU.Build.0 = Release|Any CPU
-		{18C71EEB-518C-4F6B-A121-E809226067DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{18C71EEB-518C-4F6B-A121-E809226067DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18C71EEB-518C-4F6B-A121-E809226067DD}.OTAPI|Any CPU.ActiveCfg = OTAPI|Any CPU
+		{18C71EEB-518C-4F6B-A121-E809226067DD}.OTAPI|Any CPU.Build.0 = OTAPI|Any CPU
 		{18C71EEB-518C-4F6B-A121-E809226067DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{18C71EEB-518C-4F6B-A121-E809226067DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18C71EEB-518C-4F6B-A121-E809226067DD}.TShock|Any CPU.ActiveCfg = TShock|Any CPU
+		{18C71EEB-518C-4F6B-A121-E809226067DD}.TShock|Any CPU.Build.0 = TShock|Any CPU
+		{BE76FBAE-B44D-4303-97C1-EC806470B726}.OTAPI|Any CPU.ActiveCfg = OTAPI|Any CPU
+		{BE76FBAE-B44D-4303-97C1-EC806470B726}.OTAPI|Any CPU.Build.0 = OTAPI|Any CPU
+		{BE76FBAE-B44D-4303-97C1-EC806470B726}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE76FBAE-B44D-4303-97C1-EC806470B726}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE76FBAE-B44D-4303-97C1-EC806470B726}.TShock|Any CPU.ActiveCfg = TShock|Any CPU
+		{BE76FBAE-B44D-4303-97C1-EC806470B726}.TShock|Any CPU.Build.0 = TShock|Any CPU
+		{FDA69D84-FD53-4DDA-BB00-0F9CCAC7A3D4}.OTAPI|Any CPU.ActiveCfg = OTAPI|Any CPU
+		{FDA69D84-FD53-4DDA-BB00-0F9CCAC7A3D4}.OTAPI|Any CPU.Build.0 = OTAPI|Any CPU
+		{FDA69D84-FD53-4DDA-BB00-0F9CCAC7A3D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDA69D84-FD53-4DDA-BB00-0F9CCAC7A3D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FDA69D84-FD53-4DDA-BB00-0F9CCAC7A3D4}.TShock|Any CPU.ActiveCfg = TShock|Any CPU
+		{FDA69D84-FD53-4DDA-BB00-0F9CCAC7A3D4}.TShock|Any CPU.Build.0 = TShock|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{66DFB182-0E4E-4CB3-8FCE-D18D2F2D7346} = {93E7A4CA-D6B6-4BC4-807B-41EFAA1B15B3}
+		{841040EF-038A-4950-9766-528A0F35D6A8} = {93E7A4CA-D6B6-4BC4-807B-41EFAA1B15B3}
+		{BE76FBAE-B44D-4303-97C1-EC806470B726} = {221E879D-8D36-4A04-98EA-940620B6A383}
+		{18C71EEB-518C-4F6B-A121-E809226067DD} = {221E879D-8D36-4A04-98EA-940620B6A383}
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{BE76FBAE-B44D-4303-97C1-EC806470B726} = {221E879D-8D36-4A04-98EA-940620B6A383}
-		{18C71EEB-518C-4F6B-A121-E809226067DD} = {221E879D-8D36-4A04-98EA-940620B6A383}
 	EndGlobalSection
 EndGlobal

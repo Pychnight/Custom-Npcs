@@ -25,9 +25,9 @@ using OTA.Logging;
 using OTA.Commands;
 using OTA.Command;
 using Microsoft.Xna.Framework;
-#endif
 
 [assembly: PluginDependency ("OTA.Commands")]
+#endif
 
 namespace CustomNPC
 {
