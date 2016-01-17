@@ -193,14 +193,23 @@ namespace CustomNPC
 			this.AddCommand ("csm")
                 .ByPermissionNode ("customnpc.spawn")
                 .Calls (CommandSpawnNPC);
+            this.AddCommand("csmlist")
+                .ByPermissionNode("customnpc.list")
+                .Calls(CommandListNPCS);
+            this.AddCommand("csminfo")
+                .ByPermissionNode("customnpc.info")
+                .Calls(CommandNPCInfo);
+            //this.AddCommand("csmreload")
+              //.ByPermissionNode("customnpc.reload")
+              //.Calls(CommandReload);
 #endif
-		}
+        }
 
-		#if TShock
+#if TShock
 		private void OnInitialize (EventArgs args)
 
 #elif OTAPI
-		private void OnInit ()
+        private void OnInit ()
 #endif
         {
 			CreateCommands ();
@@ -478,115 +487,234 @@ namespace CustomNPC
 			else
 				sender.SendMessage (String.Format ("Spawned {0} \"{1}\"'s at ({2}, {3})", amount, args.GetInt (0), x, y), R: 0, B: 0);
 		}
-		#endif
-		//
-		//		/// <summary>
-		//		/// List custom npcs using /csmlist &lt;page&gt; [onlyalive]
-		//		/// </summary>
-		//		/// <param name="args"></param>
-		//		private void CommandListNPCS (CommandArgs args)
-		//		{
-		//			//Error if too many or too few params specified
-		//			if (args.Parameters.Count == 0 || args.Parameters.Count > 2)
-		//			{
-		//				args.Player.SendInfoMessage ("Usage: /csmlist <page> [onlyalive]");
-		//				return;
-		//			}
-		//
-		//			int page;
-		//			if (!int.TryParse (args.Parameters [0], out page))
-		//			{
-		//				args.Player.SendErrorMessage ("Error: Invalid page defined! Please give a number.");
-		//				return;
-		//			}
-		//
-		//			bool onlyalive = false;
-		//			if (args.Parameters.Count == 2 && !bool.TryParse (args.Parameters [1], out onlyalive))
-		//			{
-		//				args.Player.SendErrorMessage ("Error: Invalid onlyalive flag! onlyalive can be true or false.");
-		//				return;
-		//			}
-		//
-		//			//Check if page is valid
-		//			if (page < 1)
-		//			{
-		//				args.Player.SendErrorMessage ("Error: Invalid page defined! Page has to be 1 or bigger.");
-		//				return;
-		//			}
-		//
-		//			var vals = NPCManager.Data.CustomNPCs.Values.Where (cd => cd != null && (!onlyalive || cd.currSpawnsVar > 0));
-		//
-		//			int start = (page - 1) * 6;
-		//			int end = start + 6;
-		//			int total = vals.Count ();
-		//			int totalpages = (total + 5) / 6;
-		//
-		//			if (start > total)
-		//			{
-		//				args.Player.SendErrorMessage ("Error: Page too large! The last page is \"{0}\".", totalpages);
-		//				return;
-		//			}
-		//
-		//			args.Player.SendInfoMessage ("Page {0} / {1}. Only Alive = {2}", page, totalpages, onlyalive);
-		//
-		//			for (int i = start; i < end && i < total; i++)
-		//			{
-		//				CustomNPCDefinition obj = vals.ElementAt (i);
-		//
-		//				args.Player.SendInfoMessage ("[{0}]: {1}. Spawned: {2}", obj.customID, obj.customName, obj.currSpawnsVar);
-		//			}
-		//		}
-		//
-		//		/// <summary>
-		//		/// List custom npcs using /csminfo &lt;id&gt;
-		//		/// </summary>
-		//		/// <param name="args"></param>
-		//		private void CommandNPCInfo (CommandArgs args)
-		//		{
-		//			//Error if too many or too few params specified
-		//			if (args.Parameters.Count != 1)
-		//			{
-		//				args.Player.SendInfoMessage ("Usage: /csminfo <id>");
-		//				return;
-		//			}
-		//
-		//			//Get custom npc by id
-		//			var cdef = NPCManager.Data.GetNPCbyID (args.Parameters [0]);
-		//			if (cdef == null)
-		//			{
-		//				args.Player.SendErrorMessage ("Error: The custom npc with id \"{0}\" does not exist!", args.Parameters [0]);
-		//				return;
-		//			}
-		//
-		//			//Info About CustomSlime
-		//			//Custom Name: Slimenator (Default: Slime)
-		//			//Base: Slime (10)
-		//			//Custom AI: No (Default: 1)
-		//			//Custom Health: 20 (Default: 15) -- Custom Defense: 10 (Default: 3)
-		//			//NoGravity: Yes (Default: No) -- NoTileCollide: Yes (Default: No)
-		//			//Boss: Yes (Default: No) -- Immune to Lava: Yes (Default: No)
-		//			//Custom Projectiles: No -- Custom Loot: Yes
-		//			//Custom Spawn Message: Yaaaarrrrrgh
-		//			//Alive: 2 / 20
-		//
-		//			args.Player.SendInfoMessage ("Info About {0}", cdef.customID);
-		//			args.Player.SendInfoMessage ("Custom Name: {0} (Default: {1})", TaeirUtil.ValOrNo (cdef.customName), cdef.customBase.name);
-		//			args.Player.SendInfoMessage ("Base: {0} ({1})", TaeirUtil.GetNPCName (cdef.customBase.netID), cdef.customBase.netID);
-		//			args.Player.SendInfoMessage ("Custom AI: {0} (Default: {1})", TaeirUtil.ValOrNo (cdef.customAI, cdef.customBase.aiStyle), cdef.customBase.aiStyle);
-		//			args.Player.SendInfoMessage ("Custom Health: {0} (Default: {1}) -- Custom Defense: {2} (Default: {3})", TaeirUtil.ValOrNo (cdef.customHealth, cdef.customBase.lifeMax), cdef.customBase.lifeMax, TaeirUtil.ValOrNo (cdef.customDefense, cdef.customBase.defense), cdef.customBase.defense);
-		//			args.Player.SendInfoMessage ("NoGravity: {0} (Default: {1}) -- NoTileCollide: {2} (Default: {3})", TaeirUtil.YesNo (cdef.noGravity), TaeirUtil.YesNo (cdef.customBase.noGravity), TaeirUtil.YesNo (cdef.noTileCollide), TaeirUtil.YesNo (cdef.customBase.noTileCollide));
-		//			args.Player.SendInfoMessage ("Boss: {0} (Default: {1}) -- Immune to Lava: {2} (Default: {3})", TaeirUtil.YesNo (cdef.isBoss), TaeirUtil.YesNo (cdef.customBase.boss), TaeirUtil.YesNo (cdef.lavaImmune), TaeirUtil.YesNo (cdef.customBase.lavaImmune));
-		//			args.Player.SendInfoMessage ("Custom Projectiles: {0} -- Custom Loot: {1}", TaeirUtil.YesNo (cdef.customProjectiles.Count != 0), TaeirUtil.YesNo (cdef.customNPCLoots.Count != 0));
-		//			args.Player.SendInfoMessage ("Custom Spawn Message: {0}", TaeirUtil.ValOrNo (cdef.customSpawnMessage));
-		//			args.Player.SendInfoMessage ("Alive: {0} / {1}", cdef.currSpawnsVar, TaeirUtil.ValOrNo (cdef.maxSpawns, -1, "No Max"));
-		//		}
+#endif
+#if tshock
+        /// <summary>
+        /// List custom npcs using /csmlist &lt;page&gt; [onlyalive]
+        /// </summary>
+        /// <param name="args"></param>
+        private void CommandListNPCS(CommandArgs args)
+        {
+            //Error if too many or too few params specified
+            if (args.Parameters.Count == 0 || args.Parameters.Count > 2)
+            {
+                args.Player.SendInfoMessage("Usage: /csmlist <page> [onlyalive]");
+                return;
+            }
 
-		/// <summary>
-		/// Called every time the server ticks.
-		/// Adds Custom Monster to array for replacement
-		/// </summary>
-		/// <param name="args"></param>
-		private void OnUpdate (EventArgs args)
+            int page;
+            if (!int.TryParse(args.Parameters[0], out page))
+            {
+                args.Player.SendErrorMessage("Error: Invalid page defined! Please give a number.");
+                return;
+            }
+
+            bool onlyalive = false;
+            if (args.Parameters.Count == 2 && !bool.TryParse(args.Parameters[1], out onlyalive))
+            {
+                args.Player.SendErrorMessage("Error: Invalid onlyalive flag! onlyalive can be true or false.");
+                return;
+            }
+
+            //Check if page is valid
+            if (page < 1)
+            {
+                args.Player.SendErrorMessage("Error: Invalid page defined! Page has to be 1 or bigger.");
+                return;
+            }
+
+            var vals = NPCManager.Data.CustomNPCs.Values.Where(cd => cd != null && (!onlyalive || cd.currSpawnsVar > 0));
+
+            int start = (page - 1) * 6;
+            int end = start + 6;
+            int total = vals.Count();
+            int totalpages = (total + 5) / 6;
+
+            if (start > total)
+            {
+                args.Player.SendErrorMessage("Error: Page too large! The last page is \"{0}\".", totalpages);
+                return;
+            }
+
+            args.Player.SendInfoMessage("Page {0} / {1}. Only Alive = {2}", page, totalpages, onlyalive);
+
+            for (int i = start; i < end && i < total; i++)
+            {
+                CustomNPCDefinition obj = vals.ElementAt(i);
+
+                args.Player.SendInfoMessage("[{0}]: {1}. Spawned: {2}", obj.customID, obj.customName, obj.currSpawnsVar);
+            }
+        }
+
+#elif OTAPI
+
+        // OTA Exclusive bugs
+        // CSMLIST does not list all monsters loaded...
+        // need solution for (args.Count == 2 && !bool.TryParse(00000, out onlyalive))
+
+        /// <summary>
+        /// List custom npcs using /csmlist &lt;page&gt; [onlyalive]
+        /// </summary>
+        /// <param name="args"></param>
+        private void CommandListNPCS(ISender sender, ArgumentList args)
+        {
+            //Error if too many or too few params specified
+            if (args.Count == 0 || args.Count > 2)
+            {
+                //throw new CommandError("Usage: /csmlist <page> [onlyalive]");
+                sender.SendMessage(String.Format("Usage: /csmlist <page> [onlyalive]"));
+                return;
+            }
+
+            int page;
+            if (!args.TryGetInt(0, out page))
+            {
+                //throw new CommandError("Error: Invalid page defined! Please give a number.");
+                sender.SendMessage(String.Format("Error: Invalid page defined! Please give a number."));
+                return;
+            }
+
+            //TODO: Improve?
+            //onlyalive used to be an bool with set to false.
+            //having it as a int might create some side effects.
+            int onlyalive = 0;
+            if (args.Count == 2 && (!args.TryGetInt(1, out onlyalive)))
+            {
+                sender.SendMessage(String.Format("Error: Invalid onlyalive flag! onlyalive can be true or false."));
+                //throw new CommandError("Error: Invalid onlyalive flag! onlyalive can be true or false.");
+                return;
+            }
+
+            //Check if page is valid
+            if (page < 1)
+            {
+                sender.SendMessage(String.Format("Error: Invalid page defined! Page has to be 1 or bigger."));
+                //throw new CommandError("Error: Invalid page defined! Page has to be 1 or bigger.");
+                return;
+            }
+
+            var vals = NPCManager.Data.CustomNPCs.Values.Where(cd => cd != null && (onlyalive == 0 || cd.currSpawnsVar > 0));
+
+            int start = (page - 1) * 6;
+            int end = start + 6;
+            int total = vals.Count();
+            int totalpages = (total + 5) / 6;
+
+            if (start > total)
+            {
+                //throw new CommandError("Error: Page too large!The last page is \"{0}\".", totalpages);
+                sender.SendMessage(String.Format("Error: Page too large!The last page is \"{0}\".", totalpages));
+                return;
+            }
+
+            sender.SendMessage(String.Format("Spawned {0} \"{1}\"'s at ({2}, {3})", page, totalpages, onlyalive, args.GetString(0)));
+
+            for (int i = start; i < end && i < total; i++)
+            {
+                CustomNPCDefinition obj = vals.ElementAt(i);
+
+                sender.SendMessage(String.Format("[{0}]: {1}. Spawned: {2}", obj.customID, obj.customName, obj.currSpawnsVar));
+                //throw new CommandError("[{0}]: {1}. Spawned: {2}", obj.customID, obj.customName, obj.currSpawnsVar);
+            }
+        }
+#endif
+
+#if tshock
+        /// <summary>
+        /// List custom npcs using /csminfo &lt;id&gt;
+        /// </summary>
+        /// <param name="args"></param>
+        private void CommandNPCInfo (CommandArgs args)
+        		{
+        			//Error if too many or too few params specified
+        			if (args.Parameters.Count != 1)
+        			{
+        				args.Player.SendInfoMessage ("Usage: /csminfo <id>");
+        				return;
+        			}
+        
+        			//Get custom npc by id
+        			var cdef = NPCManager.Data.GetNPCbyID (args.Parameters [0]);
+        			if (cdef == null)
+        			{
+        				args.Player.SendErrorMessage ("Error: The custom npc with id \"{0}\" does not exist!", args.Parameters [0]);
+        				return;
+       		    	}
+        
+        			//Info About CustomSlime
+        			//Custom Name: Slimenator (Default: Slime)
+        			//Base: Slime (10)
+        			//Custom AI: No (Default: 1)
+        			//Custom Health: 20 (Default: 15) -- Custom Defense: 10 (Default: 3)
+        			//NoGravity: Yes (Default: No) -- NoTileCollide: Yes (Default: No)
+        			//Boss: Yes (Default: No) -- Immune to Lava: Yes (Default: No)
+        			//Custom Projectiles: No -- Custom Loot: Yes
+        			//Custom Spawn Message: Yaaaarrrrrgh
+        			//Alive: 2 / 20
+        
+        			args.Player.SendInfoMessage ("Info About {0}", cdef.customID);
+        			args.Player.SendInfoMessage ("Custom Name: {0} (Default: {1})", TaeirUtil.ValOrNo (cdef.customName), cdef.customBase.name);
+        			args.Player.SendInfoMessage ("Base: {0} ({1})", TaeirUtil.GetNPCName (cdef.customBase.netID), cdef.customBase.netID);
+        			args.Player.SendInfoMessage ("Custom AI: {0} (Default: {1})", TaeirUtil.ValOrNo (cdef.customAI, cdef.customBase.aiStyle), cdef.customBase.aiStyle);
+        			args.Player.SendInfoMessage ("Custom Health: {0} (Default: {1}) -- Custom Defense: {2} (Default: {3})", TaeirUtil.ValOrNo (cdef.customHealth, cdef.customBase.lifeMax), cdef.customBase.lifeMax, TaeirUtil.ValOrNo (cdef.customDefense, cdef.customBase.defense), cdef.customBase.defense);
+        			args.Player.SendInfoMessage ("NoGravity: {0} (Default: {1}) -- NoTileCollide: {2} (Default: {3})", TaeirUtil.YesNo (cdef.noGravity), TaeirUtil.YesNo (cdef.customBase.noGravity), TaeirUtil.YesNo (cdef.noTileCollide), TaeirUtil.YesNo (cdef.customBase.noTileCollide));
+        			args.Player.SendInfoMessage ("Boss: {0} (Default: {1}) -- Immune to Lava: {2} (Default: {3})", TaeirUtil.YesNo (cdef.isBoss), TaeirUtil.YesNo (cdef.customBase.boss), TaeirUtil.YesNo (cdef.lavaImmune), TaeirUtil.YesNo (cdef.customBase.lavaImmune));
+        			args.Player.SendInfoMessage ("Custom Projectiles: {0} -- Custom Loot: {1}", TaeirUtil.YesNo (cdef.customProjectiles.Count != 0), TaeirUtil.YesNo (cdef.customNPCLoots.Count != 0));
+        			args.Player.SendInfoMessage ("Custom Spawn Message: {0}", TaeirUtil.ValOrNo (cdef.customSpawnMessage));
+        			args.Player.SendInfoMessage ("Alive: {0} / {1}", cdef.currSpawnsVar, TaeirUtil.ValOrNo (cdef.maxSpawns, -1, "No Max"));
+        		}
+#elif OTAPI
+        /// <summary>
+        /// List custom npcs using /csminfo &lt;id&gt;
+        /// </summary>
+        /// <param name="args"></param>
+        private void CommandNPCInfo(ISender sender, ArgumentList args)
+        {
+            //Error if too many or too few params specified
+            if (args.Count != 1)
+            {
+                sender.SendMessage(String.Format("Usage: /csminfo <id>"));
+                return;
+            }
+
+            //Get custom npc by id
+            var cdef = NPCManager.Data.GetNPCbyID(args.GetString(0));
+            if (cdef == null)
+            {
+                sender.SendMessage(String.Format("Error: The custom npc with id \"{0}\" does not exist!", args.GetInt(0)));
+                return;
+            }
+
+            //Info About CustomSlime
+            //Custom Name: Slimenator (Default: Slime)
+            //Base: Slime (10)
+            //Custom AI: No (Default: 1)
+            //Custom Health: 20 (Default: 15) -- Custom Defense: 10 (Default: 3)
+            //NoGravity: Yes (Default: No) -- NoTileCollide: Yes (Default: No)
+            //Boss: Yes (Default: No) -- Immune to Lava: Yes (Default: No)
+            //Custom Projectiles: No -- Custom Loot: Yes
+            //Custom Spawn Message: Yaaaarrrrrgh
+            //Alive: 2 / 20
+
+            sender.SendMessage(String.Format("Info About {0}", cdef.customID));
+            sender.SendMessage(String.Format("Custom Name: {0} (Default: {1})", TaeirUtil.ValOrNo(cdef.customName), cdef.customBase.name));
+            sender.SendMessage(String.Format("Base: {0} ({1})", TaeirUtil.GetNPCName(cdef.customBase.netID), cdef.customBase.netID));
+            sender.SendMessage(String.Format("Custom AI: {0} (Default: {1})", TaeirUtil.ValOrNo(cdef.customAI, cdef.customBase.aiStyle), cdef.customBase.aiStyle));
+            sender.SendMessage(String.Format("Custom Health: {0} (Default: {1}) -- Custom Defense: {2} (Default: {3})", TaeirUtil.ValOrNo(cdef.customHealth, cdef.customBase.lifeMax), cdef.customBase.lifeMax, TaeirUtil.ValOrNo(cdef.customDefense, cdef.customBase.defense), cdef.customBase.defense));
+            sender.SendMessage(String.Format("NoGravity: {0} (Default: {1}) -- NoTileCollide: {2} (Default: {3})", TaeirUtil.YesNo(cdef.noGravity), TaeirUtil.YesNo(cdef.customBase.noGravity), TaeirUtil.YesNo(cdef.noTileCollide), TaeirUtil.YesNo(cdef.customBase.noTileCollide)));
+            sender.SendMessage(String.Format("Boss: {0} (Default: {1}) -- Immune to Lava: {2} (Default: {3})", TaeirUtil.YesNo(cdef.isBoss), TaeirUtil.YesNo(cdef.customBase.boss), TaeirUtil.YesNo(cdef.lavaImmune), TaeirUtil.YesNo(cdef.customBase.lavaImmune)));
+            sender.SendMessage(String.Format("Custom Projectiles: {0} -- Custom Loot: {1}", TaeirUtil.YesNo(cdef.customProjectiles.Count != 0), TaeirUtil.YesNo(cdef.customNPCLoots.Count != 0)));
+            sender.SendMessage(String.Format("Custom Spawn Message: {0}", TaeirUtil.ValOrNo(cdef.customSpawnMessage)));
+            sender.SendMessage(String.Format("Alive: {0} / {1}", cdef.currSpawnsVar, TaeirUtil.ValOrNo(cdef.maxSpawns, -1, "No Max")));
+        }
+#endif
+
+        /// <summary>
+        /// Called every time the server ticks.
+        /// Adds Custom Monster to array for replacement
+        /// </summary>
+        /// <param name="args"></param>
+        private void OnUpdate (EventArgs args)
 		{
 			//Update all NPCs with custom AI
 			CustomNPCUpdate (true, false);
@@ -1285,68 +1413,75 @@ namespace CustomNPC
 				return;
 			}
 		}
-		//
-		//		/// <summary>
-		//		/// Reload Config File <type>
-		//		/// </summary>
-		//		/// <param name="args"></param>
-		//		private void CommandIReload (CommandArgs args)
-		//		{
-		//			if (NPCManager.CustomNPCInvasion.invasionStarted)
-		//			{
-		//				NPCManager.CustomNPCInvasion.StopInvasion ();
-		//			}
-		//
-		//			try
-		//			{
-		//				if (File.Exists (filepath))
-		//				{
-		//					ConfigObj = new CustomNPCConfig ();
-		//					ConfigObj = CustomNPCConfig.Read (filepath);
-		//					return;
-		//				}
-		//				else
-		//				{
-		//					TShock.Log.ConsoleError ("Config not found. Creating new one");
-		//					ConfigObj.Write (filepath);
-		//					return;
-		//				}
-		//			}
-		//			catch (Exception ex)
-		//			{
-		//				TShock.Log.ConsoleError (ex.Message);
-		//				return;
-		//			}
-		//		}
-		//
-		//		/// <summary>
-		//		/// Start custom npc invasion using /cinvade <type>
-		//		/// </summary>
-		//		/// <param name="args"></param>
-		//		private void CommandInvade (CommandArgs args)
-		//		{
-		//			//Error if too many or too few params specified
-		//			if (args.Parameters.Count == 0 || args.Parameters.Count > 1)
-		//			{
-		//				args.Player.SendInfoMessage ("Info: /cinvade <invade>");
-		//				return;
-		//			}
-		//			//Get custom invasion by name
-		//			WaveSet waveset;
-		//			if (!ConfigObj.WaveSets.TryGetValue (args.Parameters [0], out waveset))
-		//			{
-		//				args.Player.SendErrorMessage ("Error: The waveset \"{0}\" does not exist!", args.Parameters [0]);
-		//				return;
-		//			}
-		//			if (!NPCManager.CustomNPCInvasion.invasionStarted)
-		//			{
-		//				NPCManager.CustomNPCInvasion.StartInvasion (waveset);
-		//			}
-		//			else
-		//			{
-		//				NPCManager.CustomNPCInvasion.StopInvasion ();
-		//			}
-		//		}
 
-	}
+        // TODO: Improve Reload commands, Maybe create 1 generic reloading command that reloads the json file first then subplugins?
+        // Enabled features for tshock, Needs Conversion for OTA
+
+#if tshock
+        /// <summary>
+        /// Reload Config File <type>
+        /// </summary>
+        /// <param name="args"></param>
+        private void CommandIReload (CommandArgs args)
+        {
+        	if (NPCManager.CustomNPCInvasion.invasionStarted)
+        	{
+        		NPCManager.CustomNPCInvasion.StopInvasion ();
+        	}
+        
+        	try
+        	{
+        		if (File.Exists (filepath))
+        		{
+        			ConfigObj = new CustomNPCConfig ();
+       			ConfigObj = CustomNPCConfig.Read (filepath);
+        			return;
+        		}
+        		else
+        		{
+        			TShock.Log.ConsoleError ("Config not found. Creating new one");
+        			ConfigObj.Write (filepath);
+        			return;
+        		}
+        	}
+        	catch (Exception ex)
+        	{
+        		TShock.Log.ConsoleError (ex.Message);
+        		return;
+        	}
+        }
+#endif
+
+#if tshock
+        /// <summary>
+        /// Start custom npc invasion using /cinvade <type>
+        /// </summary>
+        /// <param name="args"></param>
+        private void CommandInvade (CommandArgs args)
+		{
+			//Error if too many or too few params specified
+			if (args.Parameters.Count == 0 || args.Parameters.Count > 1)
+			{
+				args.Player.SendInfoMessage ("Info: /cinvade <invade>");
+				return;
+			}
+			//Get custom invasion by name
+			WaveSet waveset;
+			if (!ConfigObj.WaveSets.TryGetValue (args.Parameters [0], out waveset))
+			{
+				args.Player.SendErrorMessage ("Error: The waveset \"{0}\" does not exist!", args.Parameters [0]);
+				return;
+			}
+			if (!NPCManager.CustomNPCInvasion.invasionStarted)
+			{
+				NPCManager.CustomNPCInvasion.StartInvasion (waveset);
+			}
+			else
+			{
+				NPCManager.CustomNPCInvasion.StopInvasion ();
+			}
+		}
+#endif
+
+    }
 }
