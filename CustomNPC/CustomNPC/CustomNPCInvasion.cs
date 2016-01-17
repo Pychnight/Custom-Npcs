@@ -4,7 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
+#if TShock
 using TShockAPI;
+#elif OTAPI
+using Microsoft.Xna.Framework;
+#endif
 using Terraria;
 
 namespace CustomNPC
@@ -33,14 +37,14 @@ namespace CustomNPC
         {
             if (CurrentInvasion.Waves.Count - 1 == CurrentWaveIndex)
             {
-                TSPlayer.All.SendInfoMessage("{0} has been defeated!", CurrentInvasion.WaveSetName);
+				NpcUtils.InfoMessageAllPlayers("{0} has been defeated!", CurrentInvasion.WaveSetName);
                 StopInvasion();
                 return;
             }
             CurrentWaveIndex++;
             CurrentWave = CurrentInvasion.Waves[CurrentWaveIndex];
             WaveSize = CurrentWave.SpawnGroup.KillAmount;
-            TSPlayer.All.SendInfoMessage("Wave {0}: {1} has begun!", CurrentWaveIndex + 1, CurrentWave.WaveName);
+			NpcUtils.InfoMessageAllPlayers("Wave {0}: {1} has begun!", CurrentWaveIndex + 1, CurrentWave.WaveName);
         }
 
         public void StartInvasion(WaveSet waveset)
@@ -49,7 +53,7 @@ namespace CustomNPC
             WaveSize = CurrentWave.SpawnGroup.KillAmount;
             if (CurrentWave.SpawnGroup.PlayerMultiplier)
             {
-                WaveSize *= TShock.Utils.ActivePlayers();
+				WaveSize *= NpcUtils.ActivePlayerCount;
             }
             CurrentWave = waveset.Waves[0];
             CurrentWaveIndex = 0;
@@ -69,7 +73,7 @@ namespace CustomNPC
 
         private void InvasionTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            if (TShock.Utils.ActivePlayers() == 0)
+			if (NpcUtils.ActivePlayerCount == 0)
             {
                 return;
             }
@@ -84,7 +88,7 @@ namespace CustomNPC
                 var npcdef = NPCManager.Data.GetNPCbyID(minions.MobID);
                 if (npcdef == null)
                 {
-                    TShock.Log.ConsoleError("[CustomNPC]: Error! The custom mob id \"{0}\" does not exist!", minions.MobID);
+					NpcUtils.LogConsole("[CustomNPC]: Error! The custom mob id \"{0}\" does not exist!", minions.MobID);
                     continue;
                 }
 
@@ -97,16 +101,29 @@ namespace CustomNPC
                     }
                 }
 
-                foreach (TSPlayer player in TShock.Players)
+				#if TShock
+				foreach (TSPlayer player in TShock.Players)
+				#elif OTAPI
+				foreach (var player in Terraria.Main.player)
+				#endif
                 {
                     //Skip spawning more NPCs when we have likely hit the server's mob limit.
                     if (spawnFails > 40 && spawnsThisWave >= 150) continue;
 
-                    if (player == null || player.Dead || !player.Active || !NPCManager.Chance(minions.Chance))
+					#if TShock
+					if (player == null || player.Dead || !player.Active || !NPCManager.Chance(minions.Chance))
+					#elif OTAPI
+					if (player == null || player.dead || !player.active || !NPCManager.Chance(minions.Chance))
+					#endif
                     {
                         continue;
                     }
-                    Rectangle playerframe = new Rectangle((int)player.TPlayer.position.X, (int)player.TPlayer.position.Y, player.TPlayer.width, player.TPlayer.height);
+
+					#if TShock
+					Rectangle playerframe = new Rectangle((int)player.TPlayer.position.X, (int)player.TPlayer.position.Y, player.TPlayer.width, player.TPlayer.height);
+					#elif OTAPI
+					Rectangle playerframe = new Rectangle((int)player.position.X, (int)player.position.Y, player.width, player.height);
+					#endif
                     if (!playerframe.Intersects(SpawnRegion))
                     {
                         continue;
@@ -149,7 +166,7 @@ namespace CustomNPC
 
             if (spawnFails > 0)
             {
-                TShock.Log.ConsoleInfo("[CustomNPC]: Failed to spawn {0} npcs this wave!", spawnFails);
+				NpcUtils.LogConsole("[CustomNPC]: Failed to spawn {0} npcs this wave!", spawnFails);
             }
         }
 

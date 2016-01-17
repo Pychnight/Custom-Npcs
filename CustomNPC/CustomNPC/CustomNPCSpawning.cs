@@ -4,9 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using TShockAPI.DB;
-using TShockAPI;
-
 namespace CustomNPC
 {
     public class CustomNPCSpawning

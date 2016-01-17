@@ -4,63 +4,78 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+
+#if TShock
 using TShockAPI;
+#elif OTAPI
+using Microsoft.Xna.Framework;
+#endif
 
 namespace CustomNPC
 {
     internal static class Extensions
     {
+		#if TShock
         public static BiomeTypes GetCurrentBiomes(this TSPlayer player)
+		#elif OTAPI
+		public static BiomeTypes GetCurrentBiomes(this Terraria.Player player)
+		#endif
         {
             BiomeTypes biome = BiomeTypes.None;
 
-            if (player.TPlayer.ZoneCorrupt)
-                biome |= BiomeTypes.Corruption;
+			#if TShock
+			var _player = player.TPlayer;
+			#elif OTAPI
+			var _player = player;
+			#endif
 
-            if (player.TPlayer.ZoneCrimson)
-                biome |= BiomeTypes.Crimsion;
+			if (_player.ZoneCorrupt)
+				biome |= BiomeTypes.Corruption;
 
-            if (player.TPlayer.ZoneDesert)
-                biome |= BiomeTypes.Desert;
+			if (_player.ZoneCrimson)
+				biome |= BiomeTypes.Crimsion;
 
-            if (player.TPlayer.ZoneDungeon)
-                biome |= BiomeTypes.Dungeon;
+			if (_player.ZoneDesert)
+				biome |= BiomeTypes.Desert;
 
-            if (player.TPlayer.ZoneGlowshroom)
-                biome |= BiomeTypes.Glowshroom;
+			if (_player.ZoneDungeon)
+				biome |= BiomeTypes.Dungeon;
 
-            if (player.TPlayer.ZoneHoly)
-                biome |= BiomeTypes.Holy;
+			if (_player.ZoneGlowshroom)
+				biome |= BiomeTypes.Glowshroom;
 
-            if (player.TPlayer.ZoneJungle)
-                biome |= BiomeTypes.Jungle;
+			if (_player.ZoneHoly)
+				biome |= BiomeTypes.Holy;
 
-            if (player.TPlayer.ZoneMeteor)
-                biome |= BiomeTypes.Meteor;
+			if (_player.ZoneJungle)
+				biome |= BiomeTypes.Jungle;
 
-            if (player.TPlayer.ZonePeaceCandle)
-                biome |= BiomeTypes.PeaceCandle;
+			if (_player.ZoneMeteor)
+				biome |= BiomeTypes.Meteor;
 
-            if (player.TPlayer.ZoneSnow)
-                biome |= BiomeTypes.Snow;
+			if (_player.ZonePeaceCandle)
+				biome |= BiomeTypes.PeaceCandle;
 
-            if (player.TPlayer.ZoneTowerNebula)
-                biome |= BiomeTypes.TowerNebula;
+			if (_player.ZoneSnow)
+				biome |= BiomeTypes.Snow;
 
-            if (player.TPlayer.ZoneTowerSolar)
-                biome |= BiomeTypes.TowerSolar;
+			if (_player.ZoneTowerNebula)
+				biome |= BiomeTypes.TowerNebula;
 
-            if (player.TPlayer.ZoneTowerStardust)
-                biome |= BiomeTypes.TowerStardust;
+			if (_player.ZoneTowerSolar)
+				biome |= BiomeTypes.TowerSolar;
 
-            if (player.TPlayer.ZoneTowerVortex)
-                biome |= BiomeTypes.TowerVortex;
+			if (_player.ZoneTowerStardust)
+				biome |= BiomeTypes.TowerStardust;
 
-            if (player.TPlayer.ZoneUndergroundDesert)
-                biome |= BiomeTypes.UndergroundDesert;
+			if (_player.ZoneTowerVortex)
+				biome |= BiomeTypes.TowerVortex;
 
-            if (player.TPlayer.ZoneWaterCandle)
-                biome |= BiomeTypes.WaterCandle;
+			if (_player.ZoneUndergroundDesert)
+				biome |= BiomeTypes.UndergroundDesert;
+
+			if (_player.ZoneWaterCandle)
+				biome |= BiomeTypes.WaterCandle;
 
             if (biome == BiomeTypes.None)
             {

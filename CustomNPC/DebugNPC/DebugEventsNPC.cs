@@ -48,7 +48,7 @@ namespace DebugNPC
         //On death 35% chance of multiplying into 3
         public override void OnDeath(CustomNPCVars vars)
         {
-          
+			base.OnDeath (vars);
         }
        
     }

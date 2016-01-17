@@ -1,4 +1,8 @@
-﻿namespace CustomNPC.EventSystem.Events
+﻿#if OTAPI
+using Microsoft.Xna.Framework;
+#endif
+
+namespace CustomNPC.EventSystem.Events
 {
     public class NpcKilledEvent
     {
