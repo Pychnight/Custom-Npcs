@@ -438,7 +438,7 @@ namespace CustomNPC
 					throw new CommandError ("Error: Invalid x position defined!");
 					return;
 				}
-				if (!args.TryGetInt (1, out y))
+				if (!args.TryGetInt (2, out y))
 				{
 					throw new CommandError ("Error: Invalid y position defined!");
 					return;
