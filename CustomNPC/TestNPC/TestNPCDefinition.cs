@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CustomNPC;
+using Microsoft.Xna.Framework;
 
 namespace TestNPC
 {
@@ -92,12 +93,12 @@ namespace TestNPC
         {
             if (NPCManager.Chance(35))
             {
-                NPCManager.SendPrivateMessageNearbyPlayers("TestNpc: I live three folds more! Muwhahahah!", Color.Purple, vars.mainNPC.whoAmI, 50);
+                NPCManager.SendPrivateMessageNearbyPlayers("TestNpc: I live three folds more! Muwhahahah!", Color.Black, vars.mainNPC.whoAmI, 50);
                 vars.Multiply(vars, 3);
             }
             else
             {
-                NPCManager.SendPrivateMessageNearbyPlayers("TestNpc: Nooo! I failed to multiply!", Color.Purple, vars.mainNPC.whoAmI, 50);
+                NPCManager.SendPrivateMessageNearbyPlayers("TestNpc: Nooo! I failed to multiply!", Color.Black, vars.mainNPC.whoAmI, 50);
             }
         }
         //remove default loot

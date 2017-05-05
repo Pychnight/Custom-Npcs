@@ -1,4 +1,6 @@
-﻿namespace CustomNPC.EventSystem.Events
+﻿using Microsoft.Xna.Framework;
+
+namespace CustomNPC.EventSystem.Events
 {
     public class NpcKilledEvent
     {

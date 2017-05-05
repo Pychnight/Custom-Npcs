@@ -7,6 +7,7 @@ using System.Timers;
 
 using TShockAPI;
 using Terraria;
+using Microsoft.Xna.Framework;
 
 namespace CustomNPC
 {

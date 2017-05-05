@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using TShockAPI.DB;
 using TShockAPI;
 using Terraria;
+using Microsoft.Xna.Framework;
 
 namespace CustomNPC
 {
@@ -73,7 +74,7 @@ namespace CustomNPC
             mainNPC.position.Y = mainNPC.position.Y + (float)mainNPC.height;
             int spriteDir = mainNPC.spriteDirection;
 
-            mainNPC.netDefaults(customNPC.customBase.netID);
+            mainNPC.SetDefaults(customNPC.customBase.netID);
             //DEBUG
             TShock.Log.ConsoleInfo("DEBUG [CustomTransform] Post netDefaults. NPC Pos={0}, {1} NewNet={2} NewType={3}", mainNPC.position.X, mainNPC.position.Y, mainNPC.netID, mainNPC.type);
             //DEBUG
@@ -82,8 +83,8 @@ namespace CustomNPC
             mainNPC.velocity = vector;
             mainNPC.position.Y = mainNPC.position.Y - (float)mainNPC.height;
 
-            mainNPC.name = customNPC.customName;
-            mainNPC.displayName = customNPC.customName;
+            mainNPC.GivenName = customNPC.customName;
+            mainNPC.FullName.Replace(customNPC.customName, customNPC.customName);
             mainNPC.lifeMax = customNPC.customHealth;
             mainNPC.life = oldLife;
             mainNPC.aiStyle = customNPC.customAI;
@@ -118,11 +119,11 @@ namespace CustomNPC
 
             int oldLife = mainNPC.life;
 
-            mainNPC.netDefaults(baseType.netID);
+            mainNPC.SetDefaults(baseType.netID);
 
             mainNPC.netAlways = true;
-            mainNPC.name = customNPC.customName;
-            mainNPC.displayName = customNPC.customName;
+            mainNPC.GivenName = customNPC.customName;
+            mainNPC.FullName.Replace(customNPC.customName, customNPC.customName);
             mainNPC.lifeMax = customNPC.customHealth;
             mainNPC.life = oldLife;
 
@@ -139,8 +140,8 @@ namespace CustomNPC
                 TShock.Log.ConsoleInfo("DEBUG [PostTransform] NetMode=2, updating");
                 //DEBUG
                 mainNPC.netUpdate = true;
-                NetMessage.SendData(23, -1, -1, "", mainNPC.whoAmI, 0f, 0f, 0f, 0);
-                NetMessage.SendData(54, -1, -1, "", mainNPC.whoAmI, 0f, 0f, 0f, 0);
+                NetMessage.SendData(23, -1, -1, null, mainNPC.whoAmI, 0f, 0f, 0f, 0);
+                NetMessage.SendData(54, -1, -1, null, mainNPC.whoAmI, 0f, 0f, 0f, 0);
             }
             else
             {

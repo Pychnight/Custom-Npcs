@@ -37,9 +37,19 @@ namespace CustomNPC
         BloodMoon = 1 << 3,
 
         /// <summary>
+        /// Allowed in SnowMoon
+        /// </summary>
+        SnowMoon = 1 << 10,
+
+        /// <summary>
         /// Allowed when Raining
         /// </summary>
         Raining = 1 << 4,
+
+        /// <summary>
+        /// Allowed when Raining
+        /// </summary>
+        SlimeRaining = 1 << 9,
 
         /// <summary>
         /// Allowed during day

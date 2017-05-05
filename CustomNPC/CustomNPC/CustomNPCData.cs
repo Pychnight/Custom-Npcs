@@ -65,10 +65,10 @@ namespace CustomNPC
         public void ConvertNPCToCustom(int index, CustomNPCDefinition obj, bool netDef = true)
         {
             NPC npc = Main.npc[index];
-            if (netDef) npc.netDefaults(obj.customBase.netID);
+            if (netDef) npc.SetDefaults(obj.customBase.netID);
 
-            npc.name = obj.customName;
-            npc.displayName = obj.customName;
+            npc.GivenName = obj.customName;
+            npc.FullName.Replace(obj.customName, obj.customName);
             npc.lifeMax = obj.customHealth;
             npc.life = obj.customHealth + 1;
             npc.aiStyle = obj.customAI;

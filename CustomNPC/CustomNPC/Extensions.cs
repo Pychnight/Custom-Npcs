@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -14,29 +15,53 @@ namespace CustomNPC
         {
             BiomeTypes biome = BiomeTypes.None;
 
-            if (player.TPlayer.zoneEvil)
+            if (player.TPlayer.ZoneCorrupt)
                 biome |= BiomeTypes.Corruption;
 
-            if (player.TPlayer.zoneDungeon)
+            if (player.TPlayer.ZoneCrimson)
+                biome |= BiomeTypes.Crimsion;
+
+            if (player.TPlayer.ZoneDesert)
+                biome |= BiomeTypes.Desert;
+
+            if (player.TPlayer.ZoneDungeon)
                 biome |= BiomeTypes.Dungeon;
 
-            if (player.TPlayer.zoneMeteor)
-                biome |= BiomeTypes.Meteor;
+            if (player.TPlayer.ZoneGlowshroom)
+                biome |= BiomeTypes.Glowshroom;
 
-            if (player.TPlayer.zoneHoly)
+            if (player.TPlayer.ZoneHoly)
                 biome |= BiomeTypes.Holy;
 
-            if (player.TPlayer.zoneJungle)
+            if (player.TPlayer.ZoneJungle)
                 biome |= BiomeTypes.Jungle;
 
-            if (player.TPlayer.zoneSnow)
+            if (player.TPlayer.ZoneMeteor)
+                biome |= BiomeTypes.Meteor;
+
+            if (player.TPlayer.ZonePeaceCandle)
+                biome |= BiomeTypes.PeaceCandle;
+
+            if (player.TPlayer.ZoneSnow)
                 biome |= BiomeTypes.Snow;
 
-            if (player.TPlayer.zoneBlood)
-                biome |= BiomeTypes.Blood;
+            if (player.TPlayer.ZoneTowerNebula)
+                biome |= BiomeTypes.TowerNebula;
 
-            if (player.TPlayer.zoneCandle)
-                biome |= BiomeTypes.Candle;
+            if (player.TPlayer.ZoneTowerSolar)
+                biome |= BiomeTypes.TowerSolar;
+
+            if (player.TPlayer.ZoneTowerStardust)
+                biome |= BiomeTypes.TowerStardust;
+
+            if (player.TPlayer.ZoneTowerVortex)
+                biome |= BiomeTypes.TowerVortex;
+
+            if (player.TPlayer.ZoneUndergroundDesert)
+                biome |= BiomeTypes.UndergroundDesert;
+
+            if (player.TPlayer.ZoneWaterCandle)
+                biome |= BiomeTypes.WaterCandle;
 
             if (biome == BiomeTypes.None)
             {

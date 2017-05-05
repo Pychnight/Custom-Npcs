@@ -42,6 +42,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Libraries\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="OTAPI">
+      <HintPath>..\..\..\..\CustomNPC Addons\Refences\OTAPI.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -50,10 +53,10 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="TerrariaServer">
-      <HintPath>..\Libraries\TerrariaServer.exe</HintPath>
+      <HintPath>..\..\..\..\CustomNPC Addons\Refences\TerrariaServer.exe</HintPath>
     </Reference>
     <Reference Include="TShockAPI">
-      <HintPath>..\Libraries\TShockAPI.dll</HintPath>
+      <HintPath>..\..\..\..\CustomNPC Addons\Refences\TShockAPI.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -168,6 +169,11 @@ namespace CustomNPC
                 //Log.ConsoleInfo("Failed on Eclipse");
                 return false;
             }
+            if (conditions.HasFlag(SpawnConditions.SnowMoon) && !Main.snowMoon)
+            {
+                //Log.ConsoleInfo("Failed on SnowMoon");
+                return false;
+            }
             if (conditions.HasFlag(SpawnConditions.DayTime) && !Main.dayTime)
             {
                 //Log.ConsoleInfo("Failed on DayTime");
@@ -203,6 +209,11 @@ namespace CustomNPC
                 //Log.ConsoleInfo("Failed on Raining");
                 return false;
             }
+            if (conditions.HasFlag(SpawnConditions.SlimeRaining) && !Main.slimeRain)
+            {
+                //Log.ConsoleInfo("Failed on Slime Raining");
+                return false;
+            }
             return true;
         }
 
@@ -235,6 +246,30 @@ namespace CustomNPC
         public static int SpawnNPCAtLocation(int x, int y, CustomNPCDefinition customnpc)
         {
             return SpawnCustomNPC(x, y, customnpc);
+        }
+
+        public static int SpawnNPCAroundNPC(int npcindex, ShotTile shottile, int npcid)
+        {
+            NPC npc = Main.npc[npcindex];
+            if (npc == null) return -1;
+
+            int x = (int)(npc.position.X + shottile.X);
+            int y = (int)(npc.position.Y + shottile.Y);
+
+            return SpawnNPC(x, y, npcid);
+        }
+
+        private static int SpawnNPC(int x, int y, int npcid)
+        {
+            if (npcid == 200)
+            {
+                return -1;
+            }
+
+            NPC.NewNPC(x, y, npcid);
+            TSPlayer.All.SendData(PacketTypes.NpcUpdate, "", npcid);
+
+            return npcid;
         }
 
         public static int SpawnNPCAroundNPC(int npcindex, ShotTile shottile, CustomNPCDefinition customnpc)
@@ -285,7 +320,7 @@ namespace CustomNPC
                 int testX = rand.Next(spawnRangeMinX, spawnRangeMaxX);
                 int testY = rand.Next(spawnRangeMinY, spawnRangeMaxY);
 
-                Tile testTile = Main.tile[testX, testY];
+                OTAPI.Tile.ITile testTile = Main.tile[testX, testY];
                 if (testTile.nactive() && Main.tileSolid[testTile.type])
                 {
                     attempts++;
@@ -296,7 +331,7 @@ namespace CustomNPC
                 {
                     for (int y = testY; y < Main.maxTilesY; y++)
                     {
-                        Tile test = Main.tile[testX, y];
+                        OTAPI.Tile.ITile test = Main.tile[testX, y];
                         if (test.nactive() && Main.tileSolid[test.type])
                         {
                             if (testX < safeRangeMinX || testX > safeRangeMaxX || y < safeRangeMinY || y > safeRangeMaxY)
@@ -509,14 +544,15 @@ namespace CustomNPC
             player.SetBuff(buffid, seconds * 60);
         }
 
+        //Bug Fix #1 Counting errors Do not count dead objects
         public static int AliveCount(string customid)
         {
             int count = 0;
-            foreach(CustomNPCVars obj in NPCs)
+            foreach (CustomNPCVars obj in NPCs)
             {
                 if (obj == null) continue;
 
-                if (obj.customNPC.customID.Equals(customid, StringComparison.InvariantCultureIgnoreCase))
+                if (obj.customNPC.customID.Equals(customid, StringComparison.InvariantCultureIgnoreCase) && !obj.isDead)
                 {
                     count++;
                 }

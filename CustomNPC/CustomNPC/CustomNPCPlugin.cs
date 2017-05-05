@@ -14,10 +14,11 @@ using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;
 using TShockAPI.DB;
+using Microsoft.Xna.Framework;
 
 namespace CustomNPC
 {
-    [ApiVersion(1, 17)]
+    [ApiVersion(2, 1)]
     public class CustomNPCPlugin : TerrariaPlugin
     {
         internal Random rand = new Random();
@@ -348,7 +349,8 @@ namespace CustomNPC
             //Alive: 2 / 20
 
             args.Player.SendInfoMessage("Info About {0}", cdef.customID);
-            args.Player.SendInfoMessage("Custom Name: {0} (Default: {1})", TaeirUtil.ValOrNo(cdef.customName), cdef.customBase.name);
+            args.Player.SendInfoMessage("Custom Name: {0} (Default: {1})", TaeirUtil.ValOrNo(cdef.customName), cdef.customBase.GivenName);
+            args.Player.SendInfoMessage("Custom Full Name: {0} (Default: {1})", TaeirUtil.ValOrNo(cdef.customName), cdef.customBase.FullName);
             args.Player.SendInfoMessage("Base: {0} ({1})", TaeirUtil.GetNPCName(cdef.customBase.netID), cdef.customBase.netID);
             args.Player.SendInfoMessage("Custom AI: {0} (Default: {1})", TaeirUtil.ValOrNo(cdef.customAI, cdef.customBase.aiStyle), cdef.customBase.aiStyle);
             args.Player.SendInfoMessage("Custom Health: {0} (Default: {1}) -- Custom Defense: {2} (Default: {3})", TaeirUtil.ValOrNo(cdef.customHealth, cdef.customBase.lifeMax), cdef.customBase.lifeMax, TaeirUtil.ValOrNo(cdef.customDefense, cdef.customBase.defense), cdef.customBase.defense);
@@ -578,7 +580,7 @@ namespace CustomNPC
                     }
                     else
                     {
-                        NetMessage.SendData(23, -1, -1, "", obj.mainNPC.whoAmI, 0f, 0f, 0f, 0);
+                        NetMessage.SendData(23, -1, -1, null, obj.mainNPC.whoAmI, 0f, 0f, 0f, 0);
                     }
                 }
             }
@@ -648,7 +650,7 @@ namespace CustomNPC
                                     if (!projectile.projectileCheckCollision || Collision.CanHit(player.TPlayer.position, player.TPlayer.bodyFrame.Width, player.TPlayer.bodyFrame.Height, obj.mainNPC.position, obj.mainNPC.width, obj.mainNPC.height))
                                     {
                                         //Make sure distance isn't further then what tshock allows
-                                        float currDistance = Vector2.DistanceSquared(player.TPlayer.position, obj.mainNPC.center());
+                                        float currDistance = Vector2.DistanceSquared(player.TPlayer.position, obj.mainNPC.frame.Center());
 
                                         //Distance^2 < 4194304 is the same as Distance < 2048, but faster
                                         if (currDistance < 4194304)
@@ -729,7 +731,7 @@ namespace CustomNPC
                 proj.ai[1] = ai.Item2;
 
                 // send projectile as a packet
-                NetMessage.SendData(27, -1, -1, string.Empty, projectileIndex);
+                NetMessage.SendData(27, -1, -1, null, projectileIndex);
             }
         }
 
@@ -737,13 +739,13 @@ namespace CustomNPC
         private Vector2 GetStartPosition(CustomNPCVars origin, ShotTile shottile)
         {
             Vector2 offset = new Vector2(shottile.X, shottile.Y);
-            return origin.mainNPC.center() + offset;
+            return origin.mainNPC.frame.Center() + offset;
         }
 
         //calculates the x y speed required angle
         private Vector2 CalculateSpeed(Vector2 start, TSPlayer target)
         {
-            Vector2 targetCenter = target.TPlayer.center();
+            Vector2 targetCenter = target.TPlayer.bodyFrame.Center();
 
             float dirX = targetCenter.X - start.X;
             float dirY = targetCenter.Y - start.Y;

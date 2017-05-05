@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Terraria;
 using TShockAPI;
 using TShockAPI.DB;
+using Microsoft.Xna.Framework;
 
 namespace CustomNPC
 {
@@ -81,6 +82,14 @@ namespace CustomNPC
             get { return -1; }
         }
         public int currSpawnsVar { get; set; }
+
+        /// <summary>
+        /// Seconomy Reward // Not Implemented Yet
+        /// </summary>
+        public virtual long SEconReward
+        {
+            get { return 0L; }
+        }
 
         // NPC Projectile Variables
 
