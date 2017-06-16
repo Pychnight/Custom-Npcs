@@ -43,6 +43,7 @@ namespace CustomNPC
         {
             get { return false; }
         }
+        public virtual int ReplacementChance { get; set; }
         public abstract string customID { get; }
         public abstract string customName { get; }
         public virtual int customHealth
@@ -81,10 +82,14 @@ namespace CustomNPC
         {
             get { return -1; }
         }
+        public virtual string GetChat
+        {
+            get { return null; }
+        }
         public int currSpawnsVar { get; set; }
 
         /// <summary>
-        /// Seconomy Reward // Not Implemented Yet
+        /// Seconomy Reward
         /// </summary>
         public virtual long SEconReward
         {

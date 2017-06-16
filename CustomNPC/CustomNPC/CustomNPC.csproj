@@ -58,10 +58,14 @@
     <Reference Include="TShockAPI">
       <HintPath>..\..\..\..\CustomNPC Addons\Refences\TShockAPI.dll</HintPath>
     </Reference>
+    <Reference Include="Wolfje.Plugins.SEconomy">
+      <HintPath>..\Libraries\Wolfje.Plugins.SEconomy.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CustomNPCConfig.cs" />
     <Compile Include="CustomNPCInvasion.cs" />
+    <Compile Include="EventSystem\Events\ServerChatEvent.cs" />
     <Compile Include="SpawnConditions.cs" />
     <Compile Include="Biomes.cs" />
     <Compile Include="CustomNPCDefinition.cs" />

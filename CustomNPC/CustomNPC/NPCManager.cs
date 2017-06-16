@@ -17,6 +17,7 @@ namespace CustomNPC
         private static Random rand = new Random();
         internal static CustomNPCVars[] NPCs = new CustomNPCVars[200];
         public static CustomNPCData Data = new CustomNPCData();
+        public static readonly List<Region> ActiveArenas = new List<Region>();
 
         internal static void LoadFrom(DefinitionManager definitions)
         {
@@ -42,7 +43,7 @@ namespace CustomNPC
                     //Get list of mobs that can be spawned in that biome
                     List<Tuple<string, CustomNPCSpawning>> biomeSpawns;
                     if (!Data.BiomeSpawns.TryGetValue(biome, out biomeSpawns)) continue;
-                    
+
                     foreach (Tuple<string, CustomNPCSpawning> obj in biomeSpawns)
                     {
                         //Log.ConsoleInfo("{0} - Checking mob spawn", obj.Item1);
@@ -55,11 +56,17 @@ namespace CustomNPC
 
                         CustomNPCDefinition customnpc = Data.GetNPCbyID(obj.Item1);
 
+                        if (customnpc.maxSpawns <= -1)
+                        {
+                            customnpc.currSpawnsVar++;
+                        }
+
                         //Make sure not spawning more then maxSpawns
                         if (customnpc.maxSpawns != -1 && customnpc.currSpawnsVar >= customnpc.maxSpawns)
                         {
                             continue;
                         }
+
 
                         //Get the last spawn attempt
                         DateTime lastSpawnAttempt;
@@ -74,32 +81,39 @@ namespace CustomNPC
 
                         //Check spawn chance
                         if (!NPCManager.Chance(obj.Item2.spawnChance)) continue;
-                            
-                        //Check spawn method
-                        if (obj.Item2.useTerrariaSpawn)
+
+                        // Check Player Depth
+
+                        if (player.TileY >= obj.Item2.minDepth && player.TileY <= obj.Item2.maxDepth || obj.Item2.minDepth == -1 || obj.Item2.maxDepth == -1)
                         {
-                            //All checks completed --> spawn mob
-                            int npcid = SpawnMobAroundPlayer(player, customnpc);
-                            if (npcid != -1)
+
+                            //Check spawn method
+                            if (obj.Item2.useTerrariaSpawn)
                             {
-                                Main.npc[npcid].target = player.Index;
+                                //All checks completed --> spawn mob
+                                int npcid = SpawnMobAroundPlayer(player, customnpc);
+                                if (npcid != -1)
+                                {
+                                    Main.npc[npcid].target = player.Index;
+                                    Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
+                                    customnpc.currSpawnsVar++;
+                                }
+                            }
+                            else
+                            {
+                                //All checks completed --> spawn mob
+                                int spawnX;
+                                int spawnY;
+
+                                TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
+
+                                int npcid = SpawnNPCAtLocation((spawnX * 16) + 8, spawnY * 16, customnpc);
+                                if (npcid == -1) continue;
+
                                 Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
+                                Main.npc[npcid].target = player.Index;
                                 customnpc.currSpawnsVar++;
-                            }                                            
-                        }
-                        else
-                        {
-                            //All checks completed --> spawn mob
-                            int spawnX;
-                            int spawnY;
-                            TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
-
-                            int npcid = SpawnNPCAtLocation((spawnX * 16) + 8, spawnY * 16, customnpc);
-                            if (npcid == -1) continue;
-
-                            Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
-                            Main.npc[npcid].target = player.Index;
-                            customnpc.currSpawnsVar++;
+                            }
                         }
                     }
                 }
@@ -138,15 +152,35 @@ namespace CustomNPC
                         Data.LastSpawnAttempt[customnpc.customID] = DateTime.Now;
 
                         if (!NPCManager.Chance(obj2.Item2.spawnChance)) continue;
-                        
-                        int spawnX;
-                        int spawnY;
-                        TShock.Utils.GetRandomClearTileWithInRange(player.TileX, player.TileY, 50, 50, out spawnX, out spawnY);
-                        int npcid = SpawnNPCAtLocation((spawnX * 16) + 8, spawnY * 16, customnpc);
-                        if (npcid == -1) continue;
 
-                        Main.npc[npcid].target = player.Index;
-                        customnpc.currSpawnsVar++;
+                        // Check Player Depth
+
+                        if (player.TileY >= obj2.Item2.minDepth && player.TileY <= obj2.Item2.maxDepth || obj2.Item2.minDepth == -1 || obj2.Item2.maxDepth == -1)
+                        {
+                            var region = TShock.Regions.GetRegionByName(obj2.Item2.spawnRegion);
+                            ActiveArenas.Add(region);
+                            ActiveArenas.Count();
+
+                            var arenaX = region.Area.X + (region.Area.Width / 2);
+                            var arenaY = region.Area.Y + (region.Area.Height / 2);
+                            var rangeX = region.Area.Width / 2;
+                            var rangeY = region.Area.Height / 2;
+
+                            int spawnX;
+                            int spawnY;
+
+                            TShock.Utils.GetRandomClearTileWithInRange(arenaX, arenaY, rangeX, rangeY, out spawnX, out spawnY);
+                            
+                            int npcid = SpawnNPCAtLocation((spawnX * 16) + 8, spawnY * 16, customnpc);
+                            if (npcid == -1) continue;
+
+
+                            Main.npc[npcid].target = player.Index;
+                            customnpc.currSpawnsVar++;
+                            ActiveArenas.Remove(region);
+                            continue;
+                                                     
+                        }
                     }
                 }
             }

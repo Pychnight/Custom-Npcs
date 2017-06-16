@@ -82,9 +82,7 @@ namespace CustomNPC
             mainNPC.spriteDirection = spriteDir;
             mainNPC.velocity = vector;
             mainNPC.position.Y = mainNPC.position.Y - (float)mainNPC.height;
-
-            mainNPC.GivenName = customNPC.customName;
-            mainNPC.FullName.Replace(customNPC.customName, customNPC.customName);
+            mainNPC._givenName = customNPC.customName;
             mainNPC.lifeMax = customNPC.customHealth;
             mainNPC.life = oldLife;
             mainNPC.aiStyle = customNPC.customAI;
@@ -122,8 +120,7 @@ namespace CustomNPC
             mainNPC.SetDefaults(baseType.netID);
 
             mainNPC.netAlways = true;
-            mainNPC.GivenName = customNPC.customName;
-            mainNPC.FullName.Replace(customNPC.customName, customNPC.customName);
+            mainNPC._givenName = customNPC.customName;
             mainNPC.lifeMax = customNPC.customHealth;
             mainNPC.life = oldLife;
 
@@ -182,6 +179,19 @@ namespace CustomNPC
             }
 
             postTransform();
+        
+            //#Issue Number 7: Github issue
+            //Improve this!
+            //Temp Fix for projectiles not attaching to transformations, some one else should redo this in a better way..
+            DateTime[] dt = null;
+            if (npcdef.customProjectiles != null)
+            {
+                dt = Enumerable.Repeat(DateTime.Now, npcdef.customProjectiles.Count).ToArray();
+            }
+
+            NPC spawned = Main.npc[mainNPC.whoAmI];
+            NPCManager.NPCs[mainNPC.whoAmI] = new CustomNPCVars(npcdef, dt, spawned);
+            NPCManager.Data.ConvertNPCToCustom(mainNPC.whoAmI, npcdef);
         }
 
         /// <summary>

@@ -63,6 +63,24 @@ namespace CustomNPC
             if (player.TPlayer.ZoneWaterCandle)
                 biome |= BiomeTypes.WaterCandle;
 
+            if (player.TPlayer.ZoneBeach)
+                biome |= BiomeTypes.Beach;
+
+            if (player.TPlayer.ZoneSandstorm)
+                biome |= BiomeTypes.Sandstorm;
+
+            if (player.TPlayer.ZoneSkyHeight)
+                biome |= BiomeTypes.SkyHeight;
+
+            if (player.TPlayer.ZoneOverworldHeight)
+                biome |= BiomeTypes.OverworldHeight;
+
+            if (player.TPlayer.ZoneDirtLayerHeight)
+                biome |= BiomeTypes.DirtLayerHeight;
+
+            if (player.TPlayer.ZoneUnderworldHeight)
+                biome |= BiomeTypes.UnderworldHeight;
+
             if (biome == BiomeTypes.None)
             {
                 biome = BiomeTypes.Grass;

@@ -47,7 +47,7 @@ namespace CustomNPC
         Raining = 1 << 4,
 
         /// <summary>
-        /// Allowed when Raining
+        /// Allowed when Raining Slime
         /// </summary>
         SlimeRaining = 1 << 9,
 

@@ -67,8 +67,7 @@ namespace CustomNPC
             NPC npc = Main.npc[index];
             if (netDef) npc.SetDefaults(obj.customBase.netID);
 
-            npc.GivenName = obj.customName;
-            npc.FullName.Replace(obj.customName, obj.customName);
+            npc._givenName = obj.customName;
             npc.lifeMax = obj.customHealth;
             npc.life = obj.customHealth + 1;
             npc.aiStyle = obj.customAI;
@@ -80,6 +79,8 @@ namespace CustomNPC
             npc.defDefense = obj.customDefense;
 
             npc.boss = obj.isBoss;
+
+            NPC.setNPCName(obj.customName, obj.customBase.netID, true);
 
             if (!string.IsNullOrEmpty(obj.customSpawnMessage))
             {
