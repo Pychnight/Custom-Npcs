@@ -107,31 +107,6 @@ namespace CustomNPC
         Beach = 1 << 17,
 
         /// <summary>
-        /// Player is at Sky Limit Height
-        /// </summary>
-        SkyHeight = 1 << 18,
-
-        /// <summary>
-        /// Player is at Overworld Height
-        /// </summary>
-        OverworldHeight = 1 << 19,
-
-        /// <summary>
-        /// Player is at Dirt Layer Height
-        /// </summary>
-        DirtLayerHeight = 1 << 20,
-
-        /// <summary>
-        /// Player is at Rock Layer Height
-        /// </summary>
-        RockLayerHeight = 1 << 21,
-
-        /// <summary>
-        /// Player is at Hell Height
-        /// </summary>
-        UnderworldHeight = 1 << 22,
-
-        /// <summary>
         /// Player is in a Sandstorm
         /// </summary>
         Sandstorm = 1 << 23

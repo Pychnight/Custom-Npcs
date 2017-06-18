@@ -80,8 +80,6 @@ namespace CustomNPC
 
             npc.boss = obj.isBoss;
 
-            NPC.setNPCName(obj.customName, obj.customBase.netID, true);
-
             if (!string.IsNullOrEmpty(obj.customSpawnMessage))
             {
                 TSPlayer.All.SendMessage(obj.customSpawnMessage, obj.customSpawnMessageColor);

@@ -84,7 +84,7 @@ namespace CustomNPC
 
                         // Check Player Depth
 
-                        if (player.TileY >= obj.Item2.minDepth && player.TileY <= obj.Item2.maxDepth || obj.Item2.minDepth == -1 || obj.Item2.maxDepth == -1)
+                        if (player.TileY > obj.Item2.minDepth && player.TileY < obj.Item2.maxDepth || obj.Item2.minDepth == -1 || obj.Item2.maxDepth == -1)
                         {
 
                             //Check spawn method
@@ -155,7 +155,7 @@ namespace CustomNPC
 
                         // Check Player Depth
 
-                        if (player.TileY >= obj2.Item2.minDepth && player.TileY <= obj2.Item2.maxDepth || obj2.Item2.minDepth == -1 || obj2.Item2.maxDepth == -1)
+                        if (player.TileY > obj2.Item2.minDepth && player.TileY < obj2.Item2.maxDepth || obj2.Item2.minDepth == -1 || obj2.Item2.maxDepth == -1)
                         {
                             var region = TShock.Regions.GetRegionByName(obj2.Item2.spawnRegion);
                             ActiveArenas.Add(region);
